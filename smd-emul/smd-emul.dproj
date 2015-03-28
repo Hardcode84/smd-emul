@@ -44,5 +44,160 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="main.d" />
+    <Compile Include="..\d-gamelib\gamelib\autodispose.d">
+      <Link>gamelib\autodispose.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\core.d">
+      <Link>gamelib\core.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\fixedpoint.d">
+      <Link>gamelib\fixedpoint.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\funcwrapper.d">
+      <Link>gamelib\funcwrapper.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\interpolate.d">
+      <Link>gamelib\interpolate.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\linalg.d">
+      <Link>gamelib\linalg.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\math.d">
+      <Link>gamelib\math.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\range.d">
+      <Link>gamelib\range.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\types.d">
+      <Link>gamelib\types.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\util.d">
+      <Link>gamelib\util.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\variant.d">
+      <Link>gamelib\variant.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\3rdparty\DerelictSDL2-master\source\derelict\sdl2\functions.d">
+      <Link>gamelib\3rdparty\DerelictSDL2-master\source\derelict\sdl2\functions.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\3rdparty\DerelictSDL2-master\source\derelict\sdl2\image.d">
+      <Link>gamelib\3rdparty\DerelictSDL2-master\source\derelict\sdl2\image.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\3rdparty\DerelictSDL2-master\source\derelict\sdl2\mixer.d">
+      <Link>gamelib\3rdparty\DerelictSDL2-master\source\derelict\sdl2\mixer.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\3rdparty\DerelictSDL2-master\source\derelict\sdl2\net.d">
+      <Link>gamelib\3rdparty\DerelictSDL2-master\source\derelict\sdl2\net.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\3rdparty\DerelictSDL2-master\source\derelict\sdl2\sdl.d">
+      <Link>gamelib\3rdparty\DerelictSDL2-master\source\derelict\sdl2\sdl.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\3rdparty\DerelictSDL2-master\source\derelict\sdl2\ttf.d">
+      <Link>gamelib\3rdparty\DerelictSDL2-master\source\derelict\sdl2\ttf.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\3rdparty\DerelictSDL2-master\source\derelict\sdl2\types.d">
+      <Link>gamelib\3rdparty\DerelictSDL2-master\source\derelict\sdl2\types.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\3rdparty\DerelictUtil-master\source\derelict\util\exception.d">
+      <Link>gamelib\3rdparty\DerelictUtil-master\source\derelict\util\exception.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\3rdparty\DerelictUtil-master\source\derelict\util\loader.d">
+      <Link>gamelib\3rdparty\DerelictUtil-master\source\derelict\util\loader.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\3rdparty\DerelictUtil-master\source\derelict\util\sharedlib.d">
+      <Link>gamelib\3rdparty\DerelictUtil-master\source\derelict\util\sharedlib.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\3rdparty\DerelictUtil-master\source\derelict\util\system.d">
+      <Link>gamelib\3rdparty\DerelictUtil-master\source\derelict\util\system.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\3rdparty\DerelictUtil-master\source\derelict\util\wintypes.d">
+      <Link>gamelib\3rdparty\DerelictUtil-master\source\derelict\util\wintypes.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\3rdparty\DerelictUtil-master\source\derelict\util\xtypes.d">
+      <Link>gamelib\3rdparty\DerelictUtil-master\source\derelict\util\xtypes.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\containers\intrusivelist.d">
+      <Link>gamelib\containers\intrusivelist.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\containers\queue.d">
+      <Link>gamelib\containers\queue.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\graphics\color.d">
+      <Link>gamelib\graphics\color.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\graphics\graph.d">
+      <Link>gamelib\graphics\graph.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\graphics\memsurface.d">
+      <Link>gamelib\graphics\memsurface.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\graphics\surface.d">
+      <Link>gamelib\graphics\surface.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\graphics\surfaceview.d">
+      <Link>gamelib\graphics\surfaceview.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\graphics\window.d">
+      <Link>gamelib\graphics\window.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\graphics\renderer2d\font.d">
+      <Link>gamelib\graphics\renderer2d\font.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\graphics\renderer2d\renderer.d">
+      <Link>gamelib\graphics\renderer2d\renderer.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\graphics\renderer2d\texture.d">
+      <Link>gamelib\graphics\renderer2d\texture.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\graphics\renderer2d\textureview.d">
+      <Link>gamelib\graphics\renderer2d\textureview.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\graphics\renderer2d\vectorfont.d">
+      <Link>gamelib\graphics\renderer2d\vectorfont.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\memory\arrayview.d">
+      <Link>gamelib\memory\arrayview.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\memory\intrusiveptr.d">
+      <Link>gamelib\memory\intrusiveptr.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\memory\memory.d">
+      <Link>gamelib\memory\memory.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\memory\poolalloc.d">
+      <Link>gamelib\memory\poolalloc.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\memory\stackalloc.d">
+      <Link>gamelib\memory\stackalloc.d</Link>
+    </Compile>
+    <Compile Include="..\d-gamelib\gamelib\memory\utils.d">
+      <Link>gamelib\memory\utils.d</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="gamelib\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\d-gamelib\gamelib\3rdparty\build.bat">
+      <Link>gamelib\3rdparty\build.bat</Link>
+    </None>
+    <None Include="..\d-gamelib\gamelib\3rdparty\DerelictSDL2-master\.gitignore">
+      <Link>gamelib\3rdparty\DerelictSDL2-master\.gitignore</Link>
+    </None>
+    <None Include="..\d-gamelib\gamelib\3rdparty\DerelictSDL2-master\package.json">
+      <Link>gamelib\3rdparty\DerelictSDL2-master\package.json</Link>
+    </None>
+    <None Include="..\d-gamelib\gamelib\3rdparty\DerelictSDL2-master\README.md">
+      <Link>gamelib\3rdparty\DerelictSDL2-master\README.md</Link>
+    </None>
+    <None Include="..\d-gamelib\gamelib\3rdparty\DerelictUtil-master\.gitignore">
+      <Link>gamelib\3rdparty\DerelictUtil-master\.gitignore</Link>
+    </None>
+    <None Include="..\d-gamelib\gamelib\3rdparty\DerelictUtil-master\package.json">
+      <Link>gamelib\3rdparty\DerelictUtil-master\package.json</Link>
+    </None>
+    <None Include="..\d-gamelib\gamelib\3rdparty\DerelictUtil-master\README.md">
+      <Link>gamelib\3rdparty\DerelictUtil-master\README.md</Link>
+    </None>
   </ItemGroup>
 </Project>
