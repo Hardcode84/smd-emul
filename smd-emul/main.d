@@ -1,13 +1,20 @@
 ﻿module main;
 
 import std.stdio;
+import std.file;
+import std.exception;
+
+import emul.rom;
 
 void main(string[] args)
 {
-    // Prints "Hello World" string in console
-    writeln("Hello World!");
+    if( args.length <= 1 )
+    {
+        writeln("Hello World!");
+        return;
+    }
     
-    // Lets the user press <Return> before program returns
-    stdin.readln();
+    auto rom = new Rom(read(args[1]).assumeUnique);
+    writeln(rom.header);
 }
 

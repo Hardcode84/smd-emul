@@ -25,9 +25,13 @@ pure:
     this(immutable(void)[] data)
     {
         mData = data;
+        header = readHeader();
     }
 
+    immutable Header header;
+
 private:
+const:
     void checkRange(uint offset, uint size)
     {
         enforce(offset < mData.length && (offset + size) <= mData.length,
@@ -41,7 +45,22 @@ private:
     auto readValue(T)(uint offset)
     {
         checkRange(offset,T.sizeof);
-        return bigEndianToNative!T(mData[offset..offset+T.sizeof]);
+        return bigEndianToNative!(T,T.sizeof)(cast(ubyte[T.sizeof])mData[offset..offset+T.sizeof]);
+    }
+    Header readHeader()
+    {
+        Header h;
+        h.consoleName      = readString(0x100,0x10);
+        h.copyright        = readString(0x110,0x10);
+        h.domesticGameName = readString(0x120,0x30);
+        h.overseasGameName = readString(0x150,0x30);
+        h.productType      = readString(0x180,0x2);
+        h.productVersion   = readString(0x182,0xc);
+        h.checkSum         = readValue!short(0x18e);
+        h.ioSupport        = readString(0x190,0x10);
+        h.romStartAddress  = readValue!uint(0x1a0);
+        h.romEndAddress    = readValue!uint(0x1a4);
+        return h;
     }
 
 private:
