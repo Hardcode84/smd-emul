@@ -173,9 +173,12 @@
     <Compile Include="..\d-gamelib\gamelib\memory\utils.d">
       <Link>gamelib\memory\utils.d</Link>
     </Compile>
+    <Compile Include="emul\core.d" />
+    <Compile Include="emul\rom.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="gamelib\" />
+    <Folder Include="emul\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\d-gamelib\gamelib\3rdparty\build.bat">
