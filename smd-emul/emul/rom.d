@@ -45,7 +45,8 @@ const:
     auto readValue(T)(uint offset)
     {
         checkRange(offset,T.sizeof);
-        return bigEndianToNative!(T,T.sizeof)(cast(ubyte[T.sizeof])mData[offset..offset+T.sizeof]);
+        ubyte[T.sizeof] data = (cast(immutable(ubyte)[])mData)[offset..offset+T.sizeof];
+        return bigEndianToNative!(T,T.sizeof)(data);
     }
     Header readHeader()
     {
