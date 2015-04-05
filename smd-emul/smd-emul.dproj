@@ -175,10 +175,16 @@
     </Compile>
     <Compile Include="emul\core.d" />
     <Compile Include="emul\rom.d" />
+    <Compile Include="emul\cpu\cpustate.d" />
+    <Compile Include="emul\cpu\cpu.d" />
+    <Compile Include="emul\cpu\instructions.d" />
+    <Compile Include="emul\cpu\memory.d" />
+    <Compile Include="emul\cpu\cpurunner.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="gamelib\" />
     <Folder Include="emul\" />
+    <Folder Include="emul\cpu\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\d-gamelib\gamelib\3rdparty\build.bat">
