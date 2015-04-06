@@ -180,6 +180,9 @@
     <Compile Include="emul\cpu\instructions.d" />
     <Compile Include="emul\cpu\memory.d" />
     <Compile Include="emul\cpu\cpurunner.d" />
+    <Compile Include="..\d-gamelib\gamelib\memory\saferef.d">
+      <Link>gamelib\memory\saferef.d</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="gamelib\" />
