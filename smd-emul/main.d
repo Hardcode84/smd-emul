@@ -1,10 +1,13 @@
 ﻿module main;
 
+import gamelib.memory.saferef;
+
 import std.stdio;
 import std.file;
 import std.exception;
 
 import emul.rom;
+import emul.cpu.cpurunner;
 
 void main(string[] args)
 {
@@ -14,7 +17,8 @@ void main(string[] args)
         return;
     }
     
-    auto rom = new Rom(read(args[1]).assumeUnique);
+    auto rom = makeSafe!Rom(read(args[1]).assumeUnique);
     writeln(rom.header);
+    auto runner = makeSafe!CpuRunner(rom);
 }
 

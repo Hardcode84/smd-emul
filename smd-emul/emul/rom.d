@@ -136,6 +136,7 @@ pure:
     }
 
     immutable Header header;
+    @property auto data() const { return mData; }
 
 private:
 const:

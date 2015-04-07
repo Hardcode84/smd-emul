@@ -10,14 +10,15 @@ struct Instruction
 {
     string name;
     ushort opcode;
-    uint size;
+    ushort size;
     void function(Cpu*) pure nothrow impl;
 }
 
-enum instructions = initInstructions();
+enum InvalidInstruction = Instruction("invalid",0x0,0x2,&invalidImpl);
+enum Instructions = initInstructions();
 
 private pure nothrow:
-void addInstruction(Instruction[] instructions, in Instruction instr)
+void addInstruction(Instruction[ushort] instructions, in Instruction instr)
 {
     /*version(BigEndian)
     {
@@ -29,16 +30,13 @@ void addInstruction(Instruction[] instructions, in Instruction instr)
     }*/
     const ind = instr.opcode;
     assert(ind != 0);
-    assert(instructions[ind].opcode == 0);
     instructions[ind] = instr;
 }
 
-Instruction[] initInstructions()
+auto initInstructions()
 {
-    Instruction[] ret;
-    ret.length = ushort.max + 1;
+    Instruction[ushort] ret;
 
-    ret[] = Instruction("invalid",0x0,0x2,&invalidImpl);
     ret.addInstruction(Instruction("nop",0x4e71,0x2,&nopImpl));
     foreach(i;TupleRange!(0x1,0xfe))
     {
