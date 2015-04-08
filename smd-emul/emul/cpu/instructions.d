@@ -11,7 +11,7 @@ struct Instruction
     string name;
     ushort opcode;
     ushort size;
-    void function(Cpu*) pure nothrow impl;
+    void function(CpuPtr) @nogc pure nothrow impl;
 }
 
 enum InvalidInstruction = Instruction("invalid",0x0,0x2,&invalidImpl);
@@ -20,15 +20,15 @@ enum Instructions = initInstructions();
 private pure nothrow:
 void addInstruction(Instruction[ushort] instructions, in Instruction instr)
 {
-    /*version(BigEndian)
+    version(BigEndian)
     {
         ushort ind = instr.opcode;
     }
     else
     {
         ushort ind = swapEndian(instr.opcode);
-    }*/
-    const ind = instr.opcode;
+    }
+    //const ind = instr.opcode;
     assert(ind != 0);
     instructions[ind] = instr;
 }
@@ -47,22 +47,23 @@ auto initInstructions()
     return ret;
 }
 
-void invalidImpl(Cpu*)
+@nogc:
+void invalidImpl(CpuPtr)
 {
     //TODO
     assert(false);
 }
 
-void nopImpl(Cpu*)
+void nopImpl(CpuPtr)
 {
     //TODO
 }
 
-void braBImpl(byte offset)(Cpu* cpu)
+void braBImpl(byte offset)(CpuPtr cpu)
 {
     cpu.state.PC += offset;
 }
-void braImpl(T)(Cpu* cpu)
+void braImpl(T)(CpuPtr cpu)
 {
     const offset = cpu.memory.getValue!T(cpu.state.PC - T.sizeof);
     cpu.state.PC += offset;

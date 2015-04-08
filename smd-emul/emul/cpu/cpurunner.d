@@ -4,6 +4,7 @@ import std.string;
 import std.algorithm;
 import std.exception;
 
+import gamelib.types;
 import gamelib.memory.saferef;
 
 import emul.rom;
@@ -23,6 +24,19 @@ public:
         mCpu.state.SP = mRom.header.stackPointer;
         mOps = createOps();
     }
+
+    void run()
+    {
+        while(true)
+        {
+            const opcode = mCpu.memory.getRawValue!ushort(mCpu.state.PC);
+            debugfOut("op: %x",opcode);
+            const op = mOps[opcode];
+            mCpu.state.PC += op.size;
+            mCpu.state.tickCounter += op.ticks;
+            convertSafe2(op.impl, ()=>assert(false),&mCpu);
+        }
+    }
 private:
     Cpu mCpu;
     SafeRef!Rom mRom;
@@ -30,8 +44,9 @@ private:
 
     struct Op
     {
-        uint size;
-        void function(Cpu*) pure nothrow impl;
+        ushort size;
+        ushort ticks;
+        void function(CpuPtr) @nogc pure nothrow impl;
     }
 
     static auto createOps()
@@ -39,10 +54,11 @@ private:
         import std.bitmanip;
         import emul.cpu.instructions;
         Op[] ret;
-        ret.length = Instructions.length;
+        ret.length = ushort.max + 1;
+        ret[] = Op(InvalidInstruction.size,1,InvalidInstruction.impl);
         foreach(i,instr; Instructions)
         {
-            ret[i] = Op(instr.size,instr.impl);
+            ret[i] = Op(instr.size,1,instr.impl);
         }
         return ret;
     }

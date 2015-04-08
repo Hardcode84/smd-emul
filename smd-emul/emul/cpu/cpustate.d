@@ -8,5 +8,7 @@ pure nothrow @nogc:
     auto ref SP() @property { return A[7]; }
     uint PC;
     ubyte CCR;
+
+    uint tickCounter = 0;
 }
 
