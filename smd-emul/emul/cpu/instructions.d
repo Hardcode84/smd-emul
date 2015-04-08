@@ -44,8 +44,19 @@ auto initInstructions()
     }
     ret.addInstruction(Instruction("bra",0x6000,0x4,&braImpl!short));
     ret.addInstruction(Instruction("bra",0x60ff,0x6,&braImpl!int));
+
+    //ret.addInstruction(Instruction("tst",0x4a00,0x2,&braImpl!int));
     return ret;
 }
+
+template sizeType(ubyte val)
+{
+         static if(0x0 == val) alias sizeType = byte;
+    else static if(0x1 == val) alias sizeType = short;
+    else static if(0x2 == val) alias sizeType = int;
+    else static assert(false);
+}
+enum ubyte[] sizeTypeValues = [0x0,0x1,0x2];
 
 @nogc:
 void invalidImpl(CpuPtr)
@@ -67,4 +78,8 @@ void braImpl(T)(CpuPtr cpu)
 {
     const offset = cpu.memory.getValue!T(cpu.state.PC - T.sizeof);
     cpu.state.PC += offset;
+}
+
+void tstImpl(CpuPtr cpu)
+{
 }
