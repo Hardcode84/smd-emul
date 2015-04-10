@@ -16,7 +16,7 @@ pure nothrow @nogc:
     void setValue(T)(uint offset, in T val)
     {
         ubyte[T.sizeof] temp = nativeToBigEndian(val);
-        (cast(const(ubyte)[])data)[offset..offset+T.sizeof] = temp;
+        (cast(ubyte[])data)[offset..offset+T.sizeof] = temp;
     }
 
     auto getRawValue(T)(uint offset) const
