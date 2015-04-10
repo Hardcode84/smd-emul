@@ -12,13 +12,14 @@ enum CCRFlags
 struct CpuState
 {
 pure nothrow @nogc @safe:
-    uint D[8];
+    int D[8];
     uint A[8];
-    auto ref SP() @property { return A[7]; }
+    auto ref SP() inout @property { return A[7]; }
     uint PC;
     ubyte CCR;
     void setFlags(CCRFlags flags) { CCR |= flags; }
     void clearFlags(CCRFlags flags) { CCR &= ~flags; }
+    bool testFlags(CCRFlags flags) const { return 0x0 != (CCR & flags); }
 
     uint tickCounter = 0;
 }

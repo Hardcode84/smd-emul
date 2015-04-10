@@ -27,15 +27,7 @@ public:
 
     void run()
     {
-        while(true)
-        {
-            const opcode = mCpu.memory.getRawValue!ushort(mCpu.state.PC);
-            debugfOut("op: %x",opcode);
-            const op = mOps[opcode];
-            mCpu.state.PC += op.size;
-            mCpu.state.tickCounter += op.ticks;
-            convertSafe2(op.impl, ()=>assert(false),&mCpu);
-        }
+        convertSafe2(&runImpl, ()=>assert(false),&mCpu);
     }
 private:
     Cpu mCpu;
@@ -61,6 +53,19 @@ private:
             ret[i] = Op(instr.size,1,instr.impl);
         }
         return ret;
+    }
+
+    void runImpl(CpuPtr cpu)
+    {
+        while(true)
+        {
+            const opcode = mCpu.memory.getRawValue!ushort(mCpu.state.PC);
+            debugfOut("op: %x",opcode);
+            const op = mOps[opcode];
+            mCpu.state.PC += op.size;
+            mCpu.state.tickCounter += op.ticks;
+            op.impl(cpu);
+        }
     }
 }
 

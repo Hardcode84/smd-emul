@@ -13,6 +13,12 @@ pure nothrow @nogc:
         return bigEndianToNative!(T,T.sizeof)(temp);
     }
 
+    void setValue(T)(uint offset, in T val)
+    {
+        ubyte[T.sizeof] temp = nativeToBigEndian(val);
+        (cast(const(ubyte)[])data)[offset..offset+T.sizeof] = temp;
+    }
+
     auto getRawValue(T)(uint offset) const
     {
         assert((offset + T.sizeof) <= data.length);
