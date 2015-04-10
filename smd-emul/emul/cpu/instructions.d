@@ -59,77 +59,7 @@ template sizeType(ubyte val)
 }
 enum ubyte[] sizeTypeValues = [0x0,0x1,0x2];
 
-template addressMode(T, bool Write, ubyte Mode, ubyte Reg)
-{
-    private void memProxy(F)(CpuPtr cpu, uint address)
-    {
-        static if(Write)
-        {
-            cpu.memory.setValue!T(address,F(cpu));
-        }
-        else
-        {
-            F(cpu,cpu.memoty.getValue!T(address));
-        }
-    }
-    private enum RegInc = (7 == Reg ? max(2,T.sizeof) : T.sizeof);
-    static if(0x000b == Mode)
-    {
-        enum exWords = 0;
-        void call(F)(CpuPtr cpu)
-        {
-            static if(Write)
-            {
-                cpu.state.D[Reg] = F(cpu);
-            }
-            else
-            {
-                F(cpu,cpu.state.D[Reg]);
-            }
-        }
-    }
-    static if(0x001b == Mode)
-    {
-        enum exWords = 0;
-        void call(F)(CpuPtr cpu)
-        {
-            static if(Write)
-            {
-                cpu.state.A[Reg] = F(cpu);
-            }
-            else
-            {
-                F(cpu,cpu.state.A[Reg]);
-            }
-        }
-    }
-    static if(0x010b == Mode)
-    {
-        enum exWords = 0;
-        void call(F)(CpuPtr cpu)
-        {
-            memProxy!F(cpu,cpu.state.A[Reg]);
-        }
-    }
-    static if(0x011b == Mode)
-    {
-        enum exWords = 0;
-        void call(F)(CpuPtr cpu)
-        {
-            memProxy!F(cpu,cpu.state.A[Reg]);
-            cpu.state.A[Reg] += RegInc;
-        }
-    }
-    static if(0x101b == Mode)
-    {
-        enum exWords = 1;
-        void call(F)(CpuPtr cpu)
-        {
-            const address = cpu.state.A[Reg] + cpu.memory.getValue!short(cpu.state.PC - short.sizeof);
-            memProxy!F(cpu,address);
-        }
-    }
-}
+
 
 @nogc:
 void invalidImpl(CpuPtr)
