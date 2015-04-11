@@ -6,6 +6,7 @@ import std.algorithm;
 import gamelib.util;
 
 import emul.cpu.cpu;
+import emul.cpu.addressmodes;
 
 struct Instruction
 {
@@ -17,9 +18,10 @@ struct Instruction
 
 enum InvalidInstruction = Instruction("invalid",0x0,0x2,&invalidImpl);
 enum Instructions = initInstructions();
+pragma(msg,Instructions.length);
 
 private pure nothrow:
-void addInstruction(Instruction[ushort] instructions, in Instruction instr)
+void addInstruction(ref Instruction[ushort] instructions, in Instruction instr)
 {
     version(BigEndian)
     {
@@ -38,7 +40,10 @@ auto initInstructions()
 {
     Instruction[ushort] ret;
 
+    // nop
     ret.addInstruction(Instruction("nop",0x4e71,0x2,&nopImpl));
+
+    //bra
     foreach(i;TupleRange!(0x1,0xfe))
     {
         ret.addInstruction(Instruction("bra",0x6000 | i,0x2,&braBImpl!(cast(byte)i)));
@@ -46,20 +51,14 @@ auto initInstructions()
     ret.addInstruction(Instruction("bra",0x6000,0x4,&braImpl!short));
     ret.addInstruction(Instruction("bra",0x60ff,0x6,&braImpl!int));
 
-    //ret.addInstruction(Instruction("tst",0x4a00,0x2,&braImpl!int));
+    //tst
+    foreach(v; TupleRange!(0,readAddressModesWSize.length))
+    {
+        enum mode = readAddressModesWSize[v];
+        ret.addInstruction(Instruction("tst",0x4a00 | mode,0x2,&tstImpl!mode));
+    }
     return ret;
 }
-
-template sizeType(ubyte val)
-{
-         static if(0x00b == val) alias sizeType = byte;
-    else static if(0x01b == val) alias sizeType = short;
-    else static if(0x11b == val) alias sizeType = int;
-    else static assert(false);
-}
-enum ubyte[] sizeTypeValues = [0x0,0x1,0x2];
-
-
 
 @nogc:
 void invalidImpl(CpuPtr)
@@ -83,6 +82,14 @@ void braImpl(T)(CpuPtr cpu)
     cpu.state.PC += offset;
 }
 
-void tstImpl(CpuPtr cpu)
+void tstImpl(ubyte Mode)(CpuPtr cpu)
 {
+    addressModeWSize!(false,Mode,(a,b)
+        {
+            if(b < 0) a.state.setFlags(CCRFlags.N);
+            else a.state.clearFlags(CCRFlags.N);
+            if(b == 0) a.state.setFlags(CCRFlags.Z);
+            else a.state.clearFlags(CCRFlags.Z);
+            a.state.clearFlags(CCRFlags.V | CCRFlags.C);
+        })(cpu);
 }

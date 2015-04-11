@@ -50,6 +50,7 @@ private:
         ret[] = Op(InvalidInstruction.size,1,InvalidInstruction.impl);
         foreach(i,instr; Instructions)
         {
+            //debugfOut("%x",i);
             ret[i] = Op(instr.size,1,instr.impl);
         }
         return ret;

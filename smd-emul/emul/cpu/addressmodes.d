@@ -2,12 +2,12 @@
 
 import emul.cpu.cpu;
 
-template addressMode(T, bool Write, ubyte Val)
+template addressMode(T, bool Write, ubyte Val, alias F)
 {
 pure nothrow @nogc @safe:
     private enum Mode = Val >> 3;
     private enum Reg =  Val & 0b111;
-    private void memProxy(alias F)(CpuPtr cpu, uint address)
+    private void memProxy(CpuPtr cpu, uint address)
     {
         static if(Write)
         {
@@ -22,7 +22,7 @@ pure nothrow @nogc @safe:
 
     static if(0b000 == Mode)
     {
-        void call(alias F)(CpuPtr cpu)
+        void addressMode(CpuPtr cpu)
         {
             static if(Write)
             {
@@ -34,9 +34,9 @@ pure nothrow @nogc @safe:
             }
         }
     }
-    static if(0b001 == Mode)
+    else static if(0b001 == Mode)
     {
-        void call(alias F)(CpuPtr cpu)
+        void addressMode(CpuPtr cpu)
         {
             static if(Write)
             {
@@ -48,97 +48,107 @@ pure nothrow @nogc @safe:
             }
         }
     }
-    static if(0b010 == Mode)
+    else static if(0b010 == Mode)
     {
-        void call(alias F)(CpuPtr cpu)
+        void addressMode(CpuPtr cpu)
         {
-            memProxy!F(cpu,cpu.state.A[Reg]);
+            memProxy(cpu,cpu.state.A[Reg]);
         }
     }
-    static if(0b011 == Mode)
+    else static if(0b011 == Mode)
     {
-        void call(alias F)(CpuPtr cpu)
+        void addressMode(CpuPtr cpu)
         {
-            memProxy!F(cpu,cpu.state.A[Reg]);
+            memProxy(cpu,cpu.state.A[Reg]);
             cpu.state.A[Reg] += RegInc;
         }
     }
-    static if(0b100 == Mode)
+    else static if(0b100 == Mode)
     {
-        void call(alias F)(CpuPtr cpu)
+        void addressMode(CpuPtr cpu)
         {
             cpu.state.A[Reg] -= RegInc;
-            memProxy!F(cpu,cpu.state.A[Reg]);
+            memProxy(cpu,cpu.state.A[Reg]);
         }
     }
-    static if(0b101 == Mode)
+    else static if(0b101 == Mode)
     {
-        void call(alias F)(CpuPtr cpu)
+        void addressMode(CpuPtr cpu)
         {
             const address = cpu.state.A[Reg] + cpu.memory.getValue!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
-            memProxy!F(cpu,address);
+            memProxy(cpu,address);
         }
     }
-    static if(0b110 == Mode)
+    else static if(0b110 == Mode)
     {
-        void call(alias F)(CpuPtr cpu)
+        void addressMode(CpuPtr cpu)
         {
             const address = decodeExtensionWord(cpu,cpu.state.A[Reg]);
-            memProxy!F(cpu,address);
+            memProxy(cpu,address);
         }
     }
-    static if(0b111 == Mode && 0b010 == Reg && !Write)
+    else static if(0b111 == Mode && 0b010 == Reg && !Write)
     {
-        void call(alias F)(CpuPtr cpu)
+        void addressMode(CpuPtr cpu)
         {
             const address = cpu.state.PC + cpu.memory.getValue!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
-            memProxy!F(cpu,address);
+            memProxy(cpu,address);
         }
     }
-    static if(0b111 == Mode && 0b011 == Reg && !Write)
+    else static if(0b111 == Mode && 0b011 == Reg && !Write)
     {
-        void call(alias F)(CpuPtr cpu)
+        void addressMode(CpuPtr cpu)
         {
             const address = decodeExtensionWord(cpu,cpu.state.PC);
-            memProxy!F(cpu,address);
+            memProxy(cpu,address);
         }
     }
-    static if(0b111 == Mode && 0b000 == Reg)
+    else static if(0b111 == Mode && 0b000 == Reg)
     {
-        void call(alias F)(CpuPtr cpu)
+        void addressMode(CpuPtr cpu)
         {
             const address = cpu.memory.getValue!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
-            memProxy!F(cpu,address);
+            memProxy(cpu,address);
         }
     }
-    static if(0b111 == Mode && 0b001 == Reg)
+    else static if(0b111 == Mode && 0b001 == Reg)
     {
-        void call(alias F)(CpuPtr cpu)
+        void addressMode(CpuPtr cpu)
         {
             const address = cpu.memory.getValue!uint(cpu.state.PC);
             cpu.state.PC += uint.sizeof;
-            memProxy!F(cpu,address);
+            memProxy(cpu,address);
         }
     }
-    static if(0b111 == Mode && 0b100 == Reg)
+    else static if(0b111 == Mode && 0b100 == Reg && !Write)
     {
-        void call(alias F)(CpuPtr cpu)
+        void addressMode(CpuPtr cpu)
         {
             const pc = cpu.state.PC;
             cpu.state.PC += T.sizeof;
-            static if(Write)
-            {
-                cpu.memory.setValue!T(pc,F(cpu));
-            }
-            else
-            {
-                F(cpu,cpu.memory.getValue!T(pc));
-            }
+            F(cpu,cpu.memory.getValue!T(pc));
         }
     }
+    else
+    {
+        static assert(false);
+    }
+}
+
+template sizeField(ubyte Val)
+{
+         static if(0x0 == Val) alias sizeField = byte;
+    else static if(0x1 == Val) alias sizeField = short;
+    else static if(0x2 == Val) alias sizeField = int;
+    else static assert(false);
+}
+
+template addressModeWSize(bool Write, ubyte Val, alias F)
+{
+    alias addressModeWSize = addressMode!(sizeField!(Val >> 6),Write,Val & 0b111111,F);
 }
 
 import std.array;
@@ -146,13 +156,19 @@ import std.algorithm;
 import std.range;
 import std.typecons;
 
-enum ubyte[] writeAddressModes = cartesianProduct(iota(7),iota(8)).map!(a => (a[0] << 3 | a[1]))
-    .chain([0b111000,0b111001,0b111100]).array;
+enum ubyte[] sizeFields = [0,1,2];
 
-enum ubyte[] readAddressModes = writeAddressModes[].chain([0b111010,0b111011]).array;
+enum ubyte[] writeAddressModes = cartesianProduct(iota(7),iota(8)).map!(a => (a[0] << 3) | a[1])
+    .chain([0b111000,0b111001]).array;
+
+enum ubyte[] readAddressModes = writeAddressModes[].chain([0b111010,0b111011,0b111100]).array;
+
+enum ubyte[] writeAddressModesWSize = cartesianProduct(sizeFields,writeAddressModes).map!(a => (a[0] << 6) | a[1]).array;
+enum ubyte[] readAddressModesWSize = cartesianProduct(sizeFields,readAddressModes).map!(a => (a[0] << 6) | a[1]).array;
 
 version(unittest)
 {
+private:
     void readFunc(T)(CpuPtr, in T) {}
     T    writeFunc(T)(CpuPtr) { return 0; }
 }
@@ -166,11 +182,11 @@ unittest
     {
         foreach(v; TupleRange!(0,readAddressModes.length))
         {
-            static assert(__traits(compiles,addressMode!(T,false,readAddressModes[v]).call!(readFunc!T)(makeSafe!Cpu)));
+            static assert(__traits(compiles,addressMode!(T,false,readAddressModes[v],readFunc!T)(makeSafe!Cpu)));
         }
         foreach(v; TupleRange!(0,writeAddressModes.length))
         {
-            static assert(__traits(compiles,addressMode!(T,true,writeAddressModes[v]).call!(writeFunc!T)(makeSafe!Cpu)));
+            static assert(__traits(compiles,addressMode!(T,true,writeAddressModes[v],writeFunc!T)(makeSafe!Cpu)));
         }
     }
 }
