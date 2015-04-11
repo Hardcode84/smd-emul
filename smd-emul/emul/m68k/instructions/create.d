@@ -46,14 +46,17 @@ auto createInstructions()
     import emul.m68k.instructions.movem;
     addMovemInstructions(ret);
 
+    import emul.m68k.instructions.moveq;
+    addMoveqInstructions(ret);
+
+    import emul.m68k.instructions.movea;
+    addMoveaInstructions(ret);
+
     import emul.m68k.instructions.move;
     addMoveInstructions(ret);
 
     import emul.m68k.instructions.andi;
     addAndiInstructions(ret);
-
-    import emul.m68k.instructions.moveq;
-    addMoveqInstructions(ret);
 
     import emul.m68k.instructions.add;
     addAddInstructions(ret);
@@ -77,6 +80,12 @@ void addInstruction(ref Instruction[ushort] instructions, in Instruction instr) 
     }
     //const ind = instr.opcode;
     //assert(ind != 0);
+    if((ind in instructions) !is null)
+    {
+        import gamelib.debugout;
+        debugOut(instr);
+        debugOut(instructions[ind]);
+    }
     assert(null == (ind in instructions),instr.name);
     instructions[ind] = instr;
 }

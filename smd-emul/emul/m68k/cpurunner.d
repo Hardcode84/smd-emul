@@ -15,13 +15,19 @@ import emul.m68k.instructions.create;
 class CpuRunner
 {
 public:
-    this(SafeRef!Rom rom)
+    this(RomRef rom)
     {
         mRom = rom;
         enforce(mRom.header.romEndAddress < mRom.header.ramEndAddress, 
             format("Invalid memory ranges %s %s", mRom.header.romEndAddress, mRom.header.ramEndAddress));
         mCpu.memory.data.length = mRom.header.ramEndAddress;
         mCpu.memory.data[0..mRom.header.romEndAddress] = mRom.data[0..mRom.header.romEndAddress];
+
+        mCpu.memory.romStartAddress = rom.header.romStartAddress;
+        mCpu.memory.romEndAddress   = rom.header.romEndAddress;
+        mCpu.memory.ramStartAddress = rom.header.ramStartAddress;
+        mCpu.memory.ramEndAddress   = rom.header.ramEndAddress;
+
         mCpu.state.PC = mRom.header.entryPoint;
         mCpu.state.SP = mRom.header.stackPointer;
         mOps = createOps();

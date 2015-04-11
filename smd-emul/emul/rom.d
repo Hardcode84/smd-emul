@@ -5,6 +5,8 @@ import std.exception;
 import std.traits;
 import std.bitmanip;
 
+import gamelib.memory.saferef;
+
 enum Interrupts
 {
     Bus_error = 0,
@@ -200,3 +202,4 @@ private:
     immutable(void)[] mData;
 }
 
+alias RomRef = SafeRef!Rom;

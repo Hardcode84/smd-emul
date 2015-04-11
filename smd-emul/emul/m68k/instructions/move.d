@@ -12,12 +12,12 @@ void addMoveInstructions(ref Instruction[ushort] ret)
         foreach(j; TupleRange!(0,writeAddressModes.length))
         {
             enum DestMode = writeAddressModes[j];
-            static if(addressModeTraits!DestMode.Alterable)
+            static if(addressModeTraits!DestMode.Data && addressModeTraits!DestMode.Alterable)
             {
                 foreach(k; TupleRange!(0,readAddressModes.length))
                 {
                     enum SrcMode = readAddressModes[k];
-                    enum instr = (Sz << 12) | (DestMode << 6) | SrcMode;
+                    enum instr = (Sz << 12) | ((DestMode & 0b111) << 9) | ((DestMode & 0b111000) << 3) | SrcMode;
                     ret.addInstruction(Instruction("move",instr,0x2,&moveImpl!(Type,SrcMode)));
                 }
             }
@@ -42,7 +42,7 @@ auto createReadFuncs(T)()
     foreach(j; TupleRange!(0,writeAddressModes.length))
     {
         enum DestMode = writeAddressModes[j];
-        static if(addressModeTraits!DestMode.Alterable)
+        static if(addressModeTraits!DestMode.Data && addressModeTraits!DestMode.Alterable)
         {
             if(DestMode >= ret.length)
             {

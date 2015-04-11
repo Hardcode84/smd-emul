@@ -24,7 +24,7 @@ void dbccImpl(ubyte condition)(CpuPtr cpu)
     if(!conditionalTest!condition(cpu))
     {
         const reg = cpu.memory.getValue!ubyte(cpu.state.PC - 0x3) & 0b111;
-        cpu.state.D[reg] = (cast(short)cpu.state.D[reg] - 1);
+        cpu.state.D[reg] = (cpu.state.D[reg] - 1);
         if(-1 != cpu.state.D[reg])
         {
             const offset = cpu.memory.getValue!short(cpu.state.PC - 0x2);

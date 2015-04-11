@@ -198,6 +198,7 @@
     <Compile Include="emul\m68k\instructions\moveq.d" />
     <Compile Include="emul\m68k\instructions\add.d" />
     <Compile Include="emul\m68k\instructions\dbcc.d" />
+    <Compile Include="emul\m68k\instructions\movea.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="gamelib\" />

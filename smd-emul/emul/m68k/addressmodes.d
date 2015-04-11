@@ -224,6 +224,7 @@ template addressModeTraits(ubyte Val)
     private enum Reg =  Val & 0b111;
     static if(0b000 == Mode)
     {
+        enum Data = true;
         enum Control = false;
         enum Alterable = true;
         enum Predecrement = false;
@@ -231,6 +232,7 @@ template addressModeTraits(ubyte Val)
     }
     else static if(0b001 == Mode)
     {
+        enum Data = false;
         enum Control = false;
         enum Alterable = true;
         enum Predecrement = false;
@@ -238,6 +240,7 @@ template addressModeTraits(ubyte Val)
     }
     else static if(0b010 == Mode)
     {
+        enum Data = true;
         enum Control = true;
         enum Alterable = true;
         enum Predecrement = false;
@@ -245,6 +248,7 @@ template addressModeTraits(ubyte Val)
     }
     else static if(0b011 == Mode)
     {
+        enum Data = true;
         enum Control = false;
         enum Alterable = true;
         enum Predecrement = false;
@@ -252,6 +256,7 @@ template addressModeTraits(ubyte Val)
     }
     else static if(0b100 == Mode)
     {
+        enum Data = true;
         enum Control = false;
         enum Alterable = true;
         enum Predecrement = true;
@@ -259,6 +264,7 @@ template addressModeTraits(ubyte Val)
     }
     else static if(0b101 == Mode)
     {
+        enum Data = true;
         enum Control = true;
         enum Alterable = true;
         enum Predecrement = false;
@@ -266,6 +272,7 @@ template addressModeTraits(ubyte Val)
     }
     else static if(0b110 == Mode)
     {
+        enum Data = true;
         enum Control = true;
         enum Alterable = true;
         enum Predecrement = false;
@@ -273,6 +280,7 @@ template addressModeTraits(ubyte Val)
     }
     else static if(0b111 == Mode && 0b010 == Reg)
     {
+        enum Data = true;
         enum Control = true;
         enum Alterable = false;
         enum Predecrement = false;
@@ -280,6 +288,7 @@ template addressModeTraits(ubyte Val)
     }
     else static if(0b111 == Mode && 0b011 == Reg)
     {
+        enum Data = true;
         enum Control = true;
         enum Alterable = false;
         enum Predecrement = false;
@@ -287,6 +296,7 @@ template addressModeTraits(ubyte Val)
     }
     else static if(0b111 == Mode && 0b000 == Reg)
     {
+        enum Data = true;
         enum Control = true;
         enum Alterable = false;
         enum Predecrement = false;
@@ -294,6 +304,7 @@ template addressModeTraits(ubyte Val)
     }
     else static if(0b111 == Mode && 0b001 == Reg)
     {
+        enum Data = true;
         enum Control = true;
         enum Alterable = false;
         enum Predecrement = false;
@@ -301,6 +312,7 @@ template addressModeTraits(ubyte Val)
     }
     else static if(0b111 == Mode && 0b100 == Reg)
     {
+        enum Data = true;
         enum Control = false;
         enum Alterable = false;
         enum Predecrement = false;
