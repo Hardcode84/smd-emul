@@ -12,7 +12,7 @@ pure nothrow @nogc:
 
     auto getValue(T)(uint offset) const
     {
-        debugfOut("getVal %#.6x %s",offset,T.stringof);
+        //debugfOut("getVal %#.6x %s",offset,T.stringof);
         const o = offset & AddressMask;
         ubyte[T.sizeof] temp = (cast(const(ubyte)[])data)[o..o+T.sizeof];
         return bigEndianToNative!(T,T.sizeof)(temp);
@@ -20,7 +20,7 @@ pure nothrow @nogc:
 
     void setValue(T)(uint offset, in T val)
     {
-        debugfOut("setVal %#.6x %s %x",offset,T.stringof,val);
+        //debugfOut("setVal %#.6x %s %x",offset,T.stringof,val);
         const o = offset & AddressMask;
         ubyte[T.sizeof] temp = nativeToBigEndian(val);
         (cast(ubyte[])data)[o..o+T.sizeof] = temp;

@@ -10,6 +10,8 @@ import gamelib.memory.saferef;
 import emul.rom;
 import emul.cpu.cpu;
 
+import emul.cpu.instructions.create;
+
 class CpuRunner
 {
 public:
@@ -37,20 +39,33 @@ private:
     struct Op
     {
         ushort size;
-        ushort ticks;
+        ushort ticks = 1;
         void function(CpuPtr) @nogc pure nothrow impl;
+        debug
+        {
+            string name;
+        }
+        this(in Instruction instr)
+        {
+            size = instr.size;
+            impl = instr.impl;
+            debug
+            {
+                name = instr.name;;
+            }
+        }
     }
 
     static auto createOps()
     {
-        import std.bitmanip;
-        import emul.cpu.instructions;
         Op[] ret;
         ret.length = ushort.max + 1;
-        ret[] = Op(InvalidInstruction.size,1,InvalidInstruction.impl);
-        foreach(i,instr; Instructions)
+        ret[] = Op(InvalidInstruction);
+        const instructions = createInstructions();
+        debugfOut("Total instructions: %s",instructions.length);
+        foreach(i,instr; instructions)
         {
-            ret[i] = Op(instr.size,1,instr.impl);
+            ret[i] = Op(instr);
         }
         return ret;
     }
@@ -61,8 +76,11 @@ private:
         while(true)
         {
             const opcode = mCpu.memory.getRawValue!ushort(mCpu.state.PC);
-            debugfOut("0x%.6x op: 0x%.4x",mCpu.state.PC,opcode);
             const op = mOps[opcode];
+            debug
+            {
+                debugfOut("0x%.6x op: 0x%.4x %s",mCpu.state.PC,opcode,op.name);
+            }
             mCpu.state.PC += op.size;
             mCpu.state.tickCounter += op.ticks;
             op.impl(cpu);

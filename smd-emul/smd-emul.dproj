@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -177,7 +177,6 @@
     <Compile Include="emul\rom.d" />
     <Compile Include="emul\cpu\cpustate.d" />
     <Compile Include="emul\cpu\cpu.d" />
-    <Compile Include="emul\cpu\instructions.d" />
     <Compile Include="emul\cpu\memory.d" />
     <Compile Include="emul\cpu\cpurunner.d" />
     <Compile Include="..\d-gamelib\gamelib\memory\saferef.d">
@@ -188,11 +187,19 @@
     <Compile Include="..\d-gamelib\gamelib\debugout.d">
       <Link>gamelib\debugout.d</Link>
     </Compile>
+    <Compile Include="emul\cpu\instructions\bcc.d" />
+    <Compile Include="emul\cpu\instructions\tst.d" />
+    <Compile Include="emul\cpu\instructions\bra.d" />
+    <Compile Include="emul\cpu\instructions\create.d" />
+    <Compile Include="emul\cpu\instructions\lea.d" />
+    <Compile Include="emul\cpu\instructions\movem.d" />
+    <Compile Include="emul\cpu\instructions\move.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="gamelib\" />
     <Folder Include="emul\" />
     <Folder Include="emul\cpu\" />
+    <Folder Include="emul\cpu\instructions\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\d-gamelib\gamelib\3rdparty\build.bat">
