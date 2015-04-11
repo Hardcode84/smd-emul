@@ -194,6 +194,7 @@
     <Compile Include="emul\cpu\instructions\lea.d" />
     <Compile Include="emul\cpu\instructions\movem.d" />
     <Compile Include="emul\cpu\instructions\move.d" />
+    <Compile Include="emul\cpu\instructions\andi.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="gamelib\" />

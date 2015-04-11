@@ -5,7 +5,7 @@ import emul.cpu.cpu;
 template addressMode(T, bool Write, ubyte Val, alias F)
 {
 pure nothrow @nogc:
-    private enum Mode = Val >> 3;
+    private enum Mode = (Val >> 3) & 0b111;
     private enum Reg =  Val & 0b111;
     private void memProxy(CpuPtr cpu, uint address)
     {
@@ -214,13 +214,13 @@ pure nothrow @nogc:
     }
     else
     {
-        static assert(false);
+        static assert(false,Reg);
     }
 }
 
 template addressModeTraits(ubyte Val)
 {
-    private enum Mode = Val >> 3;
+    private enum Mode = (Val >> 3) & 0b111;
     private enum Reg =  Val & 0b111;
     static if(0b000 == Mode)
     {
