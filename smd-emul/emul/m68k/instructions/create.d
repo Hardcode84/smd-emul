@@ -54,6 +54,9 @@ auto createInstructions()
     import emul.m68k.instructions.moveq;
     addMoveqInstructions(ret);
 
+    import emul.m68k.instructions.add;
+    addAddInstructions(ret);
+
     return ret;
 }
 
@@ -70,7 +73,7 @@ void addInstruction(ref Instruction[ushort] instructions, in Instruction instr) 
     }
     //const ind = instr.opcode;
     //assert(ind != 0);
-    assert(null == (ind in instructions));
+    assert(null == (ind in instructions),instr.name);
     instructions[ind] = instr;
 }
 

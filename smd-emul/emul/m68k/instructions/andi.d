@@ -11,7 +11,6 @@ void addAndiInstructions(ref Instruction[ushort] ret)
         enum mode = writeAddressModesWSize[v];
         static if(addressModeTraits!mode.Alterable)
         {
-            pragma(msg,mode);
             alias Type = sizeField!(mode >> 6);
             enum dataSize = 0x2 + max(Type.sizeof,0x2);
             ret.addInstruction(Instruction("andi",0x0200 | mode,dataSize,&andiImpl!(Type,mode)));

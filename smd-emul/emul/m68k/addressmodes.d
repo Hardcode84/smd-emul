@@ -214,7 +214,7 @@ pure nothrow @nogc:
     }
     else
     {
-        static assert(false,Reg);
+        static assert(false);
     }
 }
 
@@ -281,7 +281,7 @@ template addressModeTraits(ubyte Val)
     else static if(0b111 == Mode && 0b011 == Reg)
     {
         enum Control = true;
-        enum Alterable = true;
+        enum Alterable = false;
         enum Predecrement = false;
         enum Postincrement = false;
     }
