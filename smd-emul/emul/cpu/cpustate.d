@@ -12,8 +12,16 @@ enum CCRFlags
 struct CpuState
 {
 pure nothrow @nogc @safe:
-    int D[8];
-    uint A[8];
+    union
+    {
+        struct
+        {
+            int[8] D;
+            uint[8] A;
+        }
+        uint[16] AllRegsU;
+        int[16] AllregsS;
+    }
     auto ref SP() inout @property { return A[7]; }
     uint PC;
     ubyte CCR;

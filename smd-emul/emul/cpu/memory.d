@@ -2,6 +2,8 @@
 
 import std.bitmanip;
 
+import gamelib.debugout;
+
 struct Memory
 {
 pure nothrow @nogc:
@@ -9,6 +11,7 @@ pure nothrow @nogc:
 
     auto getValue(T)(uint offset) const
     {
+        debugfOut("getVal %#.6x %s",offset,T.stringof);
         ubyte[T.sizeof] temp = (cast(const(ubyte)[])data)[offset..offset+T.sizeof];
         return bigEndianToNative!(T,T.sizeof)(temp);
     }

@@ -4,7 +4,7 @@ import emul.cpu.cpu;
 
 template addressMode(T, bool Write, ubyte Val, alias F)
 {
-pure nothrow @nogc @safe:
+pure nothrow @nogc:
     private enum Mode = Val >> 3;
     private enum Reg =  Val & 0b111;
     private void memProxy(CpuPtr cpu, uint address)
@@ -54,6 +54,14 @@ pure nothrow @nogc @safe:
         {
             memProxy(cpu,cpu.state.A[Reg]);
         }
+        void addressMode(CpuPtr cpu, int count)
+        {
+            const address = cpu.state.A[Reg];
+            foreach(i;0..count)
+            {
+                memProxy(cpu,address + T.sizeof * i);
+            }
+        }
     }
     else static if(0b011 == Mode)
     {
@@ -62,6 +70,16 @@ pure nothrow @nogc @safe:
             memProxy(cpu,cpu.state.A[Reg]);
             cpu.state.A[Reg] += RegInc;
         }
+        void addressMode(CpuPtr cpu, int count)
+        {
+            auto address = cpu.state.A[Reg];
+            foreach(i; 0..count)
+            {
+                memProxy(cpu,address);
+                address += RegInc;
+            }
+            cpu.state.A[Reg] = address;
+        }
     }
     else static if(0b100 == Mode)
     {
@@ -69,6 +87,16 @@ pure nothrow @nogc @safe:
         {
             cpu.state.A[Reg] -= RegInc;
             memProxy(cpu,cpu.state.A[Reg]);
+        }
+        void addressMode(CpuPtr cpu, int count)
+        {
+            auto address = cpu.state.A[Reg];
+            foreach(i; 0..count)
+            {
+                address -= RegInc;
+                memProxy(cpu,cpu.state.A[Reg]);
+            }
+            cpu.state.A[Reg] = address;
         }
     }
     else static if(0b101 == Mode)
@@ -79,6 +107,15 @@ pure nothrow @nogc @safe:
             cpu.state.PC += short.sizeof;
             memProxy(cpu,address);
         }
+        void addressMode(CpuPtr cpu, int count)
+        {
+            const address = cpu.state.A[Reg] + cpu.memory.getValue!short(cpu.state.PC);
+            cpu.state.PC += short.sizeof;
+            foreach(i; 0..count)
+            {
+                memProxy(cpu,address + i * T.sizeof);
+            }
+        }
     }
     else static if(0b110 == Mode)
     {
@@ -86,6 +123,14 @@ pure nothrow @nogc @safe:
         {
             const address = decodeExtensionWord(cpu,cpu.state.A[Reg]);
             memProxy(cpu,address);
+        }
+        void addressMode(CpuPtr cpu, int count)
+        {
+            const address = decodeExtensionWord(cpu,cpu.state.A[Reg]);
+            foreach(i; 0..count)
+            {
+                memProxy(cpu,address + i * T.sizeof);
+            }
         }
     }
     else static if(0b111 == Mode && 0b010 == Reg && !Write)
@@ -96,6 +141,15 @@ pure nothrow @nogc @safe:
             cpu.state.PC += short.sizeof;
             memProxy(cpu,address);
         }
+        void addressMode(CpuPtr cpu, int count)
+        {
+            const address = cpu.state.PC + cpu.memory.getValue!short(cpu.state.PC);
+            cpu.state.PC += short.sizeof;
+            foreach(i; 0..count)
+            {
+                memProxy(cpu,address + i * T.sizeof);
+            }
+        }
     }
     else static if(0b111 == Mode && 0b011 == Reg && !Write)
     {
@@ -103,6 +157,14 @@ pure nothrow @nogc @safe:
         {
             const address = decodeExtensionWord(cpu,cpu.state.PC);
             memProxy(cpu,address);
+        }
+        void addressMode(CpuPtr cpu, int count)
+        {
+            const address = decodeExtensionWord(cpu,cpu.state.PC);
+            foreach(i; 0..count)
+            {
+                memProxy(cpu,address + i * T.sizeof);
+            }
         }
     }
     else static if(0b111 == Mode && 0b000 == Reg)
@@ -113,6 +175,15 @@ pure nothrow @nogc @safe:
             cpu.state.PC += short.sizeof;
             memProxy(cpu,address);
         }
+        void addressMode(CpuPtr cpu, int count)
+        {
+            const address = cpu.memory.getValue!short(cpu.state.PC);
+            cpu.state.PC += short.sizeof;
+            foreach(i; 0..count)
+            {
+                memProxy(cpu,address + i * T.sizeof);
+            }
+        }
     }
     else static if(0b111 == Mode && 0b001 == Reg)
     {
@@ -121,6 +192,15 @@ pure nothrow @nogc @safe:
             const address = cpu.memory.getValue!uint(cpu.state.PC);
             cpu.state.PC += uint.sizeof;
             memProxy(cpu,address);
+        }
+        void addressMode(CpuPtr cpu, int count)
+        {
+            const address = cpu.memory.getValue!uint(cpu.state.PC);
+            cpu.state.PC += uint.sizeof;
+            foreach(i; 0..count)
+            {
+                memProxy(cpu,address + i * T.sizeof);
+            }
         }
     }
     else static if(0b111 == Mode && 0b100 == Reg && !Write)
@@ -131,6 +211,100 @@ pure nothrow @nogc @safe:
             cpu.state.PC += T.sizeof;
             F(cpu,cpu.memory.getValue!T(pc));
         }
+    }
+    else
+    {
+        static assert(false);
+    }
+}
+
+template addressModeTraits(ubyte Val)
+{
+    private enum Mode = Val >> 3;
+    private enum Reg =  Val & 0b111;
+    static if(0b000 == Mode)
+    {
+        enum Control = false;
+        enum Alterable = true;
+        enum Predecrement = false;
+        enum Postincrement = false;
+    }
+    else static if(0b001 == Mode)
+    {
+        enum Control = false;
+        enum Alterable = true;
+        enum Predecrement = false;
+        enum Postincrement = false;
+    }
+    else static if(0b010 == Mode)
+    {
+        enum Control = true;
+        enum Alterable = true;
+        enum Predecrement = false;
+        enum Postincrement = false;
+    }
+    else static if(0b011 == Mode)
+    {
+        enum Control = false;
+        enum Alterable = true;
+        enum Predecrement = false;
+        enum Postincrement = true;
+    }
+    else static if(0b100 == Mode)
+    {
+        enum Control = false;
+        enum Alterable = true;
+        enum Predecrement = true;
+        enum Postincrement = false;
+    }
+    else static if(0b101 == Mode)
+    {
+        enum Control = true;
+        enum Alterable = true;
+        enum Predecrement = false;
+        enum Postincrement = false;
+    }
+    else static if(0b110 == Mode)
+    {
+        enum Control = true;
+        enum Alterable = true;
+        enum Predecrement = false;
+        enum Postincrement = false;
+    }
+    else static if(0b111 == Mode && 0b010 == Reg)
+    {
+        enum Control = true;
+        enum Alterable = false;
+        enum Predecrement = false;
+        enum Postincrement = false;
+    }
+    else static if(0b111 == Mode && 0b011 == Reg)
+    {
+        enum Control = true;
+        enum Alterable = true;
+        enum Predecrement = false;
+        enum Postincrement = false;
+    }
+    else static if(0b111 == Mode && 0b000 == Reg)
+    {
+        enum Control = true;
+        enum Alterable = false;
+        enum Predecrement = false;
+        enum Postincrement = false;
+    }
+    else static if(0b111 == Mode && 0b001 == Reg)
+    {
+        enum Control = true;
+        enum Alterable = false;
+        enum Predecrement = false;
+        enum Postincrement = false;
+    }
+    else static if(0b111 == Mode && 0b100 == Reg)
+    {
+        enum Control = false;
+        enum Alterable = false;
+        enum Predecrement = false;
+        enum Postincrement = false;
     }
     else
     {
