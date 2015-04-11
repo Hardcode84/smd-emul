@@ -50,7 +50,6 @@ private:
         ret[] = Op(InvalidInstruction.size,1,InvalidInstruction.impl);
         foreach(i,instr; Instructions)
         {
-            //debugfOut("%x",i);
             ret[i] = Op(instr.size,1,instr.impl);
         }
         return ret;
@@ -58,10 +57,11 @@ private:
 
     void runImpl(CpuPtr cpu)
     {
+        scope(failure) debugOut(cpu.state);
         while(true)
         {
             const opcode = mCpu.memory.getRawValue!ushort(mCpu.state.PC);
-            debugfOut("%#.6x op: %#.4x",mCpu.state.PC,opcode);
+            debugfOut("0x%.6x op: 0x%.4x",mCpu.state.PC,opcode);
             const op = mOps[opcode];
             mCpu.state.PC += op.size;
             mCpu.state.tickCounter += op.ticks;

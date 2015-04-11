@@ -82,8 +82,11 @@ auto initInstructions()
         foreach(v; TupleRange!(0,readAddressModes.length))
         {
             enum mode = readAddressModes[v];
-            enum instr = 0x41c0 | (r << 9) | mode;
-            ret.addInstruction(Instruction("lea",instr,0x2,&leaImpl!(r,mode)));
+            if(addressModeTraits!mode.Control)
+            {
+                enum instr = 0x41c0 | (r << 9) | mode;
+                ret.addInstruction(Instruction("lea",instr,0x2,&leaImpl!(r,mode)));
+            }
         }
     }
 
@@ -169,7 +172,7 @@ void tstImpl(ubyte Mode)(CpuPtr cpu)
 
 void leaImpl(ubyte reg, ubyte Mode)(CpuPtr cpu)
 {
-    addressModeWSize!(false,Mode,(a,b)
+    addressMode!(int,false,Mode,(a,b)
         {
             a.state.A[reg] = b;
         })(cpu);

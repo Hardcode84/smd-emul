@@ -11,6 +11,23 @@ enum CCRFlags
 
 struct CpuState
 {
+    string toString() const pure @safe
+    {
+        import std.array: appender;
+        import std.format: formattedWrite;
+        auto ret = appender!(char[])();
+        foreach(i,val; D[])
+        {
+            formattedWrite(ret, "D%s = 0x%.8x\n",i,val);
+        }
+        foreach(i,val; A[])
+        {
+            formattedWrite(ret, "A%s = 0x%.8x\n",i,val);
+        }
+        formattedWrite(ret, "PC = 0x%.8x\n",PC);
+        formattedWrite(ret, "flags = 0x%.1x\n",CCR);
+        return ret.data;
+    }
 pure nothrow @nogc @safe:
     union
     {

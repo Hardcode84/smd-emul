@@ -94,7 +94,7 @@ pure:
         uint ramStartAddress;
         uint ramEndAddress;
 
-        string toString() const pure
+        string toString() const pure @safe
         {
             import std.array: appender;
             import std.format: formattedWrite;
