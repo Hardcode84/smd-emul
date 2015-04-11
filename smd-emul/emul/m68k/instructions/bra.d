@@ -1,6 +1,6 @@
-﻿module emul.cpu.instructions.bra;
+﻿module emul.m68k.instructions.bra;
 
-import emul.cpu.instructions.create;
+import emul.m68k.instructions.create;
 
 package pure nothrow:
 void addBraInstructions(ref Instruction[ushort] ret)

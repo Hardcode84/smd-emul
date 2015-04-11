@@ -1,6 +1,6 @@
-﻿module emul.cpu.instructions.bcc;
+﻿module emul.m68k.instructions.bcc;
 
-import emul.cpu.instructions.create;
+import emul.m68k.instructions.create;
 
 package pure nothrow:
 void addBccInstructions(ref Instruction[ushort] ret)

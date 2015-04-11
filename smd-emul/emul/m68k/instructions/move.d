@@ -1,6 +1,6 @@
-﻿module emul.cpu.instructions.move;
+﻿module emul.m68k.instructions.move;
 
-import emul.cpu.instructions.create;
+import emul.m68k.instructions.create;
 
 package pure nothrow:
 void addMoveInstructions(ref Instruction[ushort] ret)

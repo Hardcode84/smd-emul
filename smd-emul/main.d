@@ -7,7 +7,7 @@ import std.file;
 import std.exception;
 
 import emul.rom;
-import emul.cpu.cpurunner;
+import emul.m68k.cpurunner;
 
 void main(string[] args)
 {

@@ -1,10 +1,10 @@
-﻿module emul.cpu.conditional;
+﻿module emul.m68k.conditional;
 
 import std.array;
 import std.algorithm;
 import std.range;
 
-import emul.cpu.cpu;
+import emul.m68k.cpu;
 
 pure nothrow @nogc @safe:
 bool conditionalTest(ubyte Code)(CpuPtr cpu)

@@ -1,6 +1,6 @@
-﻿module emul.cpu.instructions.movem;
+﻿module emul.m68k.instructions.movem;
 
-import emul.cpu.instructions.create;
+import emul.m68k.instructions.create;
 
 package pure nothrow:
 void addMovemInstructions(ref Instruction[ushort] ret)

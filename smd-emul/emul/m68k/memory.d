@@ -1,4 +1,4 @@
-﻿module emul.cpu.memory;
+﻿module emul.m68k.memory;
 
 import std.bitmanip;
 

@@ -1,6 +1,6 @@
-﻿module emul.cpu.instructions.tst;
+﻿module emul.m68k.instructions.tst;
 
-import emul.cpu.instructions.create;
+import emul.m68k.instructions.create;
 
 package pure nothrow:
 void addTstInstructions(ref Instruction[ushort] ret)

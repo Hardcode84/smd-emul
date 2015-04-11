@@ -1,6 +1,6 @@
-﻿module emul.cpu.addressmodes;
+﻿module emul.m68k.addressmodes;
 
-import emul.cpu.cpu;
+import emul.m68k.cpu;
 
 template addressMode(T, bool Write, ubyte Val, alias F)
 {

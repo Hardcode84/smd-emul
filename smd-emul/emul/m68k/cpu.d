@@ -1,7 +1,7 @@
-﻿module emul.cpu.cpu;
+﻿module emul.m68k.cpu;
 
-public import emul.cpu.cpustate;
-public import emul.cpu.memory;
+public import emul.m68k.cpustate;
+public import emul.m68k.memory;
 
 import gamelib.memory.saferef;
 

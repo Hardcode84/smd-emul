@@ -1,6 +1,6 @@
-﻿module emul.cpu.instructions.andi;
+﻿module emul.m68k.instructions.andi;
 
-import emul.cpu.instructions.create;
+import emul.m68k.instructions.create;
 
 package pure nothrow:
 void addAndiInstructions(ref Instruction[ushort] ret)

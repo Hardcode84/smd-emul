@@ -1,4 +1,4 @@
-﻿module emul.cpu.instructions.create;
+﻿module emul.m68k.instructions.create;
 
 package import std.array;
 package import std.bitmanip;
@@ -8,9 +8,9 @@ package import std.range;
 
 package import gamelib.util;
 
-package import emul.cpu.cpu;
-package import emul.cpu.addressmodes;
-package import emul.cpu.conditional;
+package import emul.m68k.cpu;
+package import emul.m68k.addressmodes;
+package import emul.m68k.conditional;
 
 struct Instruction
 {
@@ -30,28 +30,28 @@ auto createInstructions()
     // nop
     ret.addInstruction(Instruction("nop",0x4e71,0x2,&nopImpl));
 
-    import emul.cpu.instructions.bra;
+    import emul.m68k.instructions.bra;
     addBraInstructions(ret);
 
-    import emul.cpu.instructions.bcc;
+    import emul.m68k.instructions.bcc;
     addBccInstructions(ret);
 
-    import emul.cpu.instructions.tst;
+    import emul.m68k.instructions.tst;
     addTstInstructions(ret);
 
-    import emul.cpu.instructions.lea;
+    import emul.m68k.instructions.lea;
     addLeaInstructions(ret);
 
-    import emul.cpu.instructions.movem;
+    import emul.m68k.instructions.movem;
     addMovemInstructions(ret);
 
-    import emul.cpu.instructions.move;
+    import emul.m68k.instructions.move;
     addMoveInstructions(ret);
 
-    import emul.cpu.instructions.andi;
+    import emul.m68k.instructions.andi;
     addAndiInstructions(ret);
 
-    import emul.cpu.instructions.moveq;
+    import emul.m68k.instructions.moveq;
     addMoveqInstructions(ret);
 
     return ret;

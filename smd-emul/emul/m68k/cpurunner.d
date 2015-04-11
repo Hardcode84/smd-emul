@@ -1,4 +1,4 @@
-﻿module emul.cpu.cpurunner;
+﻿module emul.m68k.cpurunner;
 
 import std.string;
 import std.algorithm;
@@ -8,9 +8,9 @@ import gamelib.types;
 import gamelib.memory.saferef;
 
 import emul.rom;
-import emul.cpu.cpu;
+import emul.m68k.cpu;
 
-import emul.cpu.instructions.create;
+import emul.m68k.instructions.create;
 
 class CpuRunner
 {

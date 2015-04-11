@@ -175,33 +175,33 @@
     </Compile>
     <Compile Include="emul\core.d" />
     <Compile Include="emul\rom.d" />
-    <Compile Include="emul\cpu\cpustate.d" />
-    <Compile Include="emul\cpu\cpu.d" />
-    <Compile Include="emul\cpu\memory.d" />
-    <Compile Include="emul\cpu\cpurunner.d" />
     <Compile Include="..\d-gamelib\gamelib\memory\saferef.d">
       <Link>gamelib\memory\saferef.d</Link>
     </Compile>
-    <Compile Include="emul\cpu\addressmodes.d" />
-    <Compile Include="emul\cpu\conditional.d" />
     <Compile Include="..\d-gamelib\gamelib\debugout.d">
       <Link>gamelib\debugout.d</Link>
     </Compile>
-    <Compile Include="emul\cpu\instructions\bcc.d" />
-    <Compile Include="emul\cpu\instructions\tst.d" />
-    <Compile Include="emul\cpu\instructions\bra.d" />
-    <Compile Include="emul\cpu\instructions\create.d" />
-    <Compile Include="emul\cpu\instructions\lea.d" />
-    <Compile Include="emul\cpu\instructions\movem.d" />
-    <Compile Include="emul\cpu\instructions\move.d" />
-    <Compile Include="emul\cpu\instructions\andi.d" />
-    <Compile Include="emul\cpu\instructions\moveq.d" />
+    <Compile Include="emul\m68k\cpustate.d" />
+    <Compile Include="emul\m68k\cpu.d" />
+    <Compile Include="emul\m68k\memory.d" />
+    <Compile Include="emul\m68k\cpurunner.d" />
+    <Compile Include="emul\m68k\addressmodes.d" />
+    <Compile Include="emul\m68k\conditional.d" />
+    <Compile Include="emul\m68k\instructions\bcc.d" />
+    <Compile Include="emul\m68k\instructions\tst.d" />
+    <Compile Include="emul\m68k\instructions\bra.d" />
+    <Compile Include="emul\m68k\instructions\create.d" />
+    <Compile Include="emul\m68k\instructions\lea.d" />
+    <Compile Include="emul\m68k\instructions\movem.d" />
+    <Compile Include="emul\m68k\instructions\move.d" />
+    <Compile Include="emul\m68k\instructions\andi.d" />
+    <Compile Include="emul\m68k\instructions\moveq.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="gamelib\" />
     <Folder Include="emul\" />
-    <Folder Include="emul\cpu\" />
-    <Folder Include="emul\cpu\instructions\" />
+    <Folder Include="emul\m68k\" />
+    <Folder Include="emul\m68k\instructions\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\d-gamelib\gamelib\3rdparty\build.bat">

@@ -1,6 +1,6 @@
-﻿module emul.cpu.instructions.lea;
+﻿module emul.m68k.instructions.lea;
 
-import emul.cpu.instructions.create;
+import emul.m68k.instructions.create;
 
 package pure nothrow:
 void addLeaInstructions(ref Instruction[ushort] ret)
