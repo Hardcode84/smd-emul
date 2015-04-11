@@ -185,6 +185,9 @@
     </Compile>
     <Compile Include="emul\cpu\addressmodes.d" />
     <Compile Include="emul\cpu\conditional.d" />
+    <Compile Include="..\d-gamelib\gamelib\debugout.d">
+      <Link>gamelib\debugout.d</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="gamelib\" />
