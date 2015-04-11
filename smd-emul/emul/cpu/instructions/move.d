@@ -6,9 +6,9 @@ package pure nothrow:
 void addMoveInstructions(ref Instruction[ushort] ret)
 {
     //move
-    foreach(i; TupleRange!(0,sizeFields.length))
+    foreach(i,Type;TypeTuple!(byte,int,short))
     {
-        alias Type = sizeField!(sizeFields[i]);
+        enum Sz = i + 1;
         foreach(j; TupleRange!(0,writeAddressModes.length))
         {
             enum DestMode = writeAddressModes[j];
@@ -17,7 +17,7 @@ void addMoveInstructions(ref Instruction[ushort] ret)
                 foreach(k; TupleRange!(0,readAddressModes.length))
                 {
                     enum SrcMode = readAddressModes[k];
-                    enum instr = (i << 12) | (DestMode << 6) | SrcMode;
+                    enum instr = (Sz << 12) | (DestMode << 6) | SrcMode;
                     ret.addInstruction(Instruction("move",instr,0x2,&moveImpl!(Type,SrcMode)));
                 }
             }
