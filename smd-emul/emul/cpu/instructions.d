@@ -7,6 +7,7 @@ import gamelib.util;
 
 import emul.cpu.cpu;
 import emul.cpu.addressmodes;
+import emul.cpu.conditional;
 
 struct Instruction
 {
@@ -33,6 +34,7 @@ void addInstruction(ref Instruction[ushort] instructions, in Instruction instr)
     }
     //const ind = instr.opcode;
     assert(ind != 0);
+    assert(null == (ind in instructions));
     instructions[ind] = instr;
 }
 
@@ -50,6 +52,19 @@ auto initInstructions()
     }
     ret.addInstruction(Instruction("bra",0x6000,0x4,&braImpl!short));
     ret.addInstruction(Instruction("bra",0x60ff,0x6,&braImpl!int));
+
+    //bcc
+    foreach(v; TupleRange!(0,conditionalTestsBcc.length))
+    {
+        enum cond = conditionalTestsBcc[v];
+        enum instr = 0x6000 | (cast(ushort)cond << 8);
+        foreach(i;TupleRange!(0x1,0xfe))
+        {
+            ret.addInstruction(Instruction("bcc",instr | i,0x2,&bccBImpl!(cond,cast(byte)i)));
+        }
+        ret.addInstruction(Instruction("bcc",instr | 0x00,0x4,&bccImpl!(cond,short)));
+        ret.addInstruction(Instruction("bcc",instr | 0xff,0x6,&bccImpl!(cond,int)));
+    }
 
     //tst
     foreach(v; TupleRange!(0,readAddressModesWSize.length))
@@ -80,6 +95,22 @@ void braImpl(T)(CpuPtr cpu)
 {
     const offset = cpu.memory.getValue!T(cpu.state.PC - T.sizeof);
     cpu.state.PC += offset;
+}
+
+void bccBImpl(ubyte condition,byte offset)(CpuPtr cpu)
+{
+    if(conditionalTest!condition(cpu))
+    {
+        cpu.state.PC += offset;
+    }
+}
+void bccImpl(ubyte condition,T)(CpuPtr cpu)
+{
+    if(conditionalTest!condition(cpu))
+    {
+        const offset = cpu.memory.getValue!T(cpu.state.PC - T.sizeof);
+        cpu.state.PC += offset;
+    }
 }
 
 void tstImpl(ubyte Mode)(CpuPtr cpu)

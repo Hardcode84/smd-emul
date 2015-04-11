@@ -61,7 +61,7 @@ private:
         while(true)
         {
             const opcode = mCpu.memory.getRawValue!ushort(mCpu.state.PC);
-            debugfOut("op: %x",opcode);
+            debugfOut("%#.6x op: %#.4x",mCpu.state.PC,opcode);
             const op = mOps[opcode];
             mCpu.state.PC += op.size;
             mCpu.state.tickCounter += op.ticks;

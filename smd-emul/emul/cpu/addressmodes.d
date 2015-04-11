@@ -166,15 +166,10 @@ enum ubyte[] readAddressModes = writeAddressModes[].chain([0b111010,0b111011,0b1
 enum ubyte[] writeAddressModesWSize = cartesianProduct(sizeFields,writeAddressModes).map!(a => (a[0] << 6) | a[1]).array;
 enum ubyte[] readAddressModesWSize = cartesianProduct(sizeFields,readAddressModes).map!(a => (a[0] << 6) | a[1]).array;
 
-version(unittest)
-{
-private:
-    void readFunc(T)(CpuPtr, in T) {}
-    T    writeFunc(T)(CpuPtr) { return 0; }
-}
-
 unittest
 {
+    static assert(writeAddressModes.all!(a => 0x0 == (a & 0b11000000)));
+    static assert(readAddressModes.all!(a => 0x0 == (a & 0b11000000)));
     import std.typetuple;
     import gamelib.memory.saferef;
     import gamelib.util;
@@ -182,11 +177,11 @@ unittest
     {
         foreach(v; TupleRange!(0,readAddressModes.length))
         {
-            static assert(__traits(compiles,addressMode!(T,false,readAddressModes[v],readFunc!T)(makeSafe!Cpu)));
+            static assert(__traits(compiles,addressMode!(T,false,readAddressModes[v],(a,b){})(makeSafe!Cpu)));
         }
         foreach(v; TupleRange!(0,writeAddressModes.length))
         {
-            static assert(__traits(compiles,addressMode!(T,true,writeAddressModes[v],writeFunc!T)(makeSafe!Cpu)));
+            static assert(__traits(compiles,addressMode!(T,true,writeAddressModes[v],(a){return cast(T)0;})(makeSafe!Cpu)));
         }
     }
 }

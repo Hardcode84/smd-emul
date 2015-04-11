@@ -184,6 +184,7 @@
       <Link>gamelib\memory\saferef.d</Link>
     </Compile>
     <Compile Include="emul\cpu\addressmodes.d" />
+    <Compile Include="emul\cpu\conditional.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="gamelib\" />
