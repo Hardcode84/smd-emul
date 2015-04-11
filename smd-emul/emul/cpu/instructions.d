@@ -72,6 +72,17 @@ auto initInstructions()
         enum mode = readAddressModesWSize[v];
         ret.addInstruction(Instruction("tst",0x4a00 | mode,0x2,&tstImpl!mode));
     }
+
+    //lea
+    foreach(r; TupleRange!(0,8))
+    {
+        foreach(v; TupleRange!(0,readAddressModes.length))
+        {
+            enum mode = readAddressModes[v];
+            enum instr = 0x41c0 | (r << 9) | mode;
+            ret.addInstruction(Instruction("lea",instr,0x2,&leaImpl!(r,mode)));
+        }
+    }
     return ret;
 }
 
@@ -122,5 +133,13 @@ void tstImpl(ubyte Mode)(CpuPtr cpu)
             if(b == 0) a.state.setFlags(CCRFlags.Z);
             else a.state.clearFlags(CCRFlags.Z);
             a.state.clearFlags(CCRFlags.V | CCRFlags.C);
+        })(cpu);
+}
+
+void leaImpl(ubyte reg, ubyte Mode)(CpuPtr cpu)
+{
+    addressModeWSize!(false,Mode,(a,b)
+        {
+            cpu.state.A[reg] = b;
         })(cpu);
 }
