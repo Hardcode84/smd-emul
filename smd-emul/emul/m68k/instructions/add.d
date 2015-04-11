@@ -31,7 +31,7 @@ void addImpl(Type,ubyte d,ubyte Mode)(CpuPtr cpu)
     const int val = cpu.state.D[reg];
     addressModeWSize!(false,Mode,(cpu,b)
         {
-            const result = val + b;
+            const result = add(val, b, cpu);
             static if(0 == d)
             {
                 cpu.state.D[reg] = result;
@@ -43,6 +43,5 @@ void addImpl(Type,ubyte d,ubyte Mode)(CpuPtr cpu)
                         return cast(Type)result;
                     })(cpu);
             }
-            updateFlags(cpu,result);
         })(cpu);
 }

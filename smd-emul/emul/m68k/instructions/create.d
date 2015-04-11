@@ -5,6 +5,7 @@ package import std.bitmanip;
 package import std.algorithm;
 package import std.typetuple;
 package import std.range;
+package import std.traits;
 
 package import gamelib.util;
 
@@ -57,6 +58,9 @@ auto createInstructions()
     import emul.m68k.instructions.add;
     addAddInstructions(ret);
 
+    import emul.m68k.instructions.dbcc;
+    addDbccInstructions(ret);
+
     return ret;
 }
 
@@ -79,13 +83,47 @@ void addInstruction(ref Instruction[ushort] instructions, in Instruction instr) 
 
 @nogc:
 
-void updateFlags(T)(CpuPtr cpu, in T val)
+void updateNZFlags(T)(CpuPtr cpu, in T val)
 {
     if(val < 0) cpu.state.setFlags(CCRFlags.N);
     else        cpu.state.clearFlags(CCRFlags.N);
     if(val == 0) cpu.state.setFlags(CCRFlags.Z);
     else         cpu.state.clearFlags(CCRFlags.Z);
+}
+
+void updateFlags(T)(CpuPtr cpu, in T val)
+{
+    updateNZFlags(cpu, val);
     cpu.state.clearFlags(CCRFlags.V | CCRFlags.C);
+}
+
+T add(T)(in T x, in T y, CpuPtr cpu)
+{
+    const r1 = cast(long)x + cast(long)y;
+    cpu.state.setFlags(CCRFlags.V, (r1 < Signed!T.min || r1 > Signed!T.max));
+    const r2 = cast(Unsigned!T)x + cast(Unsigned!T)y;
+    cpu.state.setFlags(CCRFlags.C | CCRFlags.X, (r2 < int.min || r2 > int.max));
+    cast(void)r2;
+    updateNZFlags(cpu, cast(T)r1);
+    return cast(T)r1;
+}
+
+T sub(T)(in T x, in T y, CpuPtr cpu)
+{
+    const r1 = cast(long)x - cast(long)y;
+    cpu.state.setFlags(CCRFlags.V, (r1 < Signed!T.min || r1 > Signed!T.max));
+    cpu.state.setFlags(CCRFlags.C | CCRFlags.X, (cast(Unsigned!T)x < cast(Unsigned!T)y));
+    updateNZFlags(cpu, cast(T)r1);
+    return cast(T)r1;
+}
+
+T mul(T)(in T x, in T y, CpuPtr cpu)
+{
+    const r1 = cast(long)x * cast(long)y;
+    cpu.state.setFlags(CCRFlags.V, (r1 < Signed!T.min || r1 > Signed!T.max));
+    cpu.state.clearFlags(CCRFlags.C);
+    updateNZFlags(cpu, cast(T)r1);
+    return cast(T)r1;
 }
 
 void invalidImpl(CpuPtr)
