@@ -51,6 +51,9 @@ auto createInstructions()
     import emul.cpu.instructions.andi;
     addAndiInstructions(ret);
 
+    import emul.cpu.instructions.moveq;
+    addMoveqInstructions(ret);
+
     return ret;
 }
 
