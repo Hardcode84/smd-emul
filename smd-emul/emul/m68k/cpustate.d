@@ -40,6 +40,7 @@ pure nothrow @nogc @safe:
         int[16] AllregsS;
     }
     auto ref SP() inout @property { return A[7]; }
+    alias USP = SP;
     uint PC;
     ubyte CCR;
     void setFlags(CCRFlags flags) { CCR |= flags; }

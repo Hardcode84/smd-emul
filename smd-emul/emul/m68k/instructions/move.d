@@ -17,7 +17,7 @@ void addMoveInstructions(ref Instruction[ushort] ret)
                 foreach(k; TupleRange!(0,readAddressModes.length))
                 {
                     enum SrcMode = readAddressModes[k];
-                    enum instr = (Sz << 12) | ((DestMode & 0b111) << 9) | ((DestMode & 0b111000) << 3) | SrcMode;
+                    enum instr = (Sz << 12) | ((DestMode & 0b111) << 9) | (((DestMode >> 3) & 0b111) << 6) | SrcMode;
                     ret.addInstruction(Instruction("move",instr,0x2,&moveImpl!(Type,SrcMode)));
                 }
             }

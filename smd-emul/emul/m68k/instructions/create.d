@@ -37,11 +37,13 @@ auto createInstructions()
     import emul.m68k.instructions.bcc;
     addBccInstructions(ret);
 
+
     import emul.m68k.instructions.tst;
     addTstInstructions(ret);
 
     import emul.m68k.instructions.lea;
     addLeaInstructions(ret);
+
 
     import emul.m68k.instructions.movem;
     addMovemInstructions(ret);
@@ -52,8 +54,12 @@ auto createInstructions()
     import emul.m68k.instructions.movea;
     addMoveaInstructions(ret);
 
+    import emul.m68k.instructions.moveusp;
+    addMoveuspInstructions(ret);
+
     import emul.m68k.instructions.move;
     addMoveInstructions(ret);
+
 
     import emul.m68k.instructions.andi;
     addAndiInstructions(ret);
