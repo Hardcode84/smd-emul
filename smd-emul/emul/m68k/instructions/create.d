@@ -70,6 +70,9 @@ auto createInstructions()
     import emul.m68k.instructions.dbcc;
     addDbccInstructions(ret);
 
+    import emul.m68k.instructions.btst;
+    addBtstInstructions(ret);
+
     return ret;
 }
 

@@ -200,6 +200,7 @@
     <Compile Include="emul\m68k\instructions\dbcc.d" />
     <Compile Include="emul\m68k\instructions\movea.d" />
     <Compile Include="emul\m68k\instructions\moveusp.d" />
+    <Compile Include="emul\m68k\instructions\btst.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="gamelib\" />
