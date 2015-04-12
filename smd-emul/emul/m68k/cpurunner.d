@@ -83,6 +83,7 @@ private:
         {
             const opcode = mCpu.memory.getRawValue!ushort(mCpu.state.PC);
             const op = mOps[opcode];
+            //debugOut(cpu.state);
             debug
             {
                 debugfOut("0x%.6x op: 0x%.4x %s",mCpu.state.PC,opcode,op.name);

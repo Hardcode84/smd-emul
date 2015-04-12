@@ -43,14 +43,11 @@ void movemImpl(ubyte dr, Type, ubyte mode)(CpuPtr cpu)
     int** reg = regs.ptr;
     const uint mask = cpu.memory.getValue!ushort(cpu.state.PC - ushort.sizeof);
     const count = popcnt(mask);
-    import gamelib.debugout;
-    debugfOut("%x",count);
     enum W = (0 == dr ? AddressModeType.Write : AddressModeType.Read);
     static if(W == AddressModeType.Write)
     {
         auto func(CpuPtr cpu)
         {
-            debugfOut("w: %x",**(reg));
             return cast(Type)(**(reg++));
         }
     }
@@ -58,7 +55,6 @@ void movemImpl(ubyte dr, Type, ubyte mode)(CpuPtr cpu)
     {
         void func(CpuPtr cpu, in Type val)
         {
-            debugfOut("r: %x",val);
             **(reg++) = val;
         }
     }

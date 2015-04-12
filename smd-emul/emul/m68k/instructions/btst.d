@@ -40,7 +40,7 @@ void btstiImpl(Type,ubyte Mode)(CpuPtr cpu)
 
 void btstImpl(Type,ubyte Mode)(CpuPtr cpu)
 {
-    const reg = ((cpu.memory.getValue!ubyte(cpu.state.PC - 0x2) >> 1) & 0b11);
+    const reg = ((cpu.memory.getValue!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
     const bit = cpu.state.D[reg] % (Type.sizeof * 8);
     addressMode!(Type,AddressModeType.Read,Mode,(cpu,b)
         {
