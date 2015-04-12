@@ -201,6 +201,7 @@
     <Compile Include="emul\m68k\instructions\movea.d" />
     <Compile Include="emul\m68k\instructions\moveusp.d" />
     <Compile Include="emul\m68k\instructions\btst.d" />
+    <Compile Include="emul\m68k\instructions\jsr.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="gamelib\" />

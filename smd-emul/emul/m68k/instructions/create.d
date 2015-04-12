@@ -73,6 +73,10 @@ auto createInstructions()
     import emul.m68k.instructions.btst;
     addBtstInstructions(ret);
 
+
+    import emul.m68k.instructions.jsr;
+    addJsrInstructions(ret);
+
     return ret;
 }
 
