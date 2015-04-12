@@ -208,6 +208,7 @@
     <Compile Include="emul\m68k\instructions\jmp.d" />
     <Compile Include="emul\m68k\instructions\bsr.d" />
     <Compile Include="emul\m68k\instructions\mul.d" />
+    <Compile Include="emul\m68k\instructions\addi.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="gamelib\" />

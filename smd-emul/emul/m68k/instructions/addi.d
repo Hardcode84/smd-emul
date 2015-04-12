@@ -1,11 +1,11 @@
-﻿module emul.m68k.instructions.andi;
+﻿module emul.m68k.instructions.addi;
 
 import emul.m68k.instructions.create;
 
 package pure nothrow:
-void addAndiInstructions(ref Instruction[ushort] ret)
+void addAddiInstructions(ref Instruction[ushort] ret)
 {
-    //andi
+    //addi
     foreach(v; TupleRange!(0,writeAddressModesWSize.length))
     {
         enum mode = writeAddressModesWSize[v];
@@ -13,20 +13,20 @@ void addAndiInstructions(ref Instruction[ushort] ret)
         {
             alias Type = sizeField!(mode >> 6);
             enum dataSize = 0x2 + max(Type.sizeof,0x2);
-            ret.addInstruction(Instruction("andi",0x0200 | mode,dataSize,&andiImpl!(Type,mode)));
+            ret.addInstruction(Instruction("addi",0x0600 | mode,dataSize,&addiImpl!(Type,mode)));
         }
     }
 }
 
 private:
-void andiImpl(Type,ubyte Mode)(CpuPtr cpu)
+void addiImpl(Type,ubyte Mode)(CpuPtr cpu)
 {
     const val = cpu.memory.getValue!Type(cpu.state.PC - Type.sizeof);
     addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
         {
             addressModeWSize!(AddressModeType.WriteDontExtendRegister,Mode,(cpu)
                 {
-                    const result = val & b;
+                    const result = add(val, b, cpu);
                     updateFlags(cpu,result);
                     return cast(Type)result;
                 })(cpu);
