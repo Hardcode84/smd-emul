@@ -13,10 +13,11 @@ pure nothrow @nogc:
     uint romEndAddress;
     uint ramStartAddress;
     uint ramEndAddress;
-    
+
     auto getValue(T)(uint offset) const
     {
-        //debugfOut("getVal %#.6x %s",offset,T.stringof);
+        debugfOut("getVal %#.6x %s",offset,T.stringof);
+        if(offset == 0xa11100) return cast(T)0xffffffff; // TODO
         const o = offset & AddressMask;
         checkRange!true(o,T.sizeof);
         ubyte[T.sizeof] temp = (cast(const(ubyte)[])data)[o..o+T.sizeof];

@@ -77,6 +77,10 @@ auto createInstructions()
     import emul.m68k.instructions.jsr;
     addJsrInstructions(ret);
 
+
+    import emul.m68k.instructions.clr;
+    addClrInstructions(ret);
+
     return ret;
 }
 

@@ -32,6 +32,6 @@ void bccImpl(ubyte condition,T)(CpuPtr cpu)
     if(conditionalTest!condition(cpu))
     {
         const offset = cpu.memory.getValue!T(cpu.state.PC - T.sizeof);
-        cpu.state.PC += offset;
+        cpu.state.PC += offset - T.sizeof;
     }
 }
