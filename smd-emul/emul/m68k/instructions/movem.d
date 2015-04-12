@@ -22,9 +22,10 @@ void addMovemInstructions(ref Instruction[ushort] ret)
             foreach(v; TupleRange!(0,modes.length))
             {
                 enum mode = modes[v];
-                if(addressModeTraits!mode.Control ||
-                    (Write && addressModeTraits!mode.Predecrement) ||
-                    (!Write && addressModeTraits!mode.Postincrement))
+                static if((Write && addressModeTraits!mode.Control && addressModeTraits!mode.Alterable) ||
+                          (!Write && addressModeTraits!mode.Control) ||
+                          (Write && addressModeTraits!mode.Predecrement) ||
+                          (!Write && addressModeTraits!mode.Postincrement))
                 {
                     enum instr = 0x4880 | (dr << 10) | (s << 6) | mode;
                     ret.addInstruction(Instruction("movem",instr,0x4,&movemImpl!(dr,T,mode)));
@@ -42,14 +43,24 @@ void movemImpl(ubyte dr, Type, ubyte mode)(CpuPtr cpu)
     int** reg = regs.ptr;
     const uint mask = cpu.memory.getValue!ushort(cpu.state.PC - ushort.sizeof);
     const count = popcnt(mask);
+    import gamelib.debugout;
+    debugfOut("%x",count);
     enum Write = (0 == dr);
     static if(Write)
     {
-        auto func(CpuPtr cpu) { return cast(Type)(**(reg++)); }
+        auto func(CpuPtr cpu)
+        {
+            debugfOut("w: %x",**(reg));
+            return cast(Type)(**(reg++));
+        }
     }
     else
     {
-        void func(CpuPtr cpu, in Type val) { **(reg++) = val; }
+        void func(CpuPtr cpu, in Type val)
+        {
+            debugfOut("r: %x",val);
+            **(reg++) = val;
+        }
     }
     static if(addressModeTraits!mode.Predecrement)
     {
@@ -68,5 +79,6 @@ void movemImpl(ubyte dr, Type, ubyte mode)(CpuPtr cpu)
             ++i;
         }
     }
-    addressMode!(Type,Write,mode,func)(cpu);
+    assert(i == count);
+    addressMode!(Type,Write,mode,func)(cpu,count);
 }

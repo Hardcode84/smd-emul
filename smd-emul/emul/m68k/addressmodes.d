@@ -2,7 +2,7 @@
 
 import emul.m68k.cpu;
 
-template addressMode(T, bool Write, ubyte Val, alias F)
+template addressMode(T, bool Write, ubyte Val, alias F, bool ExtendRegister = true)
 {
 pure nothrow @nogc:
     private enum Mode = (Val >> 3) & 0b111;
@@ -26,7 +26,14 @@ pure nothrow @nogc:
         {
             static if(Write)
             {
-                cpu.state.D[Reg] = F(cpu);
+                static if(ExtendRegister)
+                {
+                    cpu.state.D[Reg] = F(cpu);
+                }
+                else
+                {
+                    *(cast(T*)&cpu.state.D[Reg]) = F(cpu);
+                }
             }
             else
             {
@@ -40,7 +47,14 @@ pure nothrow @nogc:
         {
             static if(Write)
             {
-                cpu.state.A[Reg] = F(cpu);
+                static if(ExtendRegister)
+                {
+                    cpu.state.A[Reg] = F(cpu);
+                }
+                else
+                {
+                    *(cast(T*)&cpu.state.A[Reg]) = F(cpu);
+                }
             }
             else
             {

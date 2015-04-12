@@ -32,7 +32,7 @@ void readFunc(T,ubyte Dest)(CpuPtr cpu, in T val)
     {
         return val;
     }
-    addressMode!(T,true,Dest,writeFunc)(cpu);
+    addressMode!(T,true,Dest,writeFunc,false)(cpu);
     updateFlags(cpu,val);
 }
 
@@ -44,11 +44,12 @@ auto createReadFuncs(T)()
         enum DestMode = writeAddressModes[j];
         static if(addressModeTraits!DestMode.Data && addressModeTraits!DestMode.Alterable)
         {
-            if(DestMode >= ret.length)
+            enum Dst = ((DestMode >> 3) & 0b111) | ((DestMode & 0b111) << 3);
+            if(Dst >= ret.length)
             {
-                ret.length = DestMode + 1;
+                ret.length = Dst + 1;
             }
-            ret[DestMode] = &readFunc!(T,DestMode);
+            ret[Dst] = &readFunc!(T,DestMode);
         }
     }
 
