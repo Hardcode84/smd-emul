@@ -25,6 +25,8 @@ void leaImpl(ubyte reg, ubyte Mode)(CpuPtr cpu)
 {
     addressMode!(int,false,Mode,(a,b)
         {
+            import gamelib.debugout;
+            debugfOut("0x%x 0x%x",Mode,b);
             a.state.A[reg] = b;
         })(cpu);
 }

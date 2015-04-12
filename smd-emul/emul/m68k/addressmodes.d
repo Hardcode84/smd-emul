@@ -108,7 +108,7 @@ pure nothrow @nogc:
             foreach(i; 0..count)
             {
                 address -= RegInc;
-                memProxy(cpu,cpu.state.A[Reg]);
+                memProxy(cpu,address);
             }
             cpu.state.A[Reg] = address;
         }

@@ -42,7 +42,7 @@ pure nothrow @nogc:
 
     void checkRange(bool Read)(uint ptr, uint size) const
     {
-        const ptrEnd = (ptr + size);
+        const ptrEnd = (ptr + size - 1);
         if(ptr >= 0xa00000 && ptrEnd <= 0xa14003) return;
         static if(Read)
         {
