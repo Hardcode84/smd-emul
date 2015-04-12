@@ -77,6 +77,9 @@ auto createInstructions()
     addBtstInstructions(ret);
 
 
+    import emul.m68k.instructions.jmp;
+    addJmpInstructions(ret);
+
     import emul.m68k.instructions.jsr;
     addJsrInstructions(ret);
 
