@@ -17,7 +17,7 @@ void addBraInstructions(ref Instruction[ushort] ret)
 private:
 void braImpl(T)(CpuPtr cpu)
 {
-    const offset = cpu.memory.getValue!T(cpu.state.PC - T.sizeof);
+    const offset = cpu.memory.getValue!T(cast(uint)(cpu.state.PC - T.sizeof));
     cpu.state.PC += offset - T.sizeof;
 }
 void braImpl(T : void)(CpuPtr cpu)

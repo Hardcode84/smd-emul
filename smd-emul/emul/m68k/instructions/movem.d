@@ -41,7 +41,7 @@ void movemImpl(ubyte dr, Type, ubyte mode)(CpuPtr cpu)
     import core.bitop;
     int*[16] regs = void;
     int** reg = regs.ptr;
-    const uint mask = cpu.memory.getValue!ushort(cpu.state.PC - ushort.sizeof);
+    const uint mask = cpu.memory.getValue!ushort(cast(uint)(cpu.state.PC - ushort.sizeof));
     const count = popcnt(mask);
     enum W = (0 == dr ? AddressModeType.Write : AddressModeType.Read);
     static if(W == AddressModeType.Write)

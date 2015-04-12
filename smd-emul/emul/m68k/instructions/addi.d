@@ -21,7 +21,7 @@ void addAddiInstructions(ref Instruction[ushort] ret)
 private:
 void addiImpl(Type,ubyte Mode)(CpuPtr cpu)
 {
-    const val = cpu.memory.getValue!Type(cpu.state.PC - Type.sizeof);
+    const val = cpu.memory.getValue!Type(cast(uint)(cpu.state.PC - Type.sizeof));
     addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
         {
             addressModeWSize!(AddressModeType.WriteDontExtendRegister,Mode,(cpu)

@@ -19,7 +19,7 @@ void bsrImpl(T)(CpuPtr cpu)
 {
     cpu.state.SP -= uint.sizeof;
     cpu.memory.setValue(cpu.state.SP,cpu.state.PC);
-    const offset = cpu.memory.getValue!T(cpu.state.PC - T.sizeof);
+    const offset = cpu.memory.getValue!T(cast(uint)(cpu.state.PC - T.sizeof));
     cpu.state.PC += offset - T.sizeof;
 }
 void bsrImpl(T : void)(CpuPtr cpu)

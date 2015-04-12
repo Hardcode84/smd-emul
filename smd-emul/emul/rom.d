@@ -169,7 +169,7 @@ const:
         h.entryPoint       = readPtr(0x004);
         foreach(i,ref v; h.interrupts)
         {
-            auto ptr = 0x8 + i * uint.sizeof;
+            auto ptr = cast(uint)(0x8 + i * uint.sizeof);
             assert(ptr < 0x100);
             v = readPtr(ptr);
         }

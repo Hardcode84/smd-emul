@@ -83,7 +83,7 @@ pure nothrow @nogc:
             const address = cpu.state.A[Reg];
             foreach(i;0..count)
             {
-                memProxy(cpu,address + T.sizeof * i);
+                memProxy(cpu,cast(uint)(address + T.sizeof * i));
             }
         }
     }
@@ -137,7 +137,7 @@ pure nothrow @nogc:
             cpu.state.PC += short.sizeof;
             foreach(i; 0..count)
             {
-                memProxy(cpu,address + i * T.sizeof);
+                memProxy(cpu,cast(uint)(address + i * T.sizeof));
             }
         }
     }
@@ -153,7 +153,7 @@ pure nothrow @nogc:
             const address = decodeExtensionWord(cpu,cpu.state.A[Reg]);
             foreach(i; 0..count)
             {
-                memProxy(cpu,address + i * T.sizeof);
+                memProxy(cpu,cast(uint)(address + i * T.sizeof));
             }
         }
     }
@@ -171,7 +171,7 @@ pure nothrow @nogc:
             cpu.state.PC += short.sizeof;
             foreach(i; 0..count)
             {
-                memProxy(cpu,address + i * T.sizeof);
+                memProxy(cpu,cast(uint)(address + i * T.sizeof));
             }
         }
     }
@@ -187,7 +187,7 @@ pure nothrow @nogc:
             const address = decodeExtensionWord(cpu,cpu.state.PC);
             foreach(i; 0..count)
             {
-                memProxy(cpu,address + i * T.sizeof);
+                memProxy(cpu,cast(uint)(address + i * T.sizeof));
             }
         }
     }
@@ -205,7 +205,7 @@ pure nothrow @nogc:
             cpu.state.PC += short.sizeof;
             foreach(i; 0..count)
             {
-                memProxy(cpu,address + i * T.sizeof);
+                memProxy(cpu,cast(uint)(address + i * T.sizeof));
             }
         }
     }
@@ -223,7 +223,7 @@ pure nothrow @nogc:
             cpu.state.PC += uint.sizeof;
             foreach(i; 0..count)
             {
-                memProxy(cpu,address + i * T.sizeof);
+                memProxy(cpu,cast(uint)(address + i * T.sizeof));
             }
         }
     }
