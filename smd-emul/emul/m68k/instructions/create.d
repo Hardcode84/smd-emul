@@ -70,6 +70,9 @@ auto createInstructions()
     import emul.m68k.instructions.andi;
     addAndiInstructions(ret);
 
+    import emul.m68k.instructions.rolror;
+    addRolRorInstructions(ret);
+
     import emul.m68k.instructions.add;
     addAddInstructions(ret);
 
