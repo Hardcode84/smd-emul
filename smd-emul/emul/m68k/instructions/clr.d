@@ -5,13 +5,13 @@ import emul.m68k.instructions.create;
 package pure nothrow:
 void addClrInstructions(ref Instruction[ushort] ret)
 {
-    //tst
+    //clr
     foreach(v; TupleRange!(0,writeAddressModesWSize.length))
     {
         enum mode = writeAddressModesWSize[v];
         static if(addressModeTraits!mode.Data && addressModeTraits!mode.Alterable)
         {
-            ret.addInstruction(Instruction("tst",0x4200 | mode,0x2,&clrImpl!mode));
+            ret.addInstruction(Instruction("clr",0x4200 | mode,0x2,&clrImpl!mode));
         }
     }
 }
