@@ -77,6 +77,9 @@ auto createInstructions()
     import emul.m68k.instructions.jsr;
     addJsrInstructions(ret);
 
+    import emul.m68k.instructions.rts;
+    addRtsInstructions(ret);
+
 
     import emul.m68k.instructions.clr;
     addClrInstructions(ret);
