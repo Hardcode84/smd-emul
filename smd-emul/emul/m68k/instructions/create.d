@@ -34,6 +34,9 @@ auto createInstructions()
     import emul.m68k.instructions.bra;
     addBraInstructions(ret);
 
+    import emul.m68k.instructions.bsr;
+    addBsrInstructions(ret);
+
     import emul.m68k.instructions.bcc;
     addBccInstructions(ret);
 
