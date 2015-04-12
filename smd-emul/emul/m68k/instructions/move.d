@@ -32,7 +32,7 @@ void readFunc(T,ubyte Dest)(CpuPtr cpu, in T val)
     {
         return val;
     }
-    addressMode!(T,true,Dest,writeFunc,false)(cpu);
+    addressMode!(T,AddressModeType.WriteDontExtendRegister,Dest,writeFunc)(cpu);
     updateFlags(cpu,val);
 }
 
@@ -64,5 +64,5 @@ void moveImpl(T,ubyte Src)(CpuPtr cpu)
     {
         funcs[dest](cpu,val);
     }
-    addressMode!(T,false,Src,readFuncThunk)(cpu);
+    addressMode!(T,AddressModeType.Read,Src,readFuncThunk)(cpu);
 }

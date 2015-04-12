@@ -29,7 +29,7 @@ void addImpl(Type,ubyte d,ubyte Mode)(CpuPtr cpu)
 {
     const reg = (cpu.memory.getValue!ubyte(cpu.state.PC - 0x2) >> 2) & 0b111;
     const int val = cpu.state.D[reg];
-    addressModeWSize!(false,Mode,(cpu,b)
+    addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
         {
             const result = add(val, b, cpu);
             static if(0 == d)
@@ -38,7 +38,7 @@ void addImpl(Type,ubyte d,ubyte Mode)(CpuPtr cpu)
             }
             else
             {
-                addressModeWSize!(true,Mode,(cpu)
+                addressModeWSize!(AddressModeType.Write,Mode,(cpu)
                     {
                         return cast(Type)result;
                     })(cpu);

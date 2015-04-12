@@ -23,7 +23,7 @@ void addLeaInstructions(ref Instruction[ushort] ret)
 private:
 void leaImpl(ubyte reg, ubyte Mode)(CpuPtr cpu)
 {
-    addressMode!(int,false,Mode,(a,b)
+    addressMode!(int,AddressModeType.ReadAddress,Mode,(a,b)
         {
             import gamelib.debugout;
             debugfOut("0x%x 0x%x",Mode,b);

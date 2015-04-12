@@ -20,7 +20,7 @@ public:
         mRom = rom;
         enforce(mRom.header.romEndAddress < mRom.header.ramEndAddress,
             format("Invalid memory ranges %s %s", mRom.header.romEndAddress, mRom.header.ramEndAddress));
-        mCpu.memory.data.length = mRom.header.ramEndAddress;
+        mCpu.memory.data.length = mRom.header.ramEndAddress + 1;
         mCpu.memory.data[0..mRom.data.length] = mRom.data[];
 
         mCpu.memory.romStartAddress = rom.header.romStartAddress;

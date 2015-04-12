@@ -16,7 +16,7 @@ void addTstInstructions(ref Instruction[ushort] ret)
 private:
 void tstImpl(ubyte Mode)(CpuPtr cpu)
 {
-    addressModeWSize!(false,Mode,(a,b)
+    addressModeWSize!(AddressModeType.Read,Mode,(a,b)
         {
             updateFlags(a,b);
         })(cpu);

@@ -45,8 +45,8 @@ void movemImpl(ubyte dr, Type, ubyte mode)(CpuPtr cpu)
     const count = popcnt(mask);
     import gamelib.debugout;
     debugfOut("%x",count);
-    enum Write = (0 == dr);
-    static if(Write)
+    enum W = (0 == dr ? AddressModeType.Write : AddressModeType.Read);
+    static if(W == AddressModeType.Write)
     {
         auto func(CpuPtr cpu)
         {
@@ -80,5 +80,5 @@ void movemImpl(ubyte dr, Type, ubyte mode)(CpuPtr cpu)
         }
     }
     assert(i == count);
-    addressMode!(Type,Write,mode,func)(cpu,count);
+    addressMode!(Type,W,mode,func)(cpu,count);
 }

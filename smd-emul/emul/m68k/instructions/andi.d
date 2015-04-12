@@ -23,9 +23,9 @@ private:
 void andiImpl(Type,ubyte Mode)(CpuPtr cpu)
 {
     const val = cpu.memory.getValue!Type(cpu.state.PC - Type.sizeof);
-    addressModeWSize!(false,Mode,(cpu,b)
+    addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
         {
-            addressModeWSize!(true,Mode,(cpu)
+            addressModeWSize!(AddressModeType.Write,Mode,(cpu)
                 {
                     const result = val & b;
                     updateFlags(cpu,result);

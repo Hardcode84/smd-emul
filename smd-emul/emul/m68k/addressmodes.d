@@ -2,21 +2,35 @@
 
 import emul.m68k.cpu;
 
-template addressMode(T, bool Write, ubyte Val, alias F, bool ExtendRegister = true)
+enum AddressModeType
+{
+    Write,
+    WriteDontExtendRegister,
+    Read,
+    ReadAddress
+}
+
+template addressMode(T, AddressModeType Type, ubyte Val, alias F)
 {
 pure nothrow @nogc:
     private enum Mode = (Val >> 3) & 0b111;
     private enum Reg =  Val & 0b111;
+    private enum Write = (Type == AddressModeType.Write || Type == AddressModeType.WriteDontExtendRegister);
     private void memProxy(CpuPtr cpu, uint address)
     {
-        static if(Write)
+        static if(Type == AddressModeType.Write || Type == AddressModeType.WriteDontExtendRegister)
         {
             cpu.memory.setValue!T(address,F(cpu));
         }
-        else
+        else static if(Type == AddressModeType.Read)
         {
             F(cpu,cpu.memory.getValue!T(address));
         }
+        else static if(Type == AddressModeType.ReadAddress)
+        {
+            F(cpu,cast(T)address);
+        }
+        else static assert(false);
     }
     private enum RegInc = (7 == Reg ? max(2,T.sizeof) : T.sizeof);
 
@@ -24,42 +38,38 @@ pure nothrow @nogc:
     {
         void addressMode(CpuPtr cpu)
         {
-            static if(Write)
+            static if(Type == AddressModeType.Write)
             {
-                static if(ExtendRegister)
-                {
-                    cpu.state.D[Reg] = F(cpu);
-                }
-                else
-                {
-                    *(cast(T*)&cpu.state.D[Reg]) = F(cpu);
-                }
+                cpu.state.D[Reg] = F(cpu);
             }
-            else
+            else static if(Type == AddressModeType.WriteDontExtendRegister)
+            {
+                *(cast(T*)&cpu.state.D[Reg]) = F(cpu);
+            }
+            else static if(Type == AddressModeType.Read || Type == AddressModeType.ReadAddress)
             {
                 F(cpu,cast(T)cpu.state.D[Reg]);
             }
+            else static assert(false);
         }
     }
     else static if(0b001 == Mode)
     {
         void addressMode(CpuPtr cpu)
         {
-            static if(Write)
+            static if(Type == AddressModeType.Write)
             {
-                static if(ExtendRegister)
-                {
-                    cpu.state.A[Reg] = F(cpu);
-                }
-                else
-                {
-                    *(cast(T*)&cpu.state.A[Reg]) = F(cpu);
-                }
+                cpu.state.A[Reg] = F(cpu);
             }
-            else
+            else static if(Type == AddressModeType.WriteDontExtendRegister)
+            {
+                *(cast(T*)&cpu.state.A[Reg]) = F(cpu);
+            }
+            else static if(Type == AddressModeType.Read || Type == AddressModeType.ReadAddress)
             {
                 F(cpu,cast(T)cpu.state.A[Reg]);
             }
+            else static assert(false);
         }
     }
     else static if(0b010 == Mode)
@@ -223,7 +233,15 @@ pure nothrow @nogc:
         {
             const pc = cpu.state.PC;
             cpu.state.PC += T.sizeof;
-            F(cpu,cpu.memory.getValue!T(pc));
+            static if(Type == AddressModeType.Read)
+            {
+                F(cpu,cpu.memory.getValue!T(pc));
+            }
+            else static if(Type == AddressModeType.ReadAddress)
+            {
+                F(cpu,cast(T)pc);
+            }
+            else static assert(false);
         }
     }
     else
@@ -346,9 +364,9 @@ template sizeField(ubyte Val)
     else static assert(false);
 }
 
-template addressModeWSize(bool Write, ubyte Val, alias F)
+template addressModeWSize(AddressModeType Type, ubyte Val, alias F)
 {
-    alias addressModeWSize = addressMode!(sizeField!(Val >> 6),Write,Val & 0b111111,F);
+    alias addressModeWSize = addressMode!(sizeField!(Val >> 6),Type,Val & 0b111111,F);
 }
 
 import std.array;

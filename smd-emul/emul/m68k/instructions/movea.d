@@ -29,5 +29,5 @@ void moveaImpl(T,ubyte Src)(CpuPtr cpu)
     {
         cpu.state.A[reg] = val;
     }
-    addressMode!(T,false,Src,readFunc)(cpu);
+    addressMode!(T,AddressModeType.Read,Src,readFunc)(cpu);
 }
