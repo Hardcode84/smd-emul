@@ -45,7 +45,7 @@ pure nothrow @nogc:
     {
         const ptrEnd = (ptr + size - 1);
         if(ptr >= 0xa00000 && ptrEnd <= 0xa14003) return;
-        if(ptr >= 0xc00000 && ptrEnd <= 0xc0000a) return;
+        if(ptr >= 0xc00000 && ptrEnd <= 0xc000011) return;
         static if(Read)
         {
             if((ptr < romStartAddress || ptrEnd > romEndAddress) &&

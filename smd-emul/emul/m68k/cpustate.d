@@ -42,7 +42,11 @@ pure nothrow @nogc @safe:
     auto ref SP() inout @property { return A[7]; }
     alias USP = SP;
     uint PC;
-    ubyte CCR;
+    union
+    {
+        ubyte CCR;
+        ushort SR;
+    }
     void setFlags(CCRFlags flags) { CCR |= flags; }
     void clearFlags(CCRFlags flags) { CCR &= ~flags; }
     bool testFlags(CCRFlags flags) const { return 0x0 != (CCR & flags); }
