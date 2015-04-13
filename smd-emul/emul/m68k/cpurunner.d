@@ -35,7 +35,9 @@ public:
 
     void run()
     {
-        convertSafe2(&runImpl, ()=>assert(false),&mCpu);
+        convertSafe2(&runImpl,
+            () {assert(false);},
+            &mCpu);
     }
 private:
     Cpu mCpu;
@@ -57,7 +59,7 @@ private:
             impl = instr.impl;
             debug
             {
-                name = instr.name;;
+                name = instr.name;
             }
         }
     }
