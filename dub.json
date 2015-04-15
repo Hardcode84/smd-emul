@@ -1,0 +1,6 @@
+{
+    "name": "smd-emul",
+    "targetType": "executable",
+    "sourcePaths": ["source","d-gamelib"],
+    "importPaths": ["source","d-gamelib"],
+}
