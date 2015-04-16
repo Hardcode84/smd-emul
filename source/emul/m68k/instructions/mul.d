@@ -44,7 +44,7 @@ void mulwImpl(bool Signed, ubyte Mode)(CpuPtr cpu)
         addressMode!(ushort,AddressModeType.Read,Mode,(cpu,val)
             {
                 const result = cast(uint)val * cast(uint)cpu.state.D[reg];
-                updateFlags(cpu, result);
+                updateFlags(cpu, cast(int)result);
                 cpu.state.D[reg] = result;
             })(cpu);
     }
@@ -61,9 +61,9 @@ void mulImpl(ubyte Mode)(CpuPtr cpu)
     funcs[(word >> 10) & 0b11](cpu,word);
 }
 
-void mulImpl2(bool Signed, bool Quad, ubyte Mode)(CpuPtr cpu, ushort word)
+void mulImpl2(bool S, bool Quad, ubyte Mode)(CpuPtr cpu, ushort word)
 {
-    static if(Signed)
+    static if(S)
     {
         alias Type = int;
         alias ResType = long;
@@ -77,7 +77,7 @@ void mulImpl2(bool Signed, bool Quad, ubyte Mode)(CpuPtr cpu, ushort word)
     addressMode!(Type,AddressModeType.Read,Mode,(cpu,val)
         {
             const result = cast(ResType)val * cast(ResType)cpu.state.D[regl];
-            updateNZFlags(cpu,result);
+            updateNZFlags(cpu,cast(Signed!ResType)result);
             cpu.state.clearFlags(CCRFlags.C);
             static if(Quad)
             {
@@ -87,7 +87,7 @@ void mulImpl2(bool Signed, bool Quad, ubyte Mode)(CpuPtr cpu, ushort word)
             }
             else
             {
-                static if(Signed)
+                static if(S)
                 {
                     cpu.state.setFlags(CCRFlags.V, (result < Type.min || result > Type.max));
                 }

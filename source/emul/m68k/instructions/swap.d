@@ -5,7 +5,7 @@ import emul.m68k.instructions.create;
 package pure nothrow:
 void addSwapInstructions(ref Instruction[ushort] ret)
 {
-    //clr
+    //swap
     foreach(r; TupleRange!(0,8))
     {
         ret.addInstruction(Instruction("swap",0x4840 | r,0x2,&swapImpl!r));

@@ -231,8 +231,15 @@ pure nothrow @nogc:
     {
         void addressMode(CpuPtr cpu)
         {
-            const pc = cpu.state.PC;
-            cpu.state.PC += T.sizeof;
+            static if(T.sizeof == 1)
+            {
+                const pc = cpu.state.PC + 1;
+            }
+            else
+            {
+                const pc = cpu.state.PC;
+            }
+            cpu.state.PC += max(T.sizeof,ushort.sizeof);
             static if(Type == AddressModeType.Read)
             {
                 F(cpu,cpu.memory.getValue!T(pc));

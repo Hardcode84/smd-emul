@@ -70,6 +70,9 @@ auto createInstructions()
     import emul.m68k.instructions.andi;
     addAndiInstructions(ret);
 
+    import emul.m68k.instructions.or;
+    addOrInstructions(ret);
+
     import emul.m68k.instructions.rolror;
     addRolRorInstructions(ret);
 
@@ -78,6 +81,9 @@ auto createInstructions()
 
     import emul.m68k.instructions.addi;
     addAddiInstructions(ret);
+
+    import emul.m68k.instructions.subq;
+    addSubqInstructions(ret);
 
     import emul.m68k.instructions.mul;
     addAddMulInstructions(ret);
@@ -135,6 +141,7 @@ void addInstruction(ref Instruction[ushort] instructions, in Instruction instr) 
 
 void updateNZFlags(T)(CpuPtr cpu, in T val)
 {
+    static assert(isSigned!T);
     if(val < 0) cpu.state.setFlags(CCRFlags.N);
     else        cpu.state.clearFlags(CCRFlags.N);
     if(val == 0) cpu.state.setFlags(CCRFlags.Z);

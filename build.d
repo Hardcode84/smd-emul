@@ -16,6 +16,7 @@ void main(string[] args)
     writeln("Preparing...");
     scope(success) writeln("Success");
     scope(failure) writeln("Failure");
+    const bool rebuild = args[1..$].canFind("rebuild");
     const string exeName = "smd-emul";
     const string outputPath = "bin";
     const string currPath = "./";
@@ -51,7 +52,7 @@ void main(string[] args)
     {
         cache = parseJSON(std.file.readText(cachePath));
     }
-    scope(success)
+    scope(exit)
     {
         std.file.write(cachePath,cache.toPrettyString());
     }
@@ -71,6 +72,7 @@ void main(string[] args)
         string[string] dummy;
         cacheFiles = JSONValue(["foo":"bar"]);
     }
+    scope(exit) cache.object["files"] = cacheFiles;
     writeln("Compiling...");
     //foreach(d; parallel(sourceList, 1))
     foreach(d; sourceList)
@@ -86,7 +88,8 @@ void main(string[] args)
         }
         const objFile = fileDir ~ file.retro.find('.').retro.text ~ "obj";
         scope(success) objFiles ~= objFile;
-        if(exists(objFile) &&
+        if(!rebuild &&
+            exists(objFile) &&
             (prettyFile in cacheFiles.object) &&
             timeLastModified(file) == SysTime.fromISOString(cacheFiles[prettyFile].str))
         {
@@ -102,7 +105,6 @@ void main(string[] args)
         const status = executeShell(cmd);
         enforce(0 == status.status, format("Build error %s, output:\n%s", status.status, status.output));
     }
-    cache.object["files"] = cacheFiles;
     const outputDir = currPath ~ outputPath ~ "/"~config~"/";
     if(!exists(outputDir))
     {
