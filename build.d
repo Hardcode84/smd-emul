@@ -75,6 +75,7 @@ void main(string[] args)
     //foreach(d; parallel(sourceList, 1))
     foreach(d; sourceList)
     {
+        writeln("----");
         const file = d;
         const prettyFile = d.find(currPath)[currPath.length..$].text;
         enforce(exists(file), format("File not found: %s",file));
@@ -97,7 +98,6 @@ void main(string[] args)
         //writeln(objFile);
         //writeln(fileDir);
         const cmd = buildStr ~ d ~ " " ~ format(outputOpt,objFile);
-        writeln("----");
         writeln(cmd);
         const status = executeShell(cmd);
         enforce(0 == status.status, format("Build error %s, output:\n%s", status.status, status.output));

@@ -82,6 +82,9 @@ auto createInstructions()
     import emul.m68k.instructions.mul;
     addAddMulInstructions(ret);
 
+    import emul.m68k.instructions.swap;
+    addSwapInstructions(ret);
+
     import emul.m68k.instructions.dbcc;
     addDbccInstructions(ret);
 
