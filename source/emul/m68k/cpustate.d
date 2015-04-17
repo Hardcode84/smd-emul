@@ -25,7 +25,8 @@ struct CpuState
             formattedWrite(ret, "A%s = 0x%.8x\n",i,val);
         }
         formattedWrite(ret, "PC = 0x%.8x\n",PC);
-        formattedWrite(ret, "flags = 0x%.1x\n",CCR);
+        formattedWrite(ret, "flags = 0x%.1x\n",SR);
+        formattedWrite(ret, "ticks = %s",tickCounter);
         return ret.data;
     }
 pure nothrow @nogc @safe:
