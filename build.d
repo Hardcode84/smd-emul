@@ -89,9 +89,9 @@ void main(string[] args)
         {
             name = name_;
             enforce(exists(name), format("File not found: %s",name));
-            prettyName = name.find(currPath)[currPath.length..$].retro.find('.').retro[0..$-1].text;
-            objDir = buildDir ~ name.retro.find!(a => a == '\\' || a == '/').retro.text;
-            objName = objDir ~ name.retro.find('.').retro.text ~ "obj";
+            prettyName = name.find(currPath)[currPath.length..$].text;
+            objDir = buildDir ~ prettyName.retro.find!(a => a == '\\' || a == '/').retro.text;
+            objName = objDir ~ prettyName.retro.splitter!(a => a == '\\' || a == '/').front.find('.').array.retro.text ~ "obj";
             changed = rebuild || !exists(objName) || (prettyName !in cacheFiles.object) || ("buildTime" !in cacheFiles[prettyName].object) ||
                 ("moduleName" !in cacheFiles[prettyName].object) ||
                 ("dependencies" !in cacheFiles[prettyName].object) ||
@@ -112,7 +112,6 @@ void main(string[] args)
 
             if(changed)
             {
-                writeln(objName);
                 auto f = File(name, "r");
                 while(f.readln(readBuf))
                 {
@@ -121,8 +120,9 @@ void main(string[] args)
                     {
                         moduleName = m[0]["module".length..$-1].strip.idup;
                     }
-                    dependencies ~= matchAll(readBuf,importRegex).map!(a => a.hit["import".length..$-1]
-                        .splitter(':').takeOne[0].splitter(',').map!(a => a.strip).filter!(a => !a.empty)).map!text.array;
+                     const deps = matchAll(readBuf,importRegex).map!(a => a.hit["import".length..$-1]
+                        .splitter(':').front.splitter(',').map!(a => a.strip).filter!(a => !a.empty).map!text).joiner.array;
+                     dependencies ~= deps;
                 }
             }
             if(moduleName.length == 0)
@@ -153,6 +153,7 @@ void main(string[] args)
     {
         if(e.changed) changedModules[e.moduleName] = true;
     }
+    writeln("Changed modules: ",changedModules.byKey());
     while(true)
     {
         bool hasChanges = false;
@@ -190,11 +191,10 @@ void main(string[] args)
         {
             mkdirRecurse(e.objDir);
         }
-        writeln(e.dependencies);
-        /*const cmd = buildStr ~ e.name ~ " " ~ format(outputOpt,e.objName);
+        const cmd = buildStr ~ e.name ~ " " ~ format(outputOpt,e.objName);
         writeln(cmd);
         const status = executeShell(cmd);
-        enforce(0 == status.status, format("Build error %s, output:\n%s", status.status, status.output));*/
+        enforce(0 == status.status, format("Build error %s, output:\n%s", status.status, status.output));
     }
     writeln("Files compiled: ",numCompiledFiles);
 
@@ -204,9 +204,9 @@ void main(string[] args)
         mkdirRecurse(outputDir);
     }
 
-    /*const cmd = "dmd " ~ objFiles.data.join(" ") ~ " " ~ format(outputOpt,outputDir~exeName);
+    const cmd = "dmd " ~ objFiles.data.join(" ") ~ " " ~ format(outputOpt,outputDir~exeName);
     writeln("Linking...");
     writeln(cmd);
     const status = executeShell(cmd);
-    enforce(0 == status.status, format("Build error %s, output:\n%s", status.status, status.output));*/
+    enforce(0 == status.status, format("Build error %s, output:\n%s", status.status, status.output));
 }
