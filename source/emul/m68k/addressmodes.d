@@ -347,7 +347,7 @@ template addressModeTraits(ubyte Val)
         enum Data = true;
         enum Memory = true;
         enum Control = true;
-        enum Alterable = false;
+        enum Alterable = true;//false; bug in PRM?
         enum Predecrement = false;
         enum Postincrement = false;
     }
@@ -356,7 +356,7 @@ template addressModeTraits(ubyte Val)
         enum Data = true;
         enum Memory = true;
         enum Control = true;
-        enum Alterable = false;
+        enum Alterable = true;//false; bug in PRM?
         enum Predecrement = false;
         enum Postincrement = false;
     }
