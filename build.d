@@ -10,6 +10,10 @@ import std.conv;
 import std.string;
 import std.json;
 import std.datetime;
+import std.regex;
+
+auto moduleRegex = ctRegex!("module.*;");
+auto importRegex = ctRegex!("import.*;");
 
 void main(string[] args)
 {
@@ -23,7 +27,6 @@ void main(string[] args)
     const string cacheFile = ".cache";
     const string[] importPaths = ["d-gamelib","source","d-gamelib/gamelib/3rdparty/DerelictUtil-master/source","d-gamelib/gamelib/3rdparty/DerelictSDL2-master/source"];
     const string[] sourcePaths = ["d-gamelib","source"];
-    const string projName = "smd-emul";
     const string buildDir = currPath ~ ".build/";
     const string compiler = "dmd";
     const string config = "debug";
@@ -33,15 +36,7 @@ void main(string[] args)
     const string[string] importOpts = ["dmd" : "-I%s"];
     const string[string] outputOpts = ["dmd" : "-of%s"];
 
-    const sourceList = sourcePaths[]
-        .map!(a => currPath~a)
-        .map!(a => a.dirEntries(SpanMode.depth)).joiner
-        .filter!(a => a.isFile && a.name.endsWith(".d")).map!(a => a.name).array;
     const currentOpts = compilerOpts[compiler][config];
-    /*if(exists(buildDir))
-    {
-        rmdirRecurse(buildDir);
-    }*/
     if(!exists(buildDir))
     {
         mkdirRecurse(buildDir);
@@ -50,7 +45,14 @@ void main(string[] args)
     const cachePath = buildDir ~ cacheFile;
     if(exists(cachePath))
     {
-        cache = parseJSON(std.file.readText(cachePath));
+        if(rebuild)
+        {
+            remove(cachePath);
+        }
+        else
+        {
+            cache = parseJSON(std.file.readText(cachePath));
+        }
     }
     scope(exit)
     {
@@ -70,8 +72,76 @@ void main(string[] args)
     if(cacheFiles.isNull())
     {
         string[string] dummy;
-        cacheFiles = JSONValue(["foo":"bar"]);
+        cacheFiles = JSONValue(dummy);
     }
+
+    char[] readBuf;
+    struct BuildEntry
+    {
+        string name;
+        string prettyName;
+        string fileDir;
+        string objName;
+        string moduleName;
+        string[] dependencies;
+        bool changed;
+        this(string name_)
+        {
+            name = name_;
+            prettyName = name.find(currPath)[currPath.length..$].retro.find('.').retro.text;
+            fileDir = buildDir ~ name.retro.find!(a => a == '\\' || a == '/').retro.text;
+            objName = fileDir ~ name.retro.find('.').retro.text ~ "obj";
+            changed = rebuild || !exists(objName) || (prettyName !in cacheFiles.object) || ("buildTime" !in cacheFiles[prettyName].object) ||
+                ("moduleName" !in cacheFiles[prettyName].object) ||
+                ("dependencies" !in cacheFiles[prettyName].object) ||
+                timeLastModified(name) == SysTime.fromISOString(cacheFiles[prettyName]["buildTime"].str);
+            if(!changed)
+            {
+                try
+                {
+                    moduleName = cacheFiles[prettyName]["moduleName"].str;
+                    dependencies = cacheFiles[prettyName]["dependencies"].array.map!(a => a.str).array;
+                }
+                catch(Exception e)
+                {
+                    writeln("BuildEntry error: ",e);
+                    changed = true;
+                }
+            }
+
+            if(changed)
+            {
+                auto f = File(name, "r");
+                while(f.readln(readBuf))
+                {
+                    auto m = matchFirst(readBuf,moduleRegex);
+                    if(!m.empty)
+                    {
+                        moduleName = m[0]["module".length..$-1].strip.idup;
+                    }
+                    dependencies ~= matchAll(readBuf,importRegex).map!(a => a.hit["import".length..$-1]
+                        .splitter(':').takeOne[0].splitter(',').map!(a => a.strip).filter!(a => !a.empty)).map!text.array;
+                }
+            }
+            if(moduleName.length == 0)
+            {
+                moduleName = prettyName.map!(a => (a == '\\' || a == '/' ? '.' : a)).text;
+                writefln("Empty module name, generated \"%s\"",moduleName);
+            }
+        }
+
+        void save()
+        {
+            cacheFiles.object[prettyName] = JSONValue(["buildTime" : timeLastModified(name).toISOString(),
+                                                       "moduleName" : moduleName]);
+            cacheFiles[prettyName].object["dependencies"] = dependencies;
+        }
+    }
+    const sourceList = sourcePaths[]
+        .map!(a => currPath~a)
+        .map!(a => a.dirEntries(SpanMode.depth)).joiner
+        .filter!(a => a.isFile && a.name.endsWith(".d")).map!(a => a.name).array;
+
     scope(exit) cache.object["files"] = cacheFiles;
     writeln("Compiling...");
     //foreach(d; parallel(sourceList, 1))
