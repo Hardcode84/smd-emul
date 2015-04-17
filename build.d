@@ -80,7 +80,7 @@ void main(string[] args)
     {
         string name;
         string prettyName;
-        string fileDir;
+        string objDir;
         string objName;
         string moduleName;
         string[] dependencies;
@@ -88,13 +88,14 @@ void main(string[] args)
         this(string name_)
         {
             name = name_;
-            prettyName = name.find(currPath)[currPath.length..$].retro.find('.').retro.text;
-            fileDir = buildDir ~ name.retro.find!(a => a == '\\' || a == '/').retro.text;
-            objName = fileDir ~ name.retro.find('.').retro.text ~ "obj";
+            enforce(exists(name), format("File not found: %s",name));
+            prettyName = name.find(currPath)[currPath.length..$].retro.find('.').retro[0..$-1].text;
+            objDir = buildDir ~ name.retro.find!(a => a == '\\' || a == '/').retro.text;
+            objName = objDir ~ name.retro.find('.').retro.text ~ "obj";
             changed = rebuild || !exists(objName) || (prettyName !in cacheFiles.object) || ("buildTime" !in cacheFiles[prettyName].object) ||
                 ("moduleName" !in cacheFiles[prettyName].object) ||
                 ("dependencies" !in cacheFiles[prettyName].object) ||
-                timeLastModified(name) == SysTime.fromISOString(cacheFiles[prettyName]["buildTime"].str);
+                timeLastModified(name) != SysTime.fromISOString(cacheFiles[prettyName]["buildTime"].str);
             if(!changed)
             {
                 try
@@ -111,6 +112,7 @@ void main(string[] args)
 
             if(changed)
             {
+                writeln(objName);
                 auto f = File(name, "r");
                 while(f.readln(readBuf))
                 {
@@ -137,53 +139,74 @@ void main(string[] args)
             cacheFiles[prettyName].object["dependencies"] = dependencies;
         }
     }
-    const sourceList = sourcePaths[]
+    auto createEntry(string name)
+    {
+        return BuildEntry(name);
+    }
+    auto sourceList = sourcePaths[]
         .map!(a => currPath~a)
         .map!(a => a.dirEntries(SpanMode.depth)).joiner
-        .filter!(a => a.isFile && a.name.endsWith(".d")).map!(a => a.name).array;
+        .filter!(a => a.isFile && a.name.endsWith(".d")).map!(a => createEntry(a.name)).array;
 
+    bool[string] changedModules;
+    foreach(ref e; sourceList)
+    {
+        if(e.changed) changedModules[e.moduleName] = true;
+    }
+    while(true)
+    {
+        bool hasChanges = false;
+        foreach(ref e; sourceList)
+        {
+            if(!e.changed && e.dependencies.any!(a => a in changedModules))
+            {
+                changedModules[e.moduleName] = true;
+                e.changed = true;
+                hasChanges = true;
+            }
+        }
+        if(!hasChanges) break;
+    }
+
+    writeln("Changed modules: ",changedModules.byKey());
     scope(exit) cache.object["files"] = cacheFiles;
     writeln("Compiling...");
+    int numCompiledFiles = 0;
+
     //foreach(d; parallel(sourceList, 1))
-    foreach(d; sourceList)
+    foreach(ref e; sourceList)
     {
+        scope(success) objFiles ~= e.objName;
+        scope(success) e.save();
         writeln("----");
-        const file = d;
-        const prettyFile = d.find(currPath)[currPath.length..$].text;
-        enforce(exists(file), format("File not found: %s",file));
-        const fileDir = buildDir ~ file.retro.find!(a => a == '\\' || a == '/').retro.text;
-        if(!exists(fileDir))
+        if(!e.changed)
         {
-            mkdirRecurse(fileDir);
-        }
-        const objFile = fileDir ~ file.retro.find('.').retro.text ~ "obj";
-        scope(success) objFiles ~= objFile;
-        if(!rebuild &&
-            exists(objFile) &&
-            (prettyFile in cacheFiles.object) &&
-            timeLastModified(file) == SysTime.fromISOString(cacheFiles[prettyFile].str))
-        {
-            writeln(format("\"%s\" is up to date",prettyFile));
+            writeln(format("\"%s\" is up to date",e.prettyName));
             continue;
         }
-        scope(success) cacheFiles.object[prettyFile] = JSONValue(timeLastModified(file).toISOString());
-        //writeln(file);
-        //writeln(objFile);
-        //writeln(fileDir);
-        const cmd = buildStr ~ d ~ " " ~ format(outputOpt,objFile);
+        writeln(format("Compiling \"%s\":",e.prettyName));
+        scope(success) ++numCompiledFiles;
+        if(!exists(e.objDir))
+        {
+            mkdirRecurse(e.objDir);
+        }
+        writeln(e.dependencies);
+        /*const cmd = buildStr ~ e.name ~ " " ~ format(outputOpt,e.objName);
         writeln(cmd);
         const status = executeShell(cmd);
-        enforce(0 == status.status, format("Build error %s, output:\n%s", status.status, status.output));
+        enforce(0 == status.status, format("Build error %s, output:\n%s", status.status, status.output));*/
     }
+    writeln("Files compiled: ",numCompiledFiles);
+
     const outputDir = currPath ~ outputPath ~ "/"~config~"/";
     if(!exists(outputDir))
     {
         mkdirRecurse(outputDir);
     }
 
-    const cmd = "dmd " ~ objFiles.data.join(" ") ~ " " ~ format(outputOpt,outputDir~exeName);
+    /*const cmd = "dmd " ~ objFiles.data.join(" ") ~ " " ~ format(outputOpt,outputDir~exeName);
     writeln("Linking...");
     writeln(cmd);
     const status = executeShell(cmd);
-    enforce(0 == status.status, format("Build error %s, output:\n%s", status.status, status.output));
+    enforce(0 == status.status, format("Build error %s, output:\n%s", status.status, status.output));*/
 }
