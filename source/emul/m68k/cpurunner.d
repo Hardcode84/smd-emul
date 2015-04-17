@@ -4,7 +4,7 @@ import std.string;
 import std.algorithm;
 import std.exception;
 
-import gamelib.types;
+import gamelib.debugout;
 import gamelib.memory.saferef;
 
 import emul.rom;
@@ -64,11 +64,18 @@ private:
         }
     }
 
+    static void invalidOp(Dummy)(CpuPtr cpu)
+    {
+        const pc = cpu.state.PC;
+        debugfOut("Invalid op: 0x%.6x 0x%.4x",pc,cpu.memory.getValue!ushort(pc));
+        assert(false, "Invalid op");
+    }
+
     static auto createOps()
     {
         Op[] ret;
         ret.length = ushort.max + 1;
-        ret[] = Op(InvalidInstruction);
+        ret[] = Op(Instruction("illegal",0x0,0x0,&invalidOp!void));
         const instructions = createInstructions();
         debugfOut("Total instructions: %s",instructions.length);
         foreach(i,instr; instructions)
@@ -88,7 +95,7 @@ private:
             //debugOut(cpu.state);
             debug
             {
-                debugfOut("0x%.6x op: 0x%.4x %s",mCpu.state.PC,opcode,op.name);
+                //debugfOut("0x%.6x op: 0x%.4x %s",mCpu.state.PC,opcode,op.name);
             }
             mCpu.state.PC += op.size;
             mCpu.state.tickCounter += op.ticks;

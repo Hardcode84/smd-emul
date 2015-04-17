@@ -21,15 +21,16 @@ struct Instruction
     void function(CpuPtr) @nogc pure nothrow impl;
 }
 
-enum InvalidInstruction = Instruction("invalid",0x0,0x2,&invalidImpl);
-
 pure nothrow:
 auto createInstructions()
 {
     Instruction[ushort] ret;
 
-    // nop
-    ret.addInstruction(Instruction("nop",0x4e71,0x2,&nopImpl));
+    import emul.m68k.instructions.nop;
+    addNoplInstructions(ret);
+
+    import emul.m68k.instructions.illegal;
+    addIllegalInstructions(ret);
 
     import emul.m68k.instructions.bra;
     addBraInstructions(ret);
@@ -43,6 +44,9 @@ auto createInstructions()
 
     import emul.m68k.instructions.tst;
     addTstInstructions(ret);
+
+    import emul.m68k.instructions.cmp;
+    addCmpInstructions(ret);
 
     import emul.m68k.instructions.lea;
     addLeaInstructions(ret);
@@ -181,15 +185,4 @@ T mul(T)(in T x, in T y, CpuPtr cpu)
     cpu.state.clearFlags(CCRFlags.C);
     updateNZFlags(cpu, cast(T)r1);
     return cast(T)r1;
-}
-
-void invalidImpl(CpuPtr)
-{
-    //TODO
-    assert(false);
-}
-
-void nopImpl(CpuPtr)
-{
-    //TODO
 }
