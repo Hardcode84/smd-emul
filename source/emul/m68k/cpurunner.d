@@ -15,6 +15,15 @@ import emul.m68k.instructions.create;
 class CpuRunner
 {
 public:
+    enum BreakReason
+    {
+        SingleStep = 0
+    }
+    struct RunParams
+    {
+        alias BreakHandler = bool delegate(CpuPtr cpu) pure nothrow;
+        BreakHandler[BreakReason.max + 1] breakHandlers;
+    }
     this(RomRef rom)
     {
         mRom = rom;
@@ -30,14 +39,24 @@ public:
 
         mCpu.state.PC = mRom.header.entryPoint;
         mCpu.state.SP = mRom.header.stackPointer;
-        mOps = createOps();
+        createOps();
     }
 
-    void run()
+    void run(in RunParams params)
     {
-        convertSafe2(&runImpl,
-            () {assert(false);},
-            &mCpu);
+        convertSafe2((CpuPtr a)
+            {
+                if(params.breakHandlers[BreakReason.SingleStep] is null)
+                {
+                    runImpl!false(a,params);
+                }
+                else
+                {
+                    runImpl!true(a,params);
+                }
+            },
+        () {assert(false);},
+        &mCpu);
     }
 private:
     Cpu mCpu;
@@ -49,18 +68,10 @@ private:
         ushort size;
         ushort ticks = 1;
         void function(CpuPtr) @nogc pure nothrow impl;
-        debug
-        {
-            string name;
-        }
         this(in Instruction instr)
         {
             size = instr.size;
             impl = instr.impl;
-            debug
-            {
-                name = instr.name;
-            }
         }
     }
 
@@ -71,28 +82,33 @@ private:
         assert(false, "Invalid op");
     }
 
-    static auto createOps()
+    void createOps()
     {
-        Op[] ret;
-        ret.length = ushort.max + 1;
-        ret[] = Op(Instruction("illegal",0x0,0x0,&invalidOp!void));
+        mOps.length = ushort.max + 1;
+        mOps[] = Op(Instruction("illegal",0x0,0x0,&invalidOp!void));
         const instructions = createInstructions();
         debugfOut("Total instructions: %s",instructions.length);
         foreach(i,instr; instructions)
         {
-            ret[i] = Op(instr);
+            mOps[i] = Op(instr);
         }
-        return ret;
     }
 
-    void runImpl(CpuPtr cpu)
+    void runImpl(bool SingleStep)(CpuPtr cpu, in RunParams params)
     {
+        assert((params.breakHandlers[BreakReason.SingleStep] !is null) == SingleStep);
         scope(failure) debugOut(cpu.state);
         while(true)
         {
+            static if(SingleStep)
+            {
+                if(!params.breakHandlers[BreakReason.SingleStep](cpu))
+                {
+                    break;
+                }
+            }
             const opcode = mCpu.memory.getRawValue!ushort(mCpu.state.PC);
             const op = mOps[opcode];
-            //debugOut(cpu.state);
             debug
             {
                 //debugfOut("0x%.6x op: 0x%.4x %s",mCpu.state.PC,opcode,op.name);
