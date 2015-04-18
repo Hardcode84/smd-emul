@@ -40,6 +40,9 @@ void main(string[] args)
     const string[string] outputOpts = ["dmd" : "-of%s"];
 
     const currentOpts = compilerOpts[compiler][config];
+    const importOpt = importOpts[compiler];
+    const buildStr = compiler ~ " " ~ currentOpts ~ " " ~ importPaths.map!(a => format(importOpt,currPath~a)).join(" ") ~ " ";
+    const outputOpt = outputOpts[compiler];
     if(!exists(buildDir))
     {
         mkdirRecurse(buildDir);
@@ -57,14 +60,7 @@ void main(string[] args)
             cache = parseJSON(std.file.readText(cachePath));
         }
     }
-    scope(exit)
-    {
-        std.file.write(cachePath,cache.toPrettyString());
-    }
-    const importOpt = importOpts[compiler];
-    const buildStr = compiler ~ " " ~ currentOpts ~ " " ~ importPaths.map!(a => format(importOpt,currPath~a)).join(" ") ~ " ";
-    auto objFiles = appender!(string[])();
-    const outputOpt = outputOpts[compiler];
+    scope(exit) std.file.write(cachePath,cache.toPrettyString());
 
     if(cache.isNull())
     {
@@ -91,11 +87,12 @@ void main(string[] args)
         this(string name_)
         {
             name = name_;
-            enforce(exists(name), format("File not found: %s",name));
+            enforce(exists(name), format("File not found: \"%s\"",name));
             prettyName = name.find(currPath)[currPath.length..$].text;
             objDir = buildDir ~ prettyName.retro.find!(a => a == '\\' || a == '/').retro.text;
             objName = objDir ~ prettyName.retro.splitter!(a => a == '\\' || a == '/').front.find('.').array.retro.text ~ "obj";
-            changed = rebuild || !exists(objName) || (prettyName !in cacheFiles.object) || ("buildTime" !in cacheFiles[prettyName].object) ||
+            changed = rebuild || !exists(objName) || (prettyName !in cacheFiles.object) ||
+                ("buildTime" !in cacheFiles[prettyName].object) ||
                 ("moduleName" !in cacheFiles[prettyName].object) ||
                 ("dependencies" !in cacheFiles[prettyName].object) ||
                 timeLastModified(name) != SysTime.fromISOString(cacheFiles[prettyName]["buildTime"].str);
@@ -178,6 +175,7 @@ void main(string[] args)
     writeln("Compiling...");
     int numCompiledFiles = 0;
 
+    auto objFiles = appender!(string[])();
     auto mutex = new Mutex;
     const csourceList = sourceList;
     //foreach(ref e; csourceList)
