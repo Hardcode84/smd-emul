@@ -424,10 +424,10 @@ unittest
 }
 
 pure nothrow @nogc @safe:
-private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal) 
+private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
 {
     auto pc = cpu.state.PC;
-    const word = cpu.getMemValue!ushort(pc);
+    const word = cpu.getMemValueNoHook!ushort(pc);
     pc += ushort.sizeof;
     scope(exit) cpu.state.PC = pc;
     const bool da = (0 == (word & (1 << 15)));
@@ -449,12 +449,12 @@ private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
         int baseDisp = 0;
         if(2 == BDSize)
         {
-            baseDisp = cpu.getMemValue!short(pc);
+            baseDisp = cpu.getMemValueNoHook!short(pc);
             pc +=short.sizeof;
         }
         else if(3 == BDSize)
         {
-            baseDisp = cpu.getMemValue!int(pc);
+            baseDisp = cpu.getMemValueNoHook!int(pc);
             pc += int.sizeof;
         }
         else
@@ -474,11 +474,11 @@ private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
             switch(IIS & 0b11)
             {
                 case 2:
-                    outerDisp = cpu.getMemValue!short(pc);
+                    outerDisp = cpu.getMemValueNoHook!short(pc);
                     pc += short.sizeof;
                     break;
                 case 3:
-                    outerDisp = cpu.getMemValue!int(pc);
+                    outerDisp = cpu.getMemValueNoHook!int(pc);
                     pc += int.sizeof;
                     break;
                 default:
@@ -490,12 +490,12 @@ private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
                 if(0 == (IIS & 0b100)) // Indirect Preindexed
                 {
                     const intermediate = addrRegVal + baseDisp + indexVal * scale;
-                    return cpu.getMemValue!uint(intermediate) + outerDisp;
+                    return cpu.getMemValueNoHook!uint(intermediate) + outerDisp;
                 }
                 else // Indirect Postindexed
                 {
                     const intermediate = addrRegVal + baseDisp;
-                    return cpu.getMemValue!uint(intermediate) + indexVal * scale + outerDisp;
+                    return cpu.getMemValueNoHook!uint(intermediate) + indexVal * scale + outerDisp;
                 }
             }
             else
@@ -503,7 +503,7 @@ private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
                 assert(0 == (IIS & 0b100));
                 // Memory Indirect
                 const intermediate = addrRegVal + baseDisp;
-                return cpu.getMemValue!uint(intermediate) + outerDisp;
+                return cpu.getMemValueNoHook!uint(intermediate) + outerDisp;
             }
         }
     }
