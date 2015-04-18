@@ -32,7 +32,8 @@ pure:
 
         mCpu.state.PC = mRom.header.entryPoint;
         mCpu.state.SP = mRom.header.stackPointer;
-        debugOut("asd");
+
+        mCpu.interrupts.vectors[] = rom.header.interrupts[];
         convertSafe2((CpuPtr cpu) { mVdp.register(cpu); },
             () {assert(false);},
             &mCpu);

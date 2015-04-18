@@ -6,6 +6,7 @@ import std.range;
 
 import emul.m68k.cpu.cpustate;
 import emul.m68k.cpu.memory;
+import emul.m68k.cpu.interrupts;
 
 import gamelib.memory.saferef;
 
@@ -14,6 +15,7 @@ struct Cpu
 pure nothrow:
     CpuState state;
     Memory memory;
+    Interrupts interrupts;
 
     alias MemReadHook  = uint delegate(CpuPtr,uint,size_t) pure nothrow @nogc;
     alias MemWriteHook = void delegate(CpuPtr,uint,size_t,uint) pure nothrow @nogc;

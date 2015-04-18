@@ -7,71 +7,7 @@ import std.bitmanip;
 
 import gamelib.memory.saferef;
 
-enum Interrupts
-{
-    Bus_error = 0,
-    Address_error,
-    Illegal_instruction,
-    Divistion_by_zero,
-    CHK_exception,
-    TRAPV_exception,
-    Privilege_violation,
-    TRACE_exeption,
-    LINE_1010_EMULATOR,
-    LINE_1111_EMULATOR,
-    Reserved_by_Motorola1,
-    Reserved_by_Motorola2,
-    Reserved_by_Motorola3,
-    Reserved_by_Motorola4,
-    Reserved_by_Motorola5,
-    Reserved_by_Motorola6,
-    Reserved_by_Motorola7,
-    Reserved_by_Motorola8,
-    Reserved_by_Motorola9,
-    Reserved_by_Motorola10,
-    Reserved_by_Motorola11,
-    Reserved_by_Motorola12,
-    Spurious_exception,
-    IRQ_1,
-    IRQ_2,
-    IRQ_3,
-    IRQ_4_Horizontal_blank,
-    IRQ_5,
-    IRQ_6_Vertical_blank,
-    IRQ_7,
-    TRAP_00_exception,
-    TRAP_01_exception,
-    TRAP_02_exception,
-    TRAP_03_exception,
-    TRAP_04_exception,
-    TRAP_05_exception,
-    TRAP_06_exception,
-    TRAP_07_exception,
-    TRAP_08_exception,
-    TRAP_09_exception,
-    TRAP_10_exception,
-    TRAP_11_exception,
-    TRAP_12_exception,
-    TRAP_13_exception,
-    TRAP_14_exception,
-    TRAP_15_exception,
-    Reserved_by_Motorola13,
-    Reserved_by_Motorola14,
-    Reserved_by_Motorola15,
-    Reserved_by_Motorola16,
-    Reserved_by_Motorola17,
-    Reserved_by_Motorola18,
-    Reserved_by_Motorola19,
-    Reserved_by_Motorola20,
-    Reserved_by_Motorola21,
-    Reserved_by_Motorola22,
-    Reserved_by_Motorola23,
-    Reserved_by_Motorola24,
-    Reserved_by_Motorola25,
-    Reserved_by_Motorola26,
-    Reserved_by_Motorola27,
-    Reserved_by_Motorola28
-}
+import emul.m68k.cpu;
 
 class Rom
 {
@@ -81,7 +17,7 @@ pure:
         uint stackPointer;
         uint entryPoint;
 
-        uint[Interrupts.max] interrupts;
+        uint[InterruptCodes.max + 1] interrupts;
 
         string consoleName;
         string copyright;
@@ -109,7 +45,7 @@ pure:
                     formattedWrite(ret, fieldName~":\n");
                     foreach(j,val; v)
                     {
-                        formattedWrite(ret, "    %s: 0x%x\n",cast(Interrupts)j,val);
+                        formattedWrite(ret, "    %s: 0x%x\n",cast(InterruptCodes)j,val);
                     }
                 }
                 else static if(isIntegral!(typeof(v)))
@@ -133,8 +69,6 @@ pure:
     {
         mData = data;
         header = readHeader();
-        //const checksum = calcChecksum();
-        //enforce(header.checksum == checksum,format("Invalid checksum %x %x",checksum,header.checksum));
     }
 
     immutable Header header;
@@ -187,16 +121,6 @@ const:
         h.ramEndAddress    = readPtr(0x1ac);
         return h;
     }
-
-    /*ushort calcChecksum() nothrow
-    {
-        ushort result = 0;
-        foreach(i;0x200..header.romEndAddress)
-        {
-            result += (cast(ubyte[])mData)[i];
-        }
-        return cast(ushort)(result & 0xffff);
-    }*/
 
 private:
     immutable(void)[] mData;

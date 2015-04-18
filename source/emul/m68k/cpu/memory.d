@@ -44,7 +44,7 @@ package:
         const ptrStart = ptr & AddressMask;
         const ptrEnd = (ptr + size - 1) & AddressMask;
         if(ptr >= 0xa00000 && ptrEnd <= 0xa14003) return;
-        if(ptr >= 0xc00000 && ptrEnd <= 0xc000011) return;
+        if(ptr >= 0xc00011 && ptrEnd <= 0xc00011) return;
         static if(Read)
         {
             if((ptr < romStartAddress || ptrEnd > romEndAddress) &&
