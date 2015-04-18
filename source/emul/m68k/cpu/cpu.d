@@ -11,6 +11,7 @@ import gamelib.memory.saferef;
 
 struct Cpu
 {
+pure nothrow:
     CpuState state;
     Memory memory;
 
@@ -94,9 +95,10 @@ private:
 
     static void checkHooksRange(T)(in T[] hooks)
     {
-        if(zip(hooks,hooks.dropOne).canFind!(a => (a[0].end >= a[1].begin)))
+        foreach(i, h2;hooks[1..$])
         {
-            assert(false, "Overlapping hooks");
+            const h1 = hooks[i - 1];
+            if(h1.end >= h2.begin) assert(false, "Overlapping hooks");
         }
     }
 

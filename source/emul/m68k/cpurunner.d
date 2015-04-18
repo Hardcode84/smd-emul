@@ -7,7 +7,6 @@ import std.exception;
 import gamelib.debugout;
 import gamelib.memory.saferef;
 
-import emul.rom;
 import emul.m68k.cpu;
 
 import emul.m68k.instructions.create;
@@ -15,6 +14,7 @@ import emul.m68k.instructions.create;
 class CpuRunner
 {
 public:
+pure:
     enum BreakReason
     {
         SingleStep = 0
@@ -24,51 +24,33 @@ public:
         alias BreakHandler = bool delegate(CpuPtr cpu) pure nothrow;
         BreakHandler[BreakReason.max + 1] breakHandlers;
     }
-    this(RomRef rom)
+
+    this()
     {
-        mRom = rom;
-        enforce(mRom.header.romEndAddress < mRom.header.ramEndAddress,
-            format("Invalid memory ranges %s %s", mRom.header.romEndAddress, mRom.header.ramEndAddress));
-        mCpu.memory.data.length = mRom.header.ramEndAddress + 1;
-        mCpu.memory.data[0..mRom.data.length] = mRom.data[];
-
-        mCpu.memory.romStartAddress = rom.header.romStartAddress;
-        mCpu.memory.romEndAddress   = rom.header.romEndAddress;
-        mCpu.memory.ramStartAddress = rom.header.ramStartAddress;
-        mCpu.memory.ramEndAddress   = rom.header.ramEndAddress;
-
-        mCpu.state.PC = mRom.header.entryPoint;
-        mCpu.state.SP = mRom.header.stackPointer;
         createOps();
     }
 
-    void run(in RunParams params)
+    void run(CpuPtr cpu,in RunParams params)
     {
-        convertSafe2((CpuPtr a)
-            {
-                if(params.breakHandlers[BreakReason.SingleStep] is null)
-                {
-                    runImpl!false(a,params);
-                }
-                else
-                {
-                    runImpl!true(a,params);
-                }
-            },
-        () {assert(false);},
-        &mCpu);
+        if(params.breakHandlers[BreakReason.SingleStep] is null)
+        {
+            runImpl!false(cpu,params);
+        }
+        else
+        {
+            runImpl!true(cpu,params);
+        }
     }
 private:
-    Cpu mCpu;
-    SafeRef!Rom mRom;
     Op[] mOps;
 
     struct Op
     {
+        @nogc pure nothrow:
         ushort size;
         ushort ticks = 1;
-        void function(CpuPtr) @nogc pure nothrow impl;
-        this(in Instruction instr)
+        void function(CpuPtr) impl;
+        this(in Instruction instr) @safe
         {
             size = instr.size;
             impl = instr.impl;
@@ -107,12 +89,13 @@ private:
                     break;
                 }
             }
-            const opcode = mCpu.getRawMemValue!ushort(mCpu.state.PC);
+            const opcode = cpu.getRawMemValue!ushort(cpu.state.PC);
             const op = mOps[opcode];
-            mCpu.state.PC += op.size;
-            mCpu.state.tickCounter += op.ticks;
+            cpu.state.PC += op.size;
+            cpu.state.tickCounter += op.ticks;
             op.impl(cpu);
         }
     }
 }
 
+alias CpuRunnerRef = SafeRef!CpuRunner;

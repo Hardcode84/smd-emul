@@ -8,8 +8,7 @@ import std.file;
 import std.exception;
 
 import emul.rom;
-import emul.m68k.cpurunner;
-import emul.m68k.cpu;
+import emul.core;
 
 void main(string[] args)
 {
@@ -21,17 +20,7 @@ void main(string[] args)
     
     auto rom = makeSafe!Rom(read(args[1]).assumeUnique);
     writeln(rom.header);
-    auto runner = makeSafe!CpuRunner(rom);
-    CpuRunner.RunParams params;
-    params.breakHandlers[CpuRunner.BreakReason.SingleStep] = (CpuPtr cpu)
-    {
-        if(cpu.state.tickCounter > 3000_000)
-        {
-            debugOut(cpu.state);
-            return false;
-        }
-        return true;
-    };
-    runner.run(params);
+    auto core = makeSafe!Core(rom);
+    core.run();
 }
 
