@@ -423,7 +423,7 @@ unittest
     }
 }
 
-pure nothrow @nogc @safe:
+pure nothrow @nogc:
 private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
 {
     auto pc = cpu.state.PC;
@@ -490,12 +490,12 @@ private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
                 if(0 == (IIS & 0b100)) // Indirect Preindexed
                 {
                     const intermediate = addrRegVal + baseDisp + indexVal * scale;
-                    return cpu.getMemValueNoHook!uint(intermediate) + outerDisp;
+                    return cpu.getMemValue!uint(intermediate) + outerDisp;
                 }
                 else // Indirect Postindexed
                 {
                     const intermediate = addrRegVal + baseDisp;
-                    return cpu.getMemValueNoHook!uint(intermediate) + indexVal * scale + outerDisp;
+                    return cpu.getMemValue!uint(intermediate) + indexVal * scale + outerDisp;
                 }
             }
             else
@@ -503,7 +503,7 @@ private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
                 assert(0 == (IIS & 0b100));
                 // Memory Indirect
                 const intermediate = addrRegVal + baseDisp;
-                return cpu.getMemValueNoHook!uint(intermediate) + outerDisp;
+                return cpu.getMemValue!uint(intermediate) + outerDisp;
             }
         }
     }

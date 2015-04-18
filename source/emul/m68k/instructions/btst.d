@@ -31,7 +31,7 @@ void addBtstInstructions(ref Instruction[ushort] ret)
 private:
 void btstiImpl(Type,ubyte Mode)(CpuPtr cpu)
 {
-    const bit = cpu.getMemValue!ubyte(cpu.state.PC - 0x1) % (Type.sizeof * 8);
+    const bit = cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x1) % (Type.sizeof * 8);
     addressMode!(Type,AddressModeType.Read,Mode,(cpu,b)
         {
             cpu.state.setFlags(CCRFlags.Z,(0 == ((b >> bit) & 0x1)));
@@ -40,7 +40,7 @@ void btstiImpl(Type,ubyte Mode)(CpuPtr cpu)
 
 void btstImpl(Type,ubyte Mode)(CpuPtr cpu)
 {
-    const reg = ((cpu.getMemValue!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
+    const reg = ((cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
     const bit = cpu.state.D[reg] % (Type.sizeof * 8);
     addressMode!(Type,AddressModeType.Read,Mode,(cpu,b)
         {

@@ -19,13 +19,13 @@ void bsrImpl(T)(CpuPtr cpu)
 {
     cpu.state.SP -= uint.sizeof;
     cpu.setMemValue(cpu.state.SP,cpu.state.PC);
-    const offset = cpu.getMemValue!T(cast(uint)(cpu.state.PC - T.sizeof));
+    const offset = cpu.getMemValueNoHook!T(cast(uint)(cpu.state.PC - T.sizeof));
     cpu.state.PC += offset - T.sizeof;
 }
 void bsrImpl(T : void)(CpuPtr cpu)
 {
     cpu.state.SP -= uint.sizeof;
     cpu.setMemValue(cpu.state.SP,cpu.state.PC);
-    const offset = cpu.getMemValue!byte(cpu.state.PC - 0x1);
+    const offset = cpu.getMemValueNoHook!byte(cpu.state.PC - 0x1);
     cpu.state.PC += offset;
 }

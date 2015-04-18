@@ -58,7 +58,7 @@ auto createReadFuncs(T)()
 
 void moveImpl(T,ubyte Src)(CpuPtr cpu)
 {
-    const dest = (cpu.getMemValue!ushort(cpu.state.PC - 0x2) >> 6) & 0b111111;
+    const dest = (cpu.getMemValueNoHook!ushort(cpu.state.PC - 0x2) >> 6) & 0b111111;
     static immutable funcs = createReadFuncs!T();
     void readFuncThunk(CpuPtr cpu, in T val)
     {

@@ -19,7 +19,7 @@ void addMoveuspInstructions(ref Instruction[ushort] ret)
 private:
 void moveuspImpl(ubyte dr)(CpuPtr cpu)
 {
-    const reg = cpu.getMemValue!ubyte(cpu.state.PC - 0x1) & 0b111;
+    const reg = cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x1) & 0b111;
     static if(0 == dr)
     {
         cpu.state.USP = cpu.state.A[reg];

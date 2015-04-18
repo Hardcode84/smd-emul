@@ -71,7 +71,7 @@ struct Cpu
             memory.setValue!T(offset,val);
         }
 
-        auto getMemValueNoHook(T)(uint offset) @safe
+        auto getMemValueNoHook(T)(uint offset)
         {
             memory.checkRange!true(offset,T.sizeof);
             return memory.getValue!T(offset);

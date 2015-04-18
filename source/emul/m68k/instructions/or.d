@@ -27,7 +27,7 @@ void addOrInstructions(ref Instruction[ushort] ret)
 private:
 void orImpl(Type,ubyte d,ubyte Mode)(CpuPtr cpu)
 {
-    const reg = (cpu.getMemValue!ubyte(cpu.state.PC - 0x2) >> 2) & 0b111;
+    const reg = (cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x2) >> 2) & 0b111;
     const int val = cpu.state.D[reg];
     addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
         {
