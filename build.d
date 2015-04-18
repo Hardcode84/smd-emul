@@ -23,7 +23,7 @@ void main(string[] args)
     writeln("Preparing...");
     scope(success) writeln("Success");
     scope(failure) writeln("Failure");
-    const bool rebuild = args[1..$].canFind("rebuild");
+    bool rebuild = args[1..$].canFind("rebuild");
     const string exeName = "smd-emul";
     const string outputPath = "bin";
     const string currPath = "./";
@@ -32,12 +32,12 @@ void main(string[] args)
     const string[] sourcePaths = ["d-gamelib","source"];
     const string buildDir = currPath ~ ".build/";
     const string compiler = "dmd";
-    const string config = "debug";
+    const string config = args[1..$].canFind("unittest") ? "unittest" : "debug";
 
-    const dmdConfs = ["debug" : "-debug -g -w -c"];
+    const dmdConfs = ["debug" : "-debug -g -w -c","unittest" : "-g -w -c -unittest"];
     const string[string][string] compilerOpts = ["dmd" : dmdConfs];
-    const string[string] importOpts = ["dmd" : "-I%s"];
-    const string[string] outputOpts = ["dmd" : "-of%s"];
+    const string[string] importOpts = ["dmd" : "-I\"%s\""];
+    const string[string] outputOpts = ["dmd" : "-of\"%s\""];
 
     const currentOpts = compilerOpts[compiler][config];
     const importOpt = importOpts[compiler];
@@ -72,6 +72,11 @@ void main(string[] args)
     {
         string[string] dummy;
         cacheFiles = JSONValue(dummy);
+    }
+    if("compiler" !in cache.object || cache["compiler"].str != compiler ||
+       "config"   !in cache.object || cache["config"].str   != config)
+    {
+        rebuild = true;
     }
 
     char[] readBuf;
@@ -149,36 +154,51 @@ void main(string[] args)
         .map!(a => a.dirEntries(SpanMode.depth)).joiner
         .filter!(a => a.isFile && a.name.endsWith(".d")).map!(a => createEntry(a.name)).array;
 
-    bool[string] changedModules;
-    foreach(ref e; sourceList)
+    if(!rebuild)
     {
-        if(e.changed) changedModules[e.moduleName] = true;
-    }
-    writeln("Changed modules: ",changedModules.byKey());
-    while(true)
-    {
-        bool hasChanges = false;
+        bool[string] changedModules;
         foreach(ref e; sourceList)
         {
-            if(!e.changed && e.dependencies.any!(a => a in changedModules))
-            {
-                changedModules[e.moduleName] = true;
-                e.changed = true;
-                hasChanges = true;
-            }
+            if(e.changed) changedModules[e.moduleName] = true;
         }
-        if(!hasChanges) break;
+        writeln("Changed modules: ",changedModules.byKey());
+        while(true)
+        {
+            bool hasChanges = false;
+            foreach(ref e; sourceList)
+            {
+                if(!e.changed && e.dependencies.any!(a => a in changedModules))
+                {
+                    changedModules[e.moduleName] = true;
+                    e.changed = true;
+                    hasChanges = true;
+                }
+            }
+            if(!hasChanges) break;
+        }
+        writeln("Changed modules with deps: ",changedModules.byKey());
     }
 
-    writeln("Changed modules with deps: ",changedModules.byKey());
-    scope(exit) cache.object["files"] = cacheFiles;
     writeln("Compiling...");
     int numCompiledFiles = 0;
 
     auto objFiles = appender!(string[])();
     auto mutex = new Mutex;
     const csourceList = sourceList;
-    //foreach(ref e; csourceList)
+    foreach(const ref e; csourceList)
+    {
+        if(e.changed && e.objName.exists)
+        {
+            writefln("Remove \"%s\"" ,e.objName);
+            e.objName.remove;
+        }
+    }
+    scope(exit)
+    {
+        cache.object["files"] = cacheFiles;
+        cache.object["compiler"] = compiler;
+        cache.object["config"] = config;
+    }
     foreach(const ref e; parallel(csourceList, 1))
     {
         if(e.changed)
@@ -221,7 +241,7 @@ void main(string[] args)
         mkdirRecurse(outputDir);
     }
 
-    const cmd = "dmd " ~ objFiles.data.join(" ") ~ " " ~ format(outputOpt,outputDir~exeName);
+    const cmd = compiler ~ " " ~ currentOpts ~ " " ~ objFiles.data.map!(a => "\""~a~"\"").join(" ") ~ " " ~ format(outputOpt,outputDir~exeName);
     writeln("Linking...");
     writeln(cmd);
     const status = executeShell(cmd);

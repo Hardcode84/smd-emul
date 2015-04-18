@@ -414,11 +414,11 @@ unittest
     {
         foreach(v; TupleRange!(0,readAddressModes.length))
         {
-            static assert(__traits(compiles,addressMode!(T,false,readAddressModes[v],(a,b){})(makeSafe!Cpu)));
+            static assert(__traits(compiles,addressMode!(T,AddressModeType.Read,readAddressModes[v],(a,b){})(makeSafe!Cpu)));
         }
         foreach(v; TupleRange!(0,writeAddressModes.length))
         {
-            static assert(__traits(compiles,addressMode!(T,true,writeAddressModes[v],(a){return cast(T)0;})(makeSafe!Cpu)));
+            static assert(__traits(compiles,addressMode!(T,AddressModeType.Write,writeAddressModes[v],(a){return cast(T)0;})(makeSafe!Cpu)));
         }
     }
 }
