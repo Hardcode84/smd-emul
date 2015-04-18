@@ -11,12 +11,15 @@ import std.string;
 import std.json;
 import std.datetime;
 import std.regex;
+import core.sync.mutex;
 
 auto moduleRegex = ctRegex!("module.*;");
 auto importRegex = ctRegex!("import.*;");
 
 void main(string[] args)
 {
+    const startTime = Clock.currTime();
+    scope(exit) writefln("Total time: %s",Clock.currTime() - startTime);
     writeln("Preparing...");
     scope(success) writeln("Success");
     scope(failure) writeln("Failure");
@@ -132,7 +135,7 @@ void main(string[] args)
             }
         }
 
-        void save()
+        void save() const
         {
             cacheFiles.object[prettyName] = JSONValue(["buildTime" : timeLastModified(name).toISOString(),
                                                        "moduleName" : moduleName]);
@@ -174,27 +177,41 @@ void main(string[] args)
     writeln("Compiling...");
     int numCompiledFiles = 0;
 
-    //foreach(d; parallel(sourceList, 1))
-    foreach(ref e; sourceList)
+    auto mutex = new Mutex;
+    //foreach(ref e; sourceList)
+    foreach(const ref e; parallel(cast(const(typeof(sourceList)))sourceList, 1))
     {
-        scope(success) objFiles ~= e.objName;
-        scope(success) e.save();
-        writeln("----");
-        if(!e.changed)
+        if(e.changed)
         {
-            writeln(format("\"%s\" is up to date",e.prettyName));
-            continue;
+            string cmd = buildStr ~ e.name ~ " " ~ format(outputOpt,e.objName);
+            Pid pid;
+            synchronized(mutex)
+            {
+                if(!exists(e.objDir))
+                {
+                    mkdirRecurse(e.objDir);
+                }
+                pid = spawnShell(cmd);
+            }
+
+            const status = wait(pid);
+            enforce(0 == status, format("Build error %s, command:\n%s", status, cmd));
         }
-        writeln(format("Compiling \"%s\":",e.prettyName));
-        scope(success) ++numCompiledFiles;
-        if(!exists(e.objDir))
+
+        synchronized(mutex)
         {
-            mkdirRecurse(e.objDir);
+            e.save();
+            if(e.changed)
+            {
+                ++numCompiledFiles;
+                writefln("Compiled: \"%s\"",e.prettyName);
+            }
+            else
+            {
+                writefln("\"%s\" is up to date",e.prettyName);
+            }
+            objFiles ~= e.objName;
         }
-        const cmd = buildStr ~ e.name ~ " " ~ format(outputOpt,e.objName);
-        writeln(cmd);
-        const status = executeShell(cmd);
-        enforce(0 == status.status, format("Build error %s, output:\n%s", status.status, status.output));
     }
     writeln("Files compiled: ",numCompiledFiles);
 
