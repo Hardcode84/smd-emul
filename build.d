@@ -13,8 +13,8 @@ import std.datetime;
 import std.regex;
 import core.sync.mutex;
 
-auto moduleRegex = ctRegex!("module.*;");
-auto importRegex = ctRegex!("import.*;");
+auto moduleRegex = ctRegex!("module\\s.*[^;];");
+auto importRegex = ctRegex!("import\\s.*[^;];");
 
 void main(string[] args)
 {
@@ -121,16 +121,17 @@ void main(string[] args)
                     auto m = matchFirst(readBuf,moduleRegex);
                     if(!m.empty)
                     {
-                        moduleName = m[0]["module".length..$-1].strip.idup;
+                        moduleName = m[0].stripLeft["module".length..$-1].strip.idup;
                     }
-                     const deps = matchAll(readBuf,importRegex).map!(a => a.hit["import".length..$-1]
-                        .splitter(':').front.splitter(',').map!(a => a.strip).filter!(a => !a.empty).map!text).joiner.array;
-                     dependencies ~= deps;
+                    const deps = matchAll(readBuf,importRegex).map!(a => a.hit.stripLeft["import".length..$-1]
+                        .splitter(':').front.splitter(',').map!(a => a.splitter('=').retro.front)
+                        .map!(a => a.text.strip).filter!(a => !a.empty).map!text).joiner.array;
+                    dependencies ~= deps;
                 }
             }
             if(moduleName.length == 0)
             {
-                moduleName = prettyName.map!(a => (a == '\\' || a == '/' ? '.' : a)).text;
+                moduleName = prettyName.map!(a => dchar(a == '\\' || a == '/' ? '.' : a)).text;
                 writefln("Empty module name, generated \"%s\"",moduleName);
             }
         }
@@ -172,14 +173,15 @@ void main(string[] args)
         if(!hasChanges) break;
     }
 
-    writeln("Changed modules: ",changedModules.byKey());
+    writeln("Changed modules with deps: ",changedModules.byKey());
     scope(exit) cache.object["files"] = cacheFiles;
     writeln("Compiling...");
     int numCompiledFiles = 0;
 
     auto mutex = new Mutex;
-    //foreach(ref e; sourceList)
-    foreach(const ref e; parallel(cast(const(typeof(sourceList)))sourceList, 1))
+    const csourceList = sourceList;
+    //foreach(ref e; csourceList)
+    foreach(const ref e; parallel(csourceList, 1))
     {
         if(e.changed)
         {
