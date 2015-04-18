@@ -1,4 +1,4 @@
-﻿module emul.m68k.cpustate;
+﻿module emul.m68k.cpu.cpustate;
 
 enum CCRFlags
 {

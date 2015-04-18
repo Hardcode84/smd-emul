@@ -78,7 +78,7 @@ private:
     static void invalidOp(Dummy)(CpuPtr cpu)
     {
         const pc = cpu.state.PC;
-        debugfOut("Invalid op: 0x%.6x 0x%.4x",pc,cpu.memory.getValue!ushort(pc));
+        debugfOut("Invalid op: 0x%.6x 0x%.4x",pc,cpu.getMemValue!ushort(pc));
         assert(false, "Invalid op");
     }
 
@@ -107,12 +107,8 @@ private:
                     break;
                 }
             }
-            const opcode = mCpu.memory.getRawValue!ushort(mCpu.state.PC);
+            const opcode = mCpu.getRawMemValue!ushort(mCpu.state.PC);
             const op = mOps[opcode];
-            debug
-            {
-                //debugfOut("0x%.6x op: 0x%.4x %s",mCpu.state.PC,opcode,op.name);
-            }
             mCpu.state.PC += op.size;
             mCpu.state.tickCounter += op.ticks;
             op.impl(cpu);

@@ -1,4 +1,4 @@
-﻿module emul.m68k.memory;
+﻿module emul.m68k.cpu.memory;
 
 import std.bitmanip;
 
@@ -14,6 +14,7 @@ pure nothrow @nogc:
     uint ramStartAddress;
     uint ramEndAddress;
 
+private:
     auto getValue(T)(uint offset) const
     {
         //debugfOut("getVal %#.6x %s",offset,T.stringof);

@@ -38,7 +38,7 @@ void addRolRorInstructions(ref Instruction[ushort] ret)
 private:
 void rotateImpl(Type,ubyte dr,ubyte ir)(CpuPtr cpu)
 {
-    const word = cpu.memory.getValue!ushort(cpu.state.PC - 0x2);
+    const word = cpu.getMemValue!ushort(cpu.state.PC - 0x2);
     const cr = ((word >> 9) & 0b111);
     static if(0 == ir)
     {

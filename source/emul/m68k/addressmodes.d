@@ -20,11 +20,11 @@ pure nothrow @nogc:
     {
         static if(Type == AddressModeType.Write || Type == AddressModeType.WriteDontExtendRegister)
         {
-            cpu.memory.setValue!T(address,F(cpu));
+            cpu.setMemValue!T(address,F(cpu));
         }
         else static if(Type == AddressModeType.Read)
         {
-            F(cpu,cpu.memory.getValue!T(address));
+            F(cpu,cpu.getMemValue!T(address));
         }
         else static if(Type == AddressModeType.ReadAddress)
         {
@@ -127,13 +127,13 @@ pure nothrow @nogc:
     {
         void addressMode(CpuPtr cpu)
         {
-            const address = cpu.state.A[Reg] + cpu.memory.getValue!short(cpu.state.PC);
+            const address = cpu.state.A[Reg] + cpu.getMemValue!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             memProxy(cpu,address);
         }
         void addressMode(CpuPtr cpu, int count)
         {
-            const address = cpu.state.A[Reg] + cpu.memory.getValue!short(cpu.state.PC);
+            const address = cpu.state.A[Reg] + cpu.getMemValue!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             foreach(i; 0..count)
             {
@@ -161,13 +161,13 @@ pure nothrow @nogc:
     {
         void addressMode(CpuPtr cpu)
         {
-            const address = cpu.state.PC + cpu.memory.getValue!short(cpu.state.PC);
+            const address = cpu.state.PC + cpu.getMemValue!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             memProxy(cpu,address);
         }
         void addressMode(CpuPtr cpu, int count)
         {
-            const address = cpu.state.PC + cpu.memory.getValue!short(cpu.state.PC);
+            const address = cpu.state.PC + cpu.getMemValue!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             foreach(i; 0..count)
             {
@@ -195,13 +195,13 @@ pure nothrow @nogc:
     {
         void addressMode(CpuPtr cpu)
         {
-            const address = cpu.memory.getValue!short(cpu.state.PC);
+            const address = cpu.getMemValue!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             memProxy(cpu,address);
         }
         void addressMode(CpuPtr cpu, int count)
         {
-            const address = cpu.memory.getValue!short(cpu.state.PC);
+            const address = cpu.getMemValue!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             foreach(i; 0..count)
             {
@@ -213,13 +213,13 @@ pure nothrow @nogc:
     {
         void addressMode(CpuPtr cpu)
         {
-            const address = cpu.memory.getValue!uint(cpu.state.PC);
+            const address = cpu.getMemValue!uint(cpu.state.PC);
             cpu.state.PC += uint.sizeof;
             memProxy(cpu,address);
         }
         void addressMode(CpuPtr cpu, int count)
         {
-            const address = cpu.memory.getValue!uint(cpu.state.PC);
+            const address = cpu.getMemValue!uint(cpu.state.PC);
             cpu.state.PC += uint.sizeof;
             foreach(i; 0..count)
             {
@@ -242,7 +242,7 @@ pure nothrow @nogc:
             cpu.state.PC += max(T.sizeof,ushort.sizeof);
             static if(Type == AddressModeType.Read)
             {
-                F(cpu,cpu.memory.getValue!T(pc));
+                F(cpu,cpu.getMemValue!T(pc));
             }
             else static if(Type == AddressModeType.ReadAddress)
             {
@@ -427,7 +427,7 @@ pure nothrow @nogc @safe:
 private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal) 
 {
     auto pc = cpu.state.PC;
-    const word = cpu.memory.getValue!ushort(pc);
+    const word = cpu.getMemValue!ushort(pc);
     pc += ushort.sizeof;
     scope(exit) cpu.state.PC = pc;
     const bool da = (0 == (word & (1 << 15)));
@@ -449,12 +449,12 @@ private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
         int baseDisp = 0;
         if(2 == BDSize)
         {
-            baseDisp = cpu.memory.getValue!short(pc);
+            baseDisp = cpu.getMemValue!short(pc);
             pc +=short.sizeof;
         }
         else if(3 == BDSize)
         {
-            baseDisp = cpu.memory.getValue!int(pc);
+            baseDisp = cpu.getMemValue!int(pc);
             pc += int.sizeof;
         }
         else
@@ -474,11 +474,11 @@ private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
             switch(IIS & 0b11)
             {
                 case 2:
-                    outerDisp = cpu.memory.getValue!short(pc);
+                    outerDisp = cpu.getMemValue!short(pc);
                     pc += short.sizeof;
                     break;
                 case 3:
-                    outerDisp = cpu.memory.getValue!int(pc);
+                    outerDisp = cpu.getMemValue!int(pc);
                     pc += int.sizeof;
                     break;
                 default:
@@ -490,12 +490,12 @@ private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
                 if(0 == (IIS & 0b100)) // Indirect Preindexed
                 {
                     const intermediate = addrRegVal + baseDisp + indexVal * scale;
-                    return cpu.memory.getValue!uint(intermediate) + outerDisp;
+                    return cpu.getMemValue!uint(intermediate) + outerDisp;
                 }
                 else // Indirect Postindexed
                 {
                     const intermediate = addrRegVal + baseDisp;
-                    return cpu.memory.getValue!uint(intermediate) + indexVal * scale + outerDisp;
+                    return cpu.getMemValue!uint(intermediate) + indexVal * scale + outerDisp;
                 }
             }
             else
@@ -503,7 +503,7 @@ private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
                 assert(0 == (IIS & 0b100));
                 // Memory Indirect
                 const intermediate = addrRegVal + baseDisp;
-                return cpu.memory.getValue!uint(intermediate) + outerDisp;
+                return cpu.getMemValue!uint(intermediate) + outerDisp;
             }
         }
     }

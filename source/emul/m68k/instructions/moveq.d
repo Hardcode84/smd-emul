@@ -19,8 +19,8 @@ void addMoveqInstructions(ref Instruction[ushort] ret)
 private:
 void moveqImpl(Dummy)(CpuPtr cpu)
 {
-    const reg = ((cpu.memory.getValue!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
-    const int data = cpu.memory.getValue!byte(cpu.state.PC - 0x1);
+    const reg = ((cpu.getMemValue!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
+    const int data = cpu.getMemValue!byte(cpu.state.PC - 0x1);
     cpu.state.D[reg] = data;
     updateFlags(cpu, data);
 }

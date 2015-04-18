@@ -32,7 +32,7 @@ private:
 void subqImpl(ubyte Mode)(CpuPtr cpu)
 {
     enum DestType = (addressModeTraits!Mode.Data ? AddressModeType.WriteDontExtendRegister : AddressModeType.Write);
-    const data = cast(byte)(cpu.memory.getValue!ubyte(cpu.state.PC - 1) & 0b111);
+    const data = cast(byte)(cpu.getMemValue!ubyte(cpu.state.PC - 1) & 0b111);
     static if(addressModeTraits!Mode.Data)
     {
         addressModeWSize!(AddressModeType.Read,Mode,(cpu,val)

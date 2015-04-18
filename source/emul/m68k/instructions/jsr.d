@@ -22,7 +22,7 @@ void jsrImpl(byte Mode)(CpuPtr cpu)
     addressMode!(uint,AddressModeType.ReadAddress,Mode,(cpu,b)
         {
             cpu.state.SP -= uint.sizeof;
-            cpu.memory.setValue(cpu.state.SP, cpu.state.PC);
+            cpu.setMemValue(cpu.state.SP, cpu.state.PC);
             cpu.state.PC = b;
         })(cpu);
 }

@@ -12,6 +12,6 @@ void addRtsInstructions(ref Instruction[ushort] ret)
 private:
 void rtsImpl(Dummy)(CpuPtr cpu)
 {
-    cpu.state.PC = cpu.memory.getValue!uint(cpu.state.SP);
+    cpu.state.PC = cpu.getMemValue!uint(cpu.state.SP);
     cpu.state.SP += uint.sizeof;
 }
