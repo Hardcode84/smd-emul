@@ -36,10 +36,14 @@ void main(string[] args)
 
     const dmdConfs = ["debug" : "-debug -g -w -c","unittest" : "-g -w -c -unittest"];
     const string[string][string] compilerOpts = ["dmd" : dmdConfs];
+    const dmdLinkConfs = ["debug" : "-debug -g -w","unittest" : "-g -w -unittest"];
+    const string[string][string] linkerOpts = ["dmd" : dmdLinkConfs];
+
     const string[string] importOpts = ["dmd" : "-I\"%s\""];
     const string[string] outputOpts = ["dmd" : "-of\"%s\""];
 
     const currentOpts = compilerOpts[compiler][config];
+    const currentLinkerOpts = linkerOpts[compiler][config];
     const importOpt = importOpts[compiler];
     const buildStr = compiler ~ " " ~ currentOpts ~ " " ~ importPaths.map!(a => format(importOpt,currPath~a)).join(" ") ~ " ";
     const outputOpt = outputOpts[compiler];
@@ -241,7 +245,7 @@ void main(string[] args)
         mkdirRecurse(outputDir);
     }
 
-    const cmd = compiler ~ " " ~ currentOpts ~ " " ~ objFiles.data.map!(a => "\""~a~"\"").join(" ") ~ " " ~ format(outputOpt,outputDir~exeName);
+    const cmd = compiler ~ " " ~ currentLinkerOpts ~ " " ~ objFiles.data.map!(a => "\""~a~"\"").join(" ") ~ " " ~ format(outputOpt,outputDir~exeName);
     writeln("Linking...");
     writeln(cmd);
     const status = executeShell(cmd);
