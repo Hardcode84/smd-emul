@@ -1,6 +1,6 @@
 ﻿module emul.m68k.instructions.jmp;
 
-import emul.m68k.instructions.create;
+import emul.m68k.instructions.common;
 
 package pure nothrow:
 void addJmpInstructions(ref Instruction[ushort] ret)

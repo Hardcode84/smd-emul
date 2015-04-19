@@ -1,6 +1,6 @@
 ﻿module emul.m68k.instructions.swap;
 
-import emul.m68k.instructions.create;
+import emul.m68k.instructions.common;
 
 package pure nothrow:
 void addSwapInstructions(ref Instruction[ushort] ret)

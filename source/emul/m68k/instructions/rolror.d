@@ -1,6 +1,6 @@
 ﻿module emul.m68k.instructions.rolror;
 
-import emul.m68k.instructions.create;
+import emul.m68k.instructions.common;
 
 package pure nothrow:
 void addRolRorInstructions(ref Instruction[ushort] ret)

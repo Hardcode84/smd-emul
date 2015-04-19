@@ -1,6 +1,6 @@
 ﻿module emul.m68k.instructions.rte;
 
-import emul.m68k.instructions.create;
+import emul.m68k.instructions.common;
 
 package pure nothrow:
 void addRteInstructions(ref Instruction[ushort] ret)

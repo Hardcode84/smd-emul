@@ -1,6 +1,6 @@
 ﻿module emul.m68k.instructions.mul;
 
-import emul.m68k.instructions.create;
+import emul.m68k.instructions.common;
 
 package pure nothrow:
 void addAddMulInstructions(ref Instruction[ushort] ret)
