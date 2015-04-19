@@ -13,11 +13,10 @@ void addAddInstructions(ref Instruction[ushort] ret)
         {
             static if(0 == d || addressModeTraits!mode.Alterable)
             {
-                alias Type = sizeField!(mode >> 6);
                 foreach(r; 0..8)
                 {
                     const instr = 0xd000 | (r << 9) | (d << 8) | mode;
-                    ret.addInstruction(Instruction("add", cast(ushort)instr,0x2,&addImpl!(Type,d,mode)));
+                    ret.addInstruction(Instruction("add", cast(ushort)instr,0x2,&addImpl!(d,mode)));
                 }
             }
         }
@@ -25,23 +24,23 @@ void addAddInstructions(ref Instruction[ushort] ret)
 }
 
 private:
-void addImpl(Type,ubyte d,ubyte Mode)(CpuPtr cpu)
+void addImpl(ubyte d,ubyte Mode)(CpuPtr cpu)
 {
+    alias Type = sizeField!(Mode >> 6);
     const reg = (cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x2) >> 2) & 0b111;
-    const int val = cpu.state.D[reg];
-    addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
-        {
-            const result = add(val, b, cpu);
-            static if(0 == d)
+    const val = cast(Type)cpu.state.D[reg];
+    static if(0 == d)
+    {
+        addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
             {
-                cpu.state.D[reg] = result;
-            }
-            else
+                *(cast(Type*)&cpu.state.D[reg]) = add(val, b, cpu);
+            })(cpu);
+    }
+    else
+    {
+        addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,b)
             {
-                addressModeWSize!(AddressModeType.Write,Mode,(cpu)
-                    {
-                        return cast(Type)result;
-                    })(cpu);
-            }
-        })(cpu);
+                return add(val, b, cpu);
+            })(cpu);
+    }
 }

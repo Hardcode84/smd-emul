@@ -22,13 +22,9 @@ private:
 void addiImpl(Type,ubyte Mode)(CpuPtr cpu)
 {
     const val = cpu.getMemValueNoHook!Type(cast(uint)(cpu.state.PC - Type.sizeof));
-    addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
+    addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,b)
         {
-            addressModeWSize!(AddressModeType.WriteDontExtendRegister,Mode,(cpu)
-                {
-                    const result = add(val, b, cpu);
-                    updateFlags(cpu,result);
-                    return cast(Type)result;
-                })(cpu);
+            const result = add(val, b, cpu);
+            return result;
         })(cpu);
 }
