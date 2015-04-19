@@ -81,21 +81,25 @@ private:
         assert((params.breakHandlers[BreakReason.SingleStep] !is null) == SingleStep);
         scope(failure) debugOut(cpu.state);
         uint savedPC = 0;
-        while(true)
+    outer: while(true)
         {
-            static if(SingleStep)
+            cpu.processExceptions();
+            foreach(i;0..10)
             {
-                if(!params.breakHandlers[BreakReason.SingleStep](cpu))
+                static if(SingleStep)
                 {
-                    break;
+                    if(!params.breakHandlers[BreakReason.SingleStep](cpu))
+                    {
+                        break outer;
+                    }
                 }
+                savedPC = cpu.state.PC;
+                const opcode = cpu.getRawMemValue!ushort(savedPC);
+                const op = mOps[opcode];
+                cpu.state.PC += op.size;
+                cpu.state.tickCounter += op.ticks;
+                op.impl(cpu);
             }
-            savedPC = cpu.state.PC;
-            const opcode = cpu.getRawMemValue!ushort(savedPC);
-            const op = mOps[opcode];
-            cpu.state.PC += op.size;
-            cpu.state.tickCounter += op.ticks;
-            op.impl(cpu);
         }
     }
 }

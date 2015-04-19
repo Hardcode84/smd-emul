@@ -1,5 +1,11 @@
 ﻿module emul.m68k.cpu.exceptions;
 
+import std.array;
+import std.range;
+import std.algorithm;
+
+import gamelib.debugout;
+
 import emul.m68k.cpu;
 
 enum ExceptionCodes
@@ -33,9 +39,9 @@ enum ExceptionCodes
     IRQ_1,
     IRQ_2,
     IRQ_3,
-    IRQ_4_Horizontal_blank,
+    IRQ_4,//Horizontal_blank,
     IRQ_5,
-    IRQ_6_Vertical_blank,
+    IRQ_6,//Vertical_blank,
     IRQ_7,
     TRAP_00_exception,
     TRAP_01_exception,
@@ -71,10 +77,68 @@ enum ExceptionCodes
     Reserved_by_Motorola28
 }
 
-struct Interrupts
+static immutable ExceptionCodes[] exceptionsByPriotities = [
+    ExceptionCodes.Reset,
+    ExceptionCodes.Address_error,
+    ExceptionCodes.Bus_error,
+    ExceptionCodes.TRACE_exeption,
+    ExceptionCodes.Spurious_exception,
+    ExceptionCodes.IRQ_1,
+    ExceptionCodes.IRQ_2,
+    ExceptionCodes.IRQ_3,
+    ExceptionCodes.IRQ_4,
+    ExceptionCodes.IRQ_5,
+    ExceptionCodes.IRQ_6,
+    ExceptionCodes.IRQ_7,
+    ExceptionCodes.Illegal_instruction,
+    ExceptionCodes.Privilege_violation,
+    ExceptionCodes.TRAP_00_exception,
+    ExceptionCodes.TRAP_01_exception,
+    ExceptionCodes.TRAP_02_exception,
+    ExceptionCodes.TRAP_03_exception,
+    ExceptionCodes.TRAP_04_exception,
+    ExceptionCodes.TRAP_05_exception,
+    ExceptionCodes.TRAP_06_exception,
+    ExceptionCodes.TRAP_07_exception,
+    ExceptionCodes.TRAP_08_exception,
+    ExceptionCodes.TRAP_09_exception,
+    ExceptionCodes.TRAP_10_exception,
+    ExceptionCodes.TRAP_11_exception,
+    ExceptionCodes.TRAP_12_exception,
+    ExceptionCodes.TRAP_13_exception,
+    ExceptionCodes.TRAP_14_exception,
+    ExceptionCodes.TRAP_15_exception,
+    ExceptionCodes.TRAPV_exception,
+    ExceptionCodes.CHK_exception,
+    ExceptionCodes.Divistion_by_zero];
+
+static immutable int[] priotitiesByExceptions =
+    iota(ExceptionCodes.max + 1).map!(a => exceptionsByPriotities[].countUntil(cast(ExceptionCodes)a)).array;
+
+struct Exceptions
 {
 pure nothrow @nogc:
-    ulong pendingExceptions = (1 << ExceptionCodes.Reset);
+    union
+    {
+        ulong pendingExceptions = (1 << priotitiesByExceptions[ExceptionCodes.Reset]);
+        struct
+        {
+            uint pendingExceptionsLo = void;
+            uint pendingExceptionsHi = void;
+        }
+    }
+    void setPendingException(ExceptionCodes code)
+    {
+        const ind = priotitiesByExceptions[code];
+        assert(ind >= 0);
+        pendingExceptions |= (1 << ind);
+    }
+    void clearPendingException(ExceptionCodes code)
+    {
+        const ind = priotitiesByExceptions[code];
+        assert(ind >= 0);
+        pendingExceptions &= ~(1 << ind);
+    }
 }
 
 package:
@@ -87,6 +151,7 @@ void enterException(CpuPtr cpu, ExceptionCodes code)
     cpu.state.clearFlags(SRFlags.T);
     if(code == ExceptionCodes.Reset)
     {
+        cpu.exceptions.pendingExceptions = 0;
         cpu.state.PC  = cpu.getMemValue!uint(ExceptionCodes.Start_code_address * uint.sizeof);
         cpu.state.SSP = cpu.getMemValue!uint(ExceptionCodes.Start_stack_address * uint.sizeof);
         cpu.state.setInterruptLevel(7);

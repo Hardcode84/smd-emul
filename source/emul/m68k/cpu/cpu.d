@@ -1,5 +1,7 @@
 ﻿module emul.m68k.cpu.cpu;
 
+import core.bitop;
+
 import std.typecons;
 import std.algorithm;
 import std.range;
@@ -15,6 +17,7 @@ struct Cpu
 pure nothrow:
     CpuState state;
     Memory memory;
+    Exceptions exceptions;
 
     alias MemReadHook  = uint delegate(CpuPtr,uint,size_t) pure nothrow @nogc;
     alias MemWriteHook = void delegate(CpuPtr,uint,size_t,uint) pure nothrow @nogc;
@@ -82,6 +85,26 @@ pure nothrow:
     {
         memory.checkRange!true(offset,T.sizeof);
         return memory.getRawValue!T(offset);
+    }
+
+    void processExceptions()
+    {
+        if(0 != exceptions.pendingExceptions)
+        {
+            static if(size_t.sizeof == ulong.sizeof)
+            {
+                ExceptionCodes ex = exceptionsByPriotities[bsf(exceptions.pendingExceptions)];
+            }
+            else
+            {
+                ExceptionCodes ex = void;
+                if(0 != exceptions.pendingExceptionsLo) ex = exceptionsByPriotities[bsf(exceptions.pendingExceptionsLo)];
+                else ex = exceptionsByPriotities[bsf(exceptions.pendingExceptionsHi) + 32];
+            }
+            mixin SafeThis;
+            enterException(safeThis,ex);
+            exceptions.clearPendingException(ex);
+        }
     }
 
 private:
