@@ -80,6 +80,7 @@ private:
     {
         assert((params.breakHandlers[BreakReason.SingleStep] !is null) == SingleStep);
         scope(failure) debugOut(cpu.state);
+        uint savedPC = 0;
         while(true)
         {
             static if(SingleStep)
@@ -89,7 +90,8 @@ private:
                     break;
                 }
             }
-            const opcode = cpu.getRawMemValue!ushort(cpu.state.PC);
+            savedPC = cpu.state.PC;
+            const opcode = cpu.getRawMemValue!ushort(savedPC);
             const op = mOps[opcode];
             cpu.state.PC += op.size;
             cpu.state.tickCounter += op.ticks;

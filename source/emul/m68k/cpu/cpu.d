@@ -6,7 +6,7 @@ import std.range;
 
 import emul.m68k.cpu.cpustate;
 import emul.m68k.cpu.memory;
-import emul.m68k.cpu.interrupts;
+import emul.m68k.cpu.exceptions;
 
 import gamelib.memory.saferef;
 
@@ -15,7 +15,6 @@ struct Cpu
 pure nothrow:
     CpuState state;
     Memory memory;
-    Interrupts interrupts;
 
     alias MemReadHook  = uint delegate(CpuPtr,uint,size_t) pure nothrow @nogc;
     alias MemWriteHook = void delegate(CpuPtr,uint,size_t,uint) pure nothrow @nogc;
@@ -48,43 +47,41 @@ pure nothrow:
         mWriteHooksRange = tuple(min(mWriteHooksRange[0],begin),max(mWriteHooksRange[1],end + uint.sizeof));
     }
 
-    pure nothrow @nogc
+@nogc:
+    auto getMemValue(T)(uint offset)
     {
-        auto getMemValue(T)(uint offset)
+        const hook = getHook!true(offset);
+        if(hook !is null)
         {
-            const hook = getHook!true(offset);
-            if(hook !is null)
-            {
-                mixin SafeThis;
-                return cast(T)hook(safeThis, offset, T.sizeof);
-            }
-            memory.checkRange!true(offset,T.sizeof);
-            return memory.getValue!T(offset);
+            mixin SafeThis;
+            return cast(T)hook(safeThis, offset, T.sizeof);
         }
+        memory.checkRange!true(offset,T.sizeof);
+        return memory.getValue!T(offset);
+    }
 
-        void setMemValue(T)(uint offset, in T val)
+    void setMemValue(T)(uint offset, in T val)
+    {
+        const hook = getHook!false(offset);
+        if(hook !is null)
         {
-            const hook = getHook!false(offset);
-            if(hook !is null)
-            {
-                mixin SafeThis;
-                return hook(safeThis, offset, T.sizeof, cast(uint)val);
-            }
-            memory.checkRange!false(offset,T.sizeof);
-            memory.setValue!T(offset,val);
+            mixin SafeThis;
+            return hook(safeThis, offset, T.sizeof, cast(uint)val);
         }
+        memory.checkRange!false(offset,T.sizeof);
+        memory.setValue!T(offset,val);
+    }
 
-        auto getMemValueNoHook(T)(uint offset)
-        {
-            memory.checkRange!true(offset,T.sizeof);
-            return memory.getValue!T(offset);
-        }
+    auto getMemValueNoHook(T)(uint offset)
+    {
+        memory.checkRange!true(offset,T.sizeof);
+        return memory.getValue!T(offset);
+    }
 
-        auto getRawMemValue(T)(uint offset) const
-        {
-            memory.checkRange!true(offset,T.sizeof);
-            return memory.getRawValue!T(offset);
-        }
+    auto getRawMemValue(T)(uint offset) const
+    {
+        memory.checkRange!true(offset,T.sizeof);
+        return memory.getRawValue!T(offset);
     }
 
 private:

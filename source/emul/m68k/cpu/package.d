@@ -3,4 +3,4 @@
 public import emul.m68k.cpu.cpu;
 public import emul.m68k.cpu.cpustate;
 public import emul.m68k.cpu.memory;
-public import emul.m68k.cpu.interrupts;
+public import emul.m68k.cpu.exceptions;

@@ -1,8 +1,11 @@
-﻿module emul.m68k.cpu.interrupts;
+﻿module emul.m68k.cpu.exceptions;
 
-enum InterruptCodes
+import emul.m68k.cpu;
+
+enum ExceptionCodes
 {
     Start_stack_address = 0,
+    Reset = 0,
     Start_code_address,
     Bus_error,
     Address_error,
@@ -70,6 +73,41 @@ enum InterruptCodes
 
 struct Interrupts
 {
-    uint[InterruptCodes.max + 1] vectors;
+pure nothrow @nogc:
+    ulong pendingExceptions = (1 << ExceptionCodes.Reset);
 }
 
+package:
+pure nothrow @nogc:
+void enterException(CpuPtr cpu, ExceptionCodes code)
+{
+    assert(code != ExceptionCodes.Start_code_address);
+    const oldSR = cpu.state.SR;
+    cpu.state.setFlags(SRFlags.S);
+    cpu.state.clearFlags(SRFlags.T);
+    if(code == ExceptionCodes.Reset)
+    {
+        cpu.state.PC  = cpu.getMemValue!uint(ExceptionCodes.Start_code_address * uint.sizeof);
+        cpu.state.SSP = cpu.getMemValue!uint(ExceptionCodes.Start_stack_address * uint.sizeof);
+        cpu.state.setInterruptLevel(7);
+        return;
+    }
+    if(code == ExceptionCodes.Bus_error || code == ExceptionCodes.Address_error)
+    {
+        assert(false,"Unimplemented");
+    }
+    cpu.state.SSP -= uint.sizeof;
+    cpu.setMemValue(cpu.state.SSP,cpu.state.PC);
+    cpu.state.SSP -= ushort.sizeof;
+    cpu.setMemValue(cpu.state.SSP,oldSR);
+    cpu.state.PC = cpu.getMemValue!uint(code * uint.sizeof);
+}
+
+void returnFromException(CpuPtr cpu)
+{
+    assert(cpu.state.testFlags(SRFlags.S));
+    cpu.state.SR = cpu.getMemValue!ushort(cpu.state.SSP);
+    cpu.state.SSP += ushort.sizeof;
+    cpu.state.PC = cpu.getMemValue!uint(cpu.state.SSP);
+    cpu.state.SSP += uint.sizeof;
+}

@@ -15,10 +15,10 @@ pure:
     struct Header
     {
     pure @safe:
-        uint[InterruptCodes.max + 1] interrupts;
+        uint[ExceptionCodes.max + 1] interrupts;
 
-        @property auto ref stackPointer() @nogc nothrow inout { return interrupts[InterruptCodes.Start_stack_address]; }
-        @property auto ref entryPoint()   @nogc nothrow inout { return interrupts[InterruptCodes.Start_code_address]; }
+        @property auto ref stackPointer() @nogc nothrow inout { return interrupts[ExceptionCodes.Start_stack_address]; }
+        @property auto ref entryPoint()   @nogc nothrow inout { return interrupts[ExceptionCodes.Start_code_address]; }
 
         string consoleName;
         string copyright;
@@ -46,7 +46,7 @@ pure:
                     formattedWrite(ret, fieldName~":\n");
                     foreach(j,val; v)
                     {
-                        formattedWrite(ret, "    %s: 0x%x\n",cast(InterruptCodes)j,val);
+                        formattedWrite(ret, "    %s: 0x%x\n",cast(ExceptionCodes)j,val);
                     }
                 }
                 else static if(isIntegral!(typeof(v)))

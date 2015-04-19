@@ -30,10 +30,6 @@ pure:
         mCpu.memory.ramStartAddress = rom.header.ramStartAddress;
         mCpu.memory.ramEndAddress   = rom.header.ramEndAddress;
 
-        mCpu.state.PC = mRom.header.entryPoint;
-        mCpu.state.SP = mRom.header.stackPointer;
-
-        mCpu.interrupts.vectors[] = rom.header.interrupts[];
         convertSafe2((CpuPtr cpu) { mVdp.register(cpu); },
             () {assert(false);},
             &mCpu);

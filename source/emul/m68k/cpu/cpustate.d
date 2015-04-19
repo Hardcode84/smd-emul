@@ -9,9 +9,19 @@ enum CCRFlags
     X = 1 << 4, // Extend
 }
 
+enum SRFlags
+{
+    I0 = 1 << 8,
+    I1 = 1 << 9,
+    I2 = 1 << 10,
+    S  = 1 << 13,
+    T  = 1 << 15,
+}
+
 struct CpuState
 {
-    string toString() const pure @safe
+pure @safe:
+    string toString() const
     {
         import std.array: appender;
         import std.format: formattedWrite;
@@ -29,29 +39,49 @@ struct CpuState
         formattedWrite(ret, "ticks = %s",tickCounter);
         return ret.data;
     }
-pure nothrow @nogc @safe:
+nothrow @nogc:
     union
     {
         struct
         {
             int[8] D;
             uint[8] A;
+            uint SSP;
         }
-        uint[16] AllRegsU;
-        int[16] AllregsS;
+        uint[16+1] AllRegsU;
+        int[16+1] AllregsS;
     }
-    auto ref SP() inout @property { return A[7]; }
-    alias USP = SP;
+    auto ref SP() inout @property { return AllRegsU[15 + ((SR >> 13) & 0x1)]; }
+    auto ref USP() inout @property { return A[7]; }
     uint PC;
     union
     {
-        ubyte CCR;
-        ushort SR;
+        struct
+        {
+            ubyte CCR = void;
+            ubyte SRupper = void;
+        }
+        ushort SR = SRFlags.S;
     }
     void setFlags(CCRFlags flags) { CCR |= flags; }
     void clearFlags(CCRFlags flags) { CCR &= ~flags; }
     bool testFlags(CCRFlags flags) const { return 0x0 != (CCR & flags); }
     void setFlags(CCRFlags flags, bool set) { if(set) setFlags(flags); else clearFlags(flags); }
+
+    void setFlags(SRFlags flags) { SR |= flags; }
+    void clearFlags(SRFlags flags) { SR &= ~flags; }
+    bool testFlags(SRFlags flags) const { return 0x0 != (SR & flags); }
+    void setFlags(SRFlags flags, bool set) { if(set) setFlags(flags); else clearFlags(flags); }
+
+    void setInterruptLevel(ubyte level)
+    {
+        assert(level < 8);
+        SRupper = cast(ubyte)((SRupper & ~0b111) | level);
+    }
+    byte getInterruptLevel() const
+    {
+        return cast(ubyte)(SRupper & 0b111);
+    }
 
     uint tickCounter = 0;
 }
