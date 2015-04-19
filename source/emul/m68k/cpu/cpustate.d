@@ -74,12 +74,12 @@ nothrow @nogc:
     bool testFlags(SRFlags flags) const { return 0x0 != (SR & flags); }
     void setFlags(SRFlags flags, bool set) { if(set) setFlags(flags); else clearFlags(flags); }
 
-    void setInterruptLevel(ubyte level)
+    @property void interruptLevel(ubyte level)
     {
         assert(level < 8);
         SRupper = cast(ubyte)((SRupper & ~0b111) | level);
     }
-    byte getInterruptLevel() const
+    @property byte interruptLevel() const
     {
         return cast(ubyte)(SRupper & 0b111);
     }

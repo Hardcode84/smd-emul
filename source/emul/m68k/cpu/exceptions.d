@@ -118,6 +118,16 @@ static immutable int[] priotitiesByExceptions =
 struct Exceptions
 {
 pure nothrow @nogc:
+    void setInterrupt(ExceptionCodes code)
+    in
+    {
+        assert(isIRQ(code), debugConv(code));
+    }
+    body
+    {
+        setPendingException(code);
+    }
+package:
     union
     {
         ulong pendingExceptions = (1 << priotitiesByExceptions[ExceptionCodes.Reset]);
@@ -142,34 +152,48 @@ pure nothrow @nogc:
 }
 
 pure nothrow @nogc:
-void enterException(CpuPtr cpu, ExceptionCodes code)
+bool isMemoryError(ExceptionCodes code) @safe
+{
+    return code == ExceptionCodes.Address_error || code == ExceptionCodes.Bus_error;
+}
+bool isIRQ(ExceptionCodes code) @safe
+{
+    return code >= ExceptionCodes.Spurious_exception && code <= ExceptionCodes.IRQ_7;
+}
+
+bool enterException(CpuPtr cpu, ExceptionCodes code)
 {
     assert(code != ExceptionCodes.Start_code_address);
     const oldSR = cpu.state.SR;
-    cpu.state.setFlags(SRFlags.S);
-    cpu.state.clearFlags(SRFlags.T);
-    if(code == ExceptionCodes.Reset)
+    if(ExceptionCodes.Reset == code)
     {
+        cpu.state.setFlags(SRFlags.S);
+        cpu.state.clearFlags(SRFlags.T);
         cpu.exceptions.pendingExceptions = 0;
         cpu.state.PC  = cpu.getMemValue!uint(ExceptionCodes.Start_code_address * uint.sizeof);
         cpu.state.SSP = cpu.getMemValue!uint(ExceptionCodes.Start_stack_address * uint.sizeof);
-        cpu.state.setInterruptLevel(7);
-        return;
+        cpu.state.interruptLevel = 7;
+        return true;
     }
-    cpu.exceptions.clearPendingException(code);
-    if(code == ExceptionCodes.Bus_error || code == ExceptionCodes.Address_error)
+    else if(isMemoryError(code))
     {
         assert(false,"Unimplemented");
     }
-    else if(code >= ExceptionCodes.Spurious_exception && code <= ExceptionCodes.IRQ_7)
+    else if(isIRQ(code))
     {
-        cpu.state.setInterruptLevel(cast(ubyte)(code - ExceptionCodes.Spurious_exception));
+        if((code - ExceptionCodes.Spurious_exception) <= cpu.state.interruptLevel) return false;
+        cpu.state.interruptLevel = cast(ubyte)(code - ExceptionCodes.Spurious_exception);
     }
+    cpu.state.setFlags(SRFlags.S);
+    cpu.state.clearFlags(SRFlags.T);
+
+    cpu.exceptions.clearPendingException(code);
     cpu.state.SSP -= uint.sizeof;
     cpu.setMemValue(cpu.state.SSP,cpu.state.PC);
     cpu.state.SSP -= ushort.sizeof;
     cpu.setMemValue(cpu.state.SSP,oldSR);
     cpu.state.PC = cpu.getMemValue!uint(code * uint.sizeof);
+    return true;
 }
 
 void returnFromException(CpuPtr cpu)

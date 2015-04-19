@@ -14,6 +14,7 @@ pure nothrow:
     {
         cpu.addReadHook(&readHook,   0xc00000, 0xc0000A);
         cpu.addWriteHook(&writeHook, 0xc00000, 0xc0000A);
+        cpu.setInterruptsHook(&interruptsHook);
     }
 
 private:
@@ -27,6 +28,15 @@ private:
     {
         //debugfOut("vdp write : 0x%.6x 0x%.8x 0x%x 0x%.8x",cpu.state.PC,offset,size,data);
     }
+    void interruptsHook(const CpuPtr cpu, ref Exceptions e)
+    {
+        if((cpu.state.tickCounter - mCounter) < 100_000)
+        {
+            //debugOut("hblank");
+            e.setInterrupt(ExceptionCodes.IRQ_4);
+        }
+    }
+    int mCounter = 0;
 }
 
 alias VpdPtr = SafeRef!Vdp;

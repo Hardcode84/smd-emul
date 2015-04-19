@@ -19,7 +19,7 @@ pure nothrow:
     Memory memory;
     Exceptions exceptions;
 
-    alias InterruptsHook = uint delegate(CpuPtr) pure nothrow @nogc;
+    alias InterruptsHook = void delegate(const CpuPtr, ref Exceptions) pure nothrow @nogc;
     alias MemReadHook    = uint delegate(CpuPtr,uint,size_t) pure nothrow @nogc;
     alias MemWriteHook   = void delegate(CpuPtr,uint,size_t,uint) pure nothrow @nogc;
 
@@ -98,22 +98,27 @@ pure nothrow:
         mixin SafeThis;
         if(mInterruptsHook !is null)
         {
-            mInterruptsHook(safeThis);
+            mInterruptsHook(safeThis, exceptions);
         }
 
         if(0 != exceptions.pendingExceptions)
         {
             static if(size_t.sizeof == ulong.sizeof)
             {
-                ExceptionCodes ex = exceptionsByPriotities[bsf(exceptions.pendingExceptions)];
+                int ind = bsf(exceptions.pendingExceptions);
             }
             else
             {
-                ExceptionCodes ex = void;
-                if(0 != exceptions.pendingExceptionsLo) ex = exceptionsByPriotities[bsf(exceptions.pendingExceptionsLo)];
-                else ex = exceptionsByPriotities[bsf(exceptions.pendingExceptionsHi) + 32];
+                int ind = void;
+                if(0 != exceptions.pendingExceptionsLo) ind = bsf(exceptions.pendingExceptionsLo);
+                else ind = bsf(exceptions.pendingExceptionsHi) + 32;
             }
-            enterException(safeThis,ex);
+            while(ind >= 0)
+            {
+                const ex = exceptionsByPriotities[ind];
+                if(enterException(safeThis,ex)) break;
+                --ind;
+            }
         }
     }
 
