@@ -141,7 +141,6 @@ pure nothrow @nogc:
     }
 }
 
-package:
 pure nothrow @nogc:
 void enterException(CpuPtr cpu, ExceptionCodes code)
 {

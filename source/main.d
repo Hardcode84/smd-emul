@@ -17,7 +17,7 @@ void main(string[] args)
         writeln("Hello World!");
         return;
     }
-    
+
     auto rom = makeSafe!Rom(read(args[1]).assumeUnique);
     writeln(rom.header);
     auto core = makeSafe!Core(rom);

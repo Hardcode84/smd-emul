@@ -20,12 +20,12 @@ private:
 @nogc:
     uint readHook(CpuPtr cpu, uint offset, size_t size)
     {
-        debugfOut("vdp read : 0x%.6x 0x%.8x 0x%x",cpu.state.PC,offset,size);
+        //debugfOut("vdp read : 0x%.6x 0x%.8x 0x%x",cpu.state.PC,offset,size);
         return 0;
     }
     void writeHook(CpuPtr cpu, uint offset, size_t size, uint data)
     {
-        debugfOut("vdp write : 0x%.6x 0x%.8x 0x%x 0x%.8x",cpu.state.PC,offset,size,data);
+        //debugfOut("vdp write : 0x%.6x 0x%.8x 0x%x 0x%.8x",cpu.state.PC,offset,size,data);
     }
 }
 
