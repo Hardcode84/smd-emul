@@ -29,20 +29,22 @@ void orImpl(Type,ubyte d,ubyte Mode)(CpuPtr cpu)
 {
     const reg = (cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x2) >> 2) & 0b111;
     const int val = cpu.state.D[reg];
-    addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
-        {
-            const result = val | b;
-            updateFlags(cpu,result);
-            static if(0 == d)
+    static if(0 == d)
+    {
+        addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
             {
-                cpu.state.D[reg] = result;
-            }
-            else
+                const result = val | b;
+                updateFlags(cpu,result);
+                *(cast(Type*)&cpu.state.D[reg]) = cast(Type)result;
+            })(cpu);
+    }
+    else
+    {
+        addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,b)
             {
-                addressModeWSize!(AddressModeType.Write,Mode,(cpu)
-                    {
-                        return cast(Type)result;
-                    })(cpu);
-            }
-        })(cpu);
+                const result = val | b;
+                updateFlags(cpu,result);
+                return cast(Type)result;
+            })(cpu);
+    }
 }

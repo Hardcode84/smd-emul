@@ -70,12 +70,12 @@ void rotateImpl(Type,ubyte dr,ubyte ir)(CpuPtr cpu)
     cpu.state.clearFlags(CCRFlags.V);
     cpu.state.setFlags(CCRFlags.Z, 0 == val);
     cpu.state.setFlags(CCRFlags.N, 0x0 != (val & (1 << (Type.sizeof * 8 - 1))));
-    cpu.state.D[reg] = cast(int)val;
+    *(cast(Type*)&cpu.state.D[reg]) = cast(Type)val;
 }
 
 void rotatemImpl(ubyte dr,ubyte Mode)(CpuPtr cpu)
 {
-    addressMode!(ushort,AddressModeType.Read,Mode,(cpu,val)
+    addressMode!(ushort,AddressModeType.ReadWrite,Mode,(cpu,val)
         {
             static if(0 == dr) //right
             {
@@ -90,9 +90,6 @@ void rotatemImpl(ubyte dr,ubyte Mode)(CpuPtr cpu)
             cpu.state.clearFlags(CCRFlags.V);
             cpu.state.setFlags(CCRFlags.Z, 0 == val);
             cpu.state.setFlags(CCRFlags.N, 0x0 != (val & (1 << (ushort.sizeof * 8 - 1))));
-            addressMode!(ushort,AddressModeType.Write,Mode,(cpu)
-                {
-                    return cast(ushort)result;
-                })(cpu);
+            return cast(ushort)result;
         })(cpu);
 }

@@ -22,13 +22,10 @@ private:
 void andiImpl(Type,ubyte Mode)(CpuPtr cpu)
 {
     const val = cpu.getMemValueNoHook!Type(cast(uint)(cpu.state.PC - Type.sizeof));
-    addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
+    addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,b)
         {
-            addressModeWSize!(AddressModeType.WriteDontExtendRegister,Mode,(cpu)
-                {
-                    const result = val & b;
-                    updateFlags(cpu,result);
-                    return cast(Type)result;
-                })(cpu);
+            const result = val & b;
+            updateFlags(cpu,result);
+            return cast(Type)result;
         })(cpu);
 }
