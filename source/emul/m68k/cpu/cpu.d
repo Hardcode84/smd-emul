@@ -19,8 +19,14 @@ pure nothrow:
     Memory memory;
     Exceptions exceptions;
 
-    alias MemReadHook  = uint delegate(CpuPtr,uint,size_t) pure nothrow @nogc;
-    alias MemWriteHook = void delegate(CpuPtr,uint,size_t,uint) pure nothrow @nogc;
+    alias InterruptsHook = uint delegate(CpuPtr) pure nothrow @nogc;
+    alias MemReadHook    = uint delegate(CpuPtr,uint,size_t) pure nothrow @nogc;
+    alias MemWriteHook   = void delegate(CpuPtr,uint,size_t,uint) pure nothrow @nogc;
+
+    void setInterruptsHook(InterruptsHook hook) @nogc
+    {
+        mInterruptsHook = hook;
+    }
 
     void addReadHook(MemReadHook hook, uint begin, uint end)
     in
@@ -89,6 +95,12 @@ pure nothrow:
 
     void processExceptions()
     {
+        mixin SafeThis;
+        if(mInterruptsHook !is null)
+        {
+            mInterruptsHook(safeThis);
+        }
+
         if(0 != exceptions.pendingExceptions)
         {
             static if(size_t.sizeof == ulong.sizeof)
@@ -101,15 +113,14 @@ pure nothrow:
                 if(0 != exceptions.pendingExceptionsLo) ex = exceptionsByPriotities[bsf(exceptions.pendingExceptionsLo)];
                 else ex = exceptionsByPriotities[bsf(exceptions.pendingExceptionsHi) + 32];
             }
-            mixin SafeThis;
             enterException(safeThis,ex);
-            exceptions.clearPendingException(ex);
         }
     }
 
 private:
     alias ReadHookTuple  = Tuple!(uint, "begin", uint, "end", MemReadHook,  "hook");
     alias WriteHookTuple = Tuple!(uint, "begin", uint, "end", MemWriteHook, "hook");
+    InterruptsHook   mInterruptsHook;
     ReadHookTuple[]  mReadHooks;
     WriteHookTuple[] mWriteHooks;
     auto mReadHooksRange  = tuple(0xffffffff,0x0);

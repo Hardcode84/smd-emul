@@ -156,9 +156,14 @@ void enterException(CpuPtr cpu, ExceptionCodes code)
         cpu.state.setInterruptLevel(7);
         return;
     }
+    cpu.exceptions.clearPendingException(code);
     if(code == ExceptionCodes.Bus_error || code == ExceptionCodes.Address_error)
     {
         assert(false,"Unimplemented");
+    }
+    else if(code >= ExceptionCodes.Spurious_exception && code <= ExceptionCodes.IRQ_7)
+    {
+        cpu.state.setInterruptLevel(cast(ubyte)(code - ExceptionCodes.Spurious_exception));
     }
     cpu.state.SSP -= uint.sizeof;
     cpu.setMemValue(cpu.state.SSP,cpu.state.PC);
