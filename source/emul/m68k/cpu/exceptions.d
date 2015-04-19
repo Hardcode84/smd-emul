@@ -170,8 +170,8 @@ bool enterException(CpuPtr cpu, ExceptionCodes code)
         cpu.state.setFlags(SRFlags.S);
         cpu.state.clearFlags(SRFlags.T);
         cpu.exceptions.pendingExceptions = 0;
-        cpu.state.PC  = cpu.getMemValue!uint(ExceptionCodes.Start_code_address * uint.sizeof);
-        cpu.state.SSP = cpu.getMemValue!uint(ExceptionCodes.Start_stack_address * uint.sizeof);
+        cpu.state.PC = cpu.getMemValue!uint(ExceptionCodes.Start_code_address * uint.sizeof);
+        cpu.state.SP = cpu.getMemValue!uint(ExceptionCodes.Start_stack_address * uint.sizeof);
         cpu.state.interruptLevel = 7;
         return true;
     }
@@ -198,9 +198,9 @@ bool enterException(CpuPtr cpu, ExceptionCodes code)
 
 void returnFromException(CpuPtr cpu)
 {
-    assert(cpu.state.testFlags(SRFlags.S));
-    cpu.state.SR = cpu.getMemValue!ushort(cpu.state.SSP);
-    cpu.state.SSP += ushort.sizeof;
-    cpu.state.PC = cpu.getMemValue!uint(cpu.state.SSP);
-    cpu.state.SSP += uint.sizeof;
+    assert(cpu.state.testFlags(SRFlags.S),debugConv(cpu.state.SR));
+    cpu.state.SR = cpu.getMemValue!ushort(cpu.state.SP);
+    cpu.state.SP += ushort.sizeof;
+    cpu.state.PC = cpu.getMemValue!uint(cpu.state.SP);
+    cpu.state.SP += uint.sizeof;
 }

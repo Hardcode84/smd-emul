@@ -113,11 +113,14 @@ pure nothrow:
                 if(0 != exceptions.pendingExceptionsLo) ind = bsf(exceptions.pendingExceptionsLo);
                 else ind = bsf(exceptions.pendingExceptionsHi) + 32;
             }
-            while(ind >= 0)
+            if(!enterException(safeThis,exceptionsByPriotities[ind]))
             {
-                const ex = exceptionsByPriotities[ind];
-                if(enterException(safeThis,ex)) break;
-                --ind;
+                while(ind > 0)
+                {
+                    --ind;
+                    const ex = exceptionsByPriotities[ind];
+                    if((0x0 != (exceptions.pendingExceptions & (1 << ind))) && enterException(safeThis,ex)) break;
+                }
             }
         }
     }

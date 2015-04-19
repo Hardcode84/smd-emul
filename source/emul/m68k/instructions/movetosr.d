@@ -19,8 +19,8 @@ void addMovetosrInstructions(ref Instruction[ushort] ret)
 private:
 void movetosrImpl(ubyte Mode)(CpuPtr cpu)
 {
-    addressMode!(ushort,AddressModeType.ReadAddress,Mode,(cpu,b)
+    addressMode!(ushort,AddressModeType.Read,Mode,(cpu,val)
         {
-            cpu.state.SR = b;
+            cpu.state.SR = val;
         })(cpu);
 }

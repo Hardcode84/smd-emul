@@ -1,5 +1,9 @@
 ﻿module emul.m68k.cpu.cpustate;
 
+import std.algorithm;
+
+import gamelib.debugout;
+
 enum CCRFlags
 {
     C = 1 << 0, // Carry
@@ -34,6 +38,8 @@ pure @safe:
         {
             formattedWrite(ret, "A%s  = 0x%.8x\n",i,val);
         }
+        formattedWrite(ret, "SP  = 0x%.8x\n",SP);
+        formattedWrite(ret, "USP = 0x%.8x\n",USP);
         formattedWrite(ret, "SSP = 0x%.8x\n",SSP);
         formattedWrite(ret, "PC  = 0x%.8x\n",PC);
         formattedWrite(ret, "flags = 0x%.4x\n",SR);
@@ -47,13 +53,14 @@ nothrow @nogc:
         {
             int[8] D;
             uint[8] A;
-            uint SSP;
+            private uint PrivateSP;
         }
         uint[16+1] AllRegsU;
         int[16+1] AllregsS;
     }
-    auto ref SP() inout @property { return AllRegsU[15 + ((SR >> 13) & 0x1)]; }
-    auto ref USP() inout @property { return A[7]; }
+    auto ref SP() inout @property { return A[7]; }
+    auto ref USP() inout @property { return AllRegsU[15 + ((SR >> 13) & 0x1)]; }
+    auto ref SSP() inout @property { return AllRegsU[16 - ((SR >> 13) & 0x1)]; }
     uint PC;
     union
     {
@@ -62,15 +69,23 @@ nothrow @nogc:
             ubyte CCR = void;
             ubyte SRupper = void;
         }
-        ushort SR = SRFlags.S;
+        private ushort SRPrivate = SRFlags.S;
     }
     void setFlags(CCRFlags flags) { CCR |= flags; }
     void clearFlags(CCRFlags flags) { CCR &= ~flags; }
     bool testFlags(CCRFlags flags) const { return 0x0 != (CCR & flags); }
     void setFlags(CCRFlags flags, bool set) { if(set) setFlags(flags); else clearFlags(flags); }
 
-    void setFlags(SRFlags flags) { SR |= flags; }
-    void clearFlags(SRFlags flags) { SR &= ~flags; }
+    auto SR() const @property { return SRPrivate; }
+    void SR(ushort val) @property
+    {
+        const oldSR = SRPrivate;
+        SRPrivate = val;
+        if((oldSR & SRFlags.S) != (SRPrivate & SRFlags.S)) swap(A[7],PrivateSP);
+    }
+
+    void setFlags(SRFlags flags) { SR = cast(ushort)(SR | flags); }
+    void clearFlags(SRFlags flags) { SR = cast(ushort)(SR & ~flags); }
     bool testFlags(SRFlags flags) const { return 0x0 != (SR & flags); }
     void setFlags(SRFlags flags, bool set) { if(set) setFlags(flags); else clearFlags(flags); }
 
