@@ -1,11 +1,11 @@
-﻿module emul.m68k.instructions.subq;
+﻿module emul.m68k.instructions.addq;
 
 import emul.m68k.instructions.common;
 
 package pure nothrow:
-void addSubqInstructions(ref Instruction[ushort] ret)
+void addAddqInstructions(ref Instruction[ushort] ret)
 {
-    //subq
+    //addq
     foreach(v; TupleRange!(0,writeAddressModesWSize.length))
     {
         enum mode = writeAddressModesWSize[v];
@@ -21,29 +21,29 @@ void addSubqInstructions(ref Instruction[ushort] ret)
             }
             foreach(d; 0..8)
             {
-                const instr = 0x5100 | (d << 9) | mode;
-                ret.addInstruction(Instruction("subq",cast(ushort)instr,0x2,&subqImpl!mode));
+                const instr = 0x5000 | (d << 9) | mode;
+                ret.addInstruction(Instruction("addq",cast(ushort)instr,0x2,&addqImpl!mode));
             }
         }
     }
 }
 
 private:
-void subqImpl(ubyte Mode)(CpuPtr cpu)
+void addqImpl(ubyte Mode)(CpuPtr cpu)
 {
     const data = cast(byte)(cpu.getMemValueNoHook!ubyte(cpu.state.PC - 1) & 0b111);
     static if(addressModeTraits!Mode.Data)
     {
         addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,val)
             {
-               return sub(val, data, cpu);
+                return add(val, data, cpu);
             })(cpu);
     }
     else
     {
         addressMode!(uint,AddressModeType.ReadWrite,Mode,(cpu,val)
             {
-                return val - data;
+                return val + data;
             })(cpu);
     }
 }

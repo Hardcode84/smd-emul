@@ -65,6 +65,9 @@ auto createInstructions()
     import emul.m68k.instructions.add;
     addAddInstructions(ret);
 
+    import emul.m68k.instructions.addq;
+    addAddqInstructions(ret);
+
     import emul.m68k.instructions.addi;
     addAddiInstructions(ret);
 

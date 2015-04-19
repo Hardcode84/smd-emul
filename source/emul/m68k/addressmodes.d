@@ -7,7 +7,9 @@ enum AddressModeType
     Write,
     WriteDontExtendRegister,
     Read,
-    ReadAddress
+    ReadAddress,
+    ReadWrite,
+    ReadWriteDontExtendRegister
 }
 
 template addressMode(T, AddressModeType Type, ubyte Val, alias F)
@@ -15,7 +17,11 @@ template addressMode(T, AddressModeType Type, ubyte Val, alias F)
 pure nothrow @nogc:
     private enum Mode = (Val >> 3) & 0b111;
     private enum Reg =  Val & 0b111;
-    private enum Write = (Type == AddressModeType.Write || Type == AddressModeType.WriteDontExtendRegister);
+    private enum Write = (
+        Type == AddressModeType.Write ||
+        Type == AddressModeType.WriteDontExtendRegister ||
+        Type == AddressModeType.ReadWrite ||
+        Type == AddressModeType.ReadWriteDontExtendRegister);
     private void memProxy(CpuPtr cpu, uint address)
     {
         static if(Type == AddressModeType.Write || Type == AddressModeType.WriteDontExtendRegister)
@@ -29,6 +35,10 @@ pure nothrow @nogc:
         else static if(Type == AddressModeType.ReadAddress)
         {
             F(cpu,cast(T)address);
+        }
+        else static if(Type == AddressModeType.ReadWrite || Type == AddressModeType.ReadWriteDontExtendRegister)
+        {
+            cpu.setMemValue!T(address,F(cpu,cast(T)cpu.getMemValue!T(address)));
         }
         else static assert(false);
     }
@@ -45,6 +55,14 @@ pure nothrow @nogc:
             else static if(Type == AddressModeType.WriteDontExtendRegister)
             {
                 *(cast(T*)&cpu.state.D[Reg]) = F(cpu);
+            }
+            else static if(Type == AddressModeType.ReadWrite)
+            {
+                cpu.state.D[Reg] = F(cpu,cast(T)cpu.state.D[Reg]);
+            }
+            else static if(Type == AddressModeType.ReadWriteDontExtendRegister)
+            {
+                *(cast(T*)&cpu.state.D[Reg]) = F(cpu,cast(T)cpu.state.D[Reg]);
             }
             else static if(Type == AddressModeType.Read || Type == AddressModeType.ReadAddress)
             {
@@ -64,6 +82,14 @@ pure nothrow @nogc:
             else static if(Type == AddressModeType.WriteDontExtendRegister)
             {
                 *(cast(T*)&cpu.state.A[Reg]) = F(cpu);
+            }
+            else static if(Type == AddressModeType.ReadWrite)
+            {
+                cpu.state.A[Reg] = F(cpu,cast(T)cpu.state.A[Reg]);
+            }
+            else static if(Type == AddressModeType.ReadWriteDontExtendRegister)
+            {
+                *(cast(T*)&cpu.state.A[Reg]) = F(cpu,cast(T)cpu.state.A[Reg]);
             }
             else static if(Type == AddressModeType.Read || Type == AddressModeType.ReadAddress)
             {

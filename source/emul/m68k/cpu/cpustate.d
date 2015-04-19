@@ -28,14 +28,14 @@ pure @safe:
         auto ret = appender!(char[])();
         foreach(i,val; D[])
         {
-            formattedWrite(ret, "D%s = 0x%.8x\n",i,val);
+            formattedWrite(ret, "D%s  = 0x%.8x\n",i,val);
         }
         foreach(i,val; A[])
         {
-            formattedWrite(ret, "A%s = 0x%.8x\n",i,val);
+            formattedWrite(ret, "A%s  = 0x%.8x\n",i,val);
         }
         formattedWrite(ret, "SSP = 0x%.8x\n",SSP);
-        formattedWrite(ret, "PC = 0x%.8x\n",PC);
+        formattedWrite(ret, "PC  = 0x%.8x\n",PC);
         formattedWrite(ret, "flags = 0x%.4x\n",SR);
         formattedWrite(ret, "ticks = %s",tickCounter);
         return ret.data;
