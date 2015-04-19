@@ -2,7 +2,9 @@
 
 enum InterruptCodes
 {
-    Bus_error = 0,
+    Start_stack_address = 0,
+    Start_code_address,
+    Bus_error,
     Address_error,
     Illegal_instruction,
     Divistion_by_zero,

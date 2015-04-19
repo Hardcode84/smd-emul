@@ -14,10 +14,11 @@ class Rom
 pure:
     struct Header
     {
-        uint stackPointer;
-        uint entryPoint;
-
+    pure @safe:
         uint[InterruptCodes.max + 1] interrupts;
+
+        @property auto ref stackPointer() @nogc nothrow inout { return interrupts[InterruptCodes.Start_stack_address]; }
+        @property auto ref entryPoint()   @nogc nothrow inout { return interrupts[InterruptCodes.Start_code_address]; }
 
         string consoleName;
         string copyright;
@@ -32,7 +33,7 @@ pure:
         uint ramStartAddress;
         uint ramEndAddress;
 
-        string toString() const pure @safe
+        string toString() const
         {
             import std.array: appender;
             import std.format: formattedWrite;
@@ -103,7 +104,7 @@ const:
         h.entryPoint       = readPtr(0x004);
         foreach(i,ref v; h.interrupts)
         {
-            auto ptr = cast(uint)(0x8 + i * uint.sizeof);
+            auto ptr = cast(uint)(i * uint.sizeof);
             assert(ptr < 0x100);
             v = readPtr(ptr);
         }
