@@ -167,8 +167,8 @@ bool enterException(CpuPtr cpu, ExceptionCodes code)
     const oldSR = cpu.state.SR;
     if(ExceptionCodes.Reset == code)
     {
-        cpu.state.setFlags(SRFlags.S);
-        cpu.state.clearFlags(SRFlags.T);
+        cpu.state.setFlags!(SRFlags.S);
+        cpu.state.clearFlags!(SRFlags.T);
         cpu.exceptions.pendingExceptions = 0;
         cpu.state.PC = cpu.getMemValue!uint(ExceptionCodes.Start_code_address * uint.sizeof);
         cpu.state.SP = cpu.getMemValue!uint(ExceptionCodes.Start_stack_address * uint.sizeof);
@@ -184,8 +184,8 @@ bool enterException(CpuPtr cpu, ExceptionCodes code)
         if((code - ExceptionCodes.Spurious_exception) <= cpu.state.interruptLevel) return false;
         cpu.state.interruptLevel = cast(ubyte)(code - ExceptionCodes.Spurious_exception);
     }
-    cpu.state.setFlags(SRFlags.S);
-    cpu.state.clearFlags(SRFlags.T);
+    cpu.state.setFlags!(SRFlags.S);
+    cpu.state.clearFlags!(SRFlags.T);
 
     cpu.exceptions.clearPendingException(code);
     cpu.state.SSP -= uint.sizeof;
@@ -198,7 +198,7 @@ bool enterException(CpuPtr cpu, ExceptionCodes code)
 
 void returnFromException(CpuPtr cpu)
 {
-    assert(cpu.state.testFlags(SRFlags.S),debugConv(cpu.state.SR));
+    assert(cpu.state.testFlags!(SRFlags.S),debugConv(cpu.state.SR));
     cpu.state.SR = cpu.getMemValue!ushort(cpu.state.SP);
     cpu.state.SP += ushort.sizeof;
     cpu.state.PC = cpu.getMemValue!uint(cpu.state.SP);

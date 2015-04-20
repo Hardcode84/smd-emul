@@ -78,10 +78,10 @@ void mulImpl2(bool S, bool Quad, ubyte Mode)(CpuPtr cpu, ushort word)
         {
             const result = cast(ResType)val * cast(ResType)cpu.state.D[regl];
             updateNZFlags(cpu,cast(Signed!ResType)result);
-            cpu.state.clearFlags(CCRFlags.C);
+            cpu.state.clearFlags!(CCRFlags.C);
             static if(Quad)
             {
-                cpu.state.clearFlags(CCRFlags.V);
+                cpu.state.clearFlags!(CCRFlags.V);
                 const regh = (word & 0b111);
                 cpu.state.D[regh] = cast(int)((result >> 32) & 0xffffffff);
             }
@@ -89,11 +89,11 @@ void mulImpl2(bool S, bool Quad, ubyte Mode)(CpuPtr cpu, ushort word)
             {
                 static if(S)
                 {
-                    cpu.state.setFlags(CCRFlags.V, (result < Type.min || result > Type.max));
+                    cpu.state.setFlags!(CCRFlags.V)(result < Type.min || result > Type.max);
                 }
                 else
                 {
-                    cpu.state.setFlags(CCRFlags.V, (result > Type.max));
+                    cpu.state.setFlags!(CCRFlags.V)(result > Type.max);
                 }
             }
             cpu.state.D[regl] = cast(int)result;

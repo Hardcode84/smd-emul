@@ -69,25 +69,47 @@ nothrow @nogc:
             ubyte CCR = void;
             ubyte SRupper = void;
         }
-        private ushort SRPrivate = SRFlags.S;
+        private ushort PrivateSR = SRFlags.S;
     }
-    void setFlags(CCRFlags flags) { CCR |= flags; }
-    void clearFlags(CCRFlags flags) { CCR &= ~flags; }
-    bool testFlags(CCRFlags flags) const { return 0x0 != (CCR & flags); }
-    void setFlags(CCRFlags flags, bool set) { if(set) setFlags(flags); else clearFlags(flags); }
+    void setFlags(CCRFlags flags)()
+    {
+        CCR |= flags; 
+    }
+    void clearFlags(CCRFlags flags)()
+    {
+        CCR &= ~flags;
+    }
+    bool testFlags(CCRFlags flags)() const
+    {
+        return 0x0 != (CCR & flags);
+    }
+    void setFlags(CCRFlags flags)(bool set) { if(set) setFlags!flags; else clearFlags!flags; }
 
-    auto SR() const @property { return SRPrivate; }
+    auto SR() const @property { return PrivateSR; }
     void SR(ushort val) @property
     {
-        const oldSR = SRPrivate;
-        SRPrivate = val;
-        if((oldSR & SRFlags.S) != (SRPrivate & SRFlags.S)) swap(A[7],PrivateSP);
+        const oldSR = PrivateSR;
+        PrivateSR = val;
+        if((oldSR & SRFlags.S) != (PrivateSR & SRFlags.S)) swap(A[7],PrivateSP);
     }
 
-    void setFlags(SRFlags flags) { SR = cast(ushort)(SR | flags); }
-    void clearFlags(SRFlags flags) { SR = cast(ushort)(SR & ~flags); }
-    bool testFlags(SRFlags flags) const { return 0x0 != (SR & flags); }
-    void setFlags(SRFlags flags, bool set) { if(set) setFlags(flags); else clearFlags(flags); }
+    void setFlags(SRFlags flags)()
+    {
+        const oldSR = PrivateSR;
+        PrivateSR |= flags;
+        if((0x0 != (flags & SRFlags.S)) && ((oldSR & SRFlags.S) != (PrivateSR & SRFlags.S))) swap(A[7],PrivateSP);
+    }
+    void clearFlags(SRFlags flags)()
+    {
+        const oldSR = PrivateSR;
+        PrivateSR &= ~flags;
+        if((0x0 != (flags & SRFlags.S)) && ((oldSR & SRFlags.S) != (PrivateSR & SRFlags.S))) swap(A[7],PrivateSP);
+    }
+    bool testFlags(SRFlags flags)() const
+    {
+        return 0x0 != (SR & flags); 
+    }
+    void setFlags(SRFlags flags)(bool set) { if(set) setFlags!flags; else clearFlags!flags; }
 
     @property void interruptLevel(ubyte level)
     {

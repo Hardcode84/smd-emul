@@ -55,21 +55,21 @@ void rotateImpl(Type,ubyte dr,ubyte ir)(CpuPtr cpu)
         static if(0 == dr) //right
         {
             val = cast(Type)(val >> count) | cast(Type)(val << (Type.sizeof * 8 - count));
-            cpu.state.setFlags(CCRFlags.C, 0x0 != (val & (1 << (Type.sizeof * 8 - 1))));
+            cpu.state.setFlags!(CCRFlags.C)(0x0 != (val & (1 << (Type.sizeof * 8 - 1))));
         }
         else
         {
             val = cast(Type)(val << count) | cast(Type)(val >> (Type.sizeof * 8 - count));
-            cpu.state.setFlags(CCRFlags.C, 0x0 != (val & 0x1));
+            cpu.state.setFlags!(CCRFlags.C)(0x0 != (val & 0x1));
         }
     }
     else
     {
-        cpu.state.clearFlags(CCRFlags.C);
+        cpu.state.clearFlags!(CCRFlags.C);
     }
-    cpu.state.clearFlags(CCRFlags.V);
-    cpu.state.setFlags(CCRFlags.Z, 0 == val);
-    cpu.state.setFlags(CCRFlags.N, 0x0 != (val & (1 << (Type.sizeof * 8 - 1))));
+    cpu.state.clearFlags!(CCRFlags.V);
+    cpu.state.setFlags!(CCRFlags.Z)(0 == val);
+    cpu.state.setFlags!(CCRFlags.N)(0x0 != (val & (1 << (Type.sizeof * 8 - 1))));
     *(cast(Type*)&cpu.state.D[reg]) = cast(Type)val;
 }
 
@@ -80,16 +80,16 @@ void rotatemImpl(ubyte dr,ubyte Mode)(CpuPtr cpu)
             static if(0 == dr) //right
             {
                 const result = cast(ushort)(val >> 1) | cast(ushort)(val << (ushort.sizeof * 8 - 1));
-                cpu.state.setFlags(CCRFlags.C, 0x0 != (val & (1 << (ushort.sizeof * 8 - 1))));
+                cpu.state.setFlags!(CCRFlags.C)(0x0 != (val & (1 << (ushort.sizeof * 8 - 1))));
             }
             else
             {
                 const result = cast(ushort)(val << 1) | cast(ushort)(val >> (ushort.sizeof * 8 - 1));
-                cpu.state.setFlags(CCRFlags.C, 0x0 != (val & 0x1));
+                cpu.state.setFlags!(CCRFlags.C)(0x0 != (val & 0x1));
             }
-            cpu.state.clearFlags(CCRFlags.V);
-            cpu.state.setFlags(CCRFlags.Z, 0 == val);
-            cpu.state.setFlags(CCRFlags.N, 0x0 != (val & (1 << (ushort.sizeof * 8 - 1))));
+            cpu.state.clearFlags!(CCRFlags.V);
+            cpu.state.setFlags!(CCRFlags.Z)(0 == val);
+            cpu.state.setFlags!(CCRFlags.N)(0x0 != (val & (1 << (ushort.sizeof * 8 - 1))));
             return cast(ushort)result;
         })(cpu);
 }

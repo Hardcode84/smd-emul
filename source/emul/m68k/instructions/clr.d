@@ -21,8 +21,8 @@ void clrImpl(ubyte Mode)(CpuPtr cpu)
 {
     addressModeWSize!(AddressModeType.Write,Mode,(cpu)
         {
-            cpu.state.clearFlags(CCRFlags.N | CCRFlags.V | CCRFlags.C);
-            cpu.state.setFlags(CCRFlags.Z);
+            cpu.state.clearFlags!(CCRFlags.N | CCRFlags.V | CCRFlags.C);
+            cpu.state.setFlags!(CCRFlags.Z);
             return cast(sizeField!(Mode >> 6))0;
         })(cpu);
 }

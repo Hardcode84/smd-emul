@@ -48,24 +48,24 @@ void addInstruction(ref Instruction[ushort] instructions, in Instruction instr) 
 void updateNZFlags(T)(CpuPtr cpu, in T val)
 {
     static assert(isSigned!T);
-    if(val < 0) cpu.state.setFlags(CCRFlags.N);
-    else        cpu.state.clearFlags(CCRFlags.N);
-    if(val == 0) cpu.state.setFlags(CCRFlags.Z);
-    else         cpu.state.clearFlags(CCRFlags.Z);
+    if(val < 0) cpu.state.setFlags!(CCRFlags.N);
+    else        cpu.state.clearFlags!(CCRFlags.N);
+    if(val == 0) cpu.state.setFlags!(CCRFlags.Z);
+    else         cpu.state.clearFlags!(CCRFlags.Z);
 }
 
 void updateFlags(T)(CpuPtr cpu, in T val)
 {
     updateNZFlags(cpu, val);
-    cpu.state.clearFlags(CCRFlags.V | CCRFlags.C);
+    cpu.state.clearFlags!(CCRFlags.V | CCRFlags.C);
 }
 
 T add(T)(in T x, in T y, CpuPtr cpu)
 {
     const r1 = cast(long)x + cast(long)y;
-    cpu.state.setFlags(CCRFlags.V, (r1 < Signed!T.min || r1 > Signed!T.max));
+    cpu.state.setFlags!(CCRFlags.V)(r1 < Signed!T.min || r1 > Signed!T.max);
     const r2 = cast(Unsigned!T)x + cast(Unsigned!T)y;
-    cpu.state.setFlags(CCRFlags.C | CCRFlags.X, (r2 < int.min || r2 > int.max));
+    cpu.state.setFlags!(CCRFlags.C | CCRFlags.X)(r2 < int.min || r2 > int.max);
     cast(void)r2;
     updateNZFlags(cpu, cast(T)r1);
     return cast(T)r1;
@@ -74,8 +74,8 @@ T add(T)(in T x, in T y, CpuPtr cpu)
 T sub(T)(in T x, in T y, CpuPtr cpu)
 {
     const r1 = cast(long)x - cast(long)y;
-    cpu.state.setFlags(CCRFlags.V, (r1 < Signed!T.min || r1 > Signed!T.max));
-    cpu.state.setFlags(CCRFlags.C | CCRFlags.X, (cast(Unsigned!T)x < cast(Unsigned!T)y));
+    cpu.state.setFlags!(CCRFlags.V)(r1 < Signed!T.min || r1 > Signed!T.max);
+    cpu.state.setFlags!(CCRFlags.C | CCRFlags.X)(cast(Unsigned!T)x < cast(Unsigned!T)y);
     updateNZFlags(cpu, cast(T)r1);
     return cast(T)r1;
 }
@@ -83,8 +83,8 @@ T sub(T)(in T x, in T y, CpuPtr cpu)
 T mul(T)(in T x, in T y, CpuPtr cpu)
 {
     const r1 = cast(long)x * cast(long)y;
-    cpu.state.setFlags(CCRFlags.V, (r1 < Signed!T.min || r1 > Signed!T.max));
-    cpu.state.clearFlags(CCRFlags.C);
+    cpu.state.setFlags!CCRFlags.V(r1 < Signed!T.min || r1 > Signed!T.max);
+    cpu.state.clearFlags!(CCRFlags.C);
     updateNZFlags(cpu, cast(T)r1);
     return cast(T)r1;
 }

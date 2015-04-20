@@ -34,7 +34,7 @@ void btstiImpl(Type,ubyte Mode)(CpuPtr cpu)
     const bit = cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x1) % (Type.sizeof * 8);
     addressMode!(Type,AddressModeType.Read,Mode,(cpu,b)
         {
-            cpu.state.setFlags(CCRFlags.Z,(0 == ((b >> bit) & 0x1)));
+            cpu.state.setFlags!(CCRFlags.Z)(0 == ((b >> bit) & 0x1));
         })(cpu);
 }
 
@@ -44,6 +44,6 @@ void btstImpl(Type,ubyte Mode)(CpuPtr cpu)
     const bit = cpu.state.D[reg] % (Type.sizeof * 8);
     addressMode!(Type,AddressModeType.Read,Mode,(cpu,b)
         {
-            cpu.state.setFlags(CCRFlags.Z,(0 == ((b >> bit) & 0x1)));
+            cpu.state.setFlags!(CCRFlags.Z)(0 == ((b >> bit) & 0x1));
         })(cpu);
 }
