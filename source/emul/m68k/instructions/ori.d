@@ -13,7 +13,7 @@ void addOriInstructions(ref Instruction[ushort] ret)
         {
             alias Type = sizeField!(mode >> 6);
             enum dataSize = 0x2 + max(Type.sizeof,0x2);
-            ret.addInstruction(Instruction("oru",0x0000 | mode,dataSize,&oriImpl!(Type,mode)));
+            ret.addInstruction(Instruction("ori",0x0000 | mode,dataSize,&oriImpl!(Type,mode)));
         }
     }
 }
