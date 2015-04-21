@@ -96,8 +96,9 @@ nothrow:
 
     void triggerException(ExceptionCodes code)
     {
-        exceptions.pendingExceptions |= (1 << priotitiesByExceptions[code]);
+        exceptions.setPendingException(code);
         xlongjmp(mJumpBuf,code);
+        assert(false);
     }
 
     void processExceptions()
@@ -131,6 +132,7 @@ nothrow:
             }
         }
     }
+    @property auto ref jmpbuf() pure nothrow @safe inout { return mJumpBuf; }
 pure:
 private:
     alias ReadHookTuple  = Tuple!(uint, "begin", uint, "end", MemReadHook,  "hook");

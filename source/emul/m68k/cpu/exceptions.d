@@ -92,6 +92,8 @@ static immutable ExceptionCodes[] exceptionsByPriotities = [
     ExceptionCodes.IRQ_7,
     ExceptionCodes.Illegal_instruction,
     ExceptionCodes.Privilege_violation,
+    ExceptionCodes.LINE_1010_EMULATOR,
+    ExceptionCodes.LINE_1111_EMULATOR,
     ExceptionCodes.TRAP_00_exception,
     ExceptionCodes.TRAP_01_exception,
     ExceptionCodes.TRAP_02_exception,
@@ -140,7 +142,7 @@ package:
     void setPendingException(ExceptionCodes code)
     {
         const ind = priotitiesByExceptions[code];
-        assert(ind >= 0);
+        assert(ind >= 0,debugConv(code));
         pendingExceptions |= (1 << ind);
     }
     void clearPendingException(ExceptionCodes code)

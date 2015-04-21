@@ -10,6 +10,7 @@ import gamelib.memory.saferef;
 import emul.m68k.cpu;
 
 import emul.m68k.instructions.create;
+import emul.m68k.xsetjmp;
 
 class CpuRunner
 {
@@ -80,6 +81,7 @@ private:
         assert((params.breakHandlers[BreakReason.SingleStep] !is null) == SingleStep);
         scope(failure) debugOut(cpu.state);
         uint savedPC = 0;
+        xsetjmp(cpu.jmpbuf);
     outer: while(true)
         {
             cpu.processExceptions();

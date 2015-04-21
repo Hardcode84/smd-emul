@@ -33,7 +33,8 @@ private:
         if((cpu.state.tickCounter - mCounter) < 100_000)
         {
             //debugOut("hblank");
-            e.setInterrupt(ExceptionCodes.IRQ_4);
+            //e.setInterrupt(ExceptionCodes.IRQ_4);
+            mCounter = cpu.state.tickCounter;
         }
     }
     int mCounter = 0;
