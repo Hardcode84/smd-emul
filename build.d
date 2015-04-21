@@ -34,9 +34,9 @@ void main(string[] args)
     const string compiler = "dmd";
     const string config = args[1..$].canFind("unittest") ? "unittest" : "debug";
 
-    const dmdConfs = ["debug" : "-debug -g -w -c","unittest" : "-g -w -c -unittest"];
+    const dmdConfs = ["debug" : "-debug -g -w -c","unittest" : "-debug -g -w -c -unittest"];
     const string[string][string] compilerOpts = ["dmd" : dmdConfs];
-    const dmdLinkConfs = ["debug" : "-debug -g -w","unittest" : "-g -w -unittest"];
+    const dmdLinkConfs = ["debug" : "-debug -g -w","unittest" : "-debug -g -w -unittest"];
     const string[string][string] linkerOpts = ["dmd" : dmdLinkConfs];
 
     const string[string] importOpts = ["dmd" : "-I\"%s\""];
