@@ -33,18 +33,18 @@ void orImpl(Type,ubyte d,ubyte Mode)(CpuPtr cpu)
     {
         addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
             {
-                const result = val | b;
+                const result = cast(Type)(val | b);
                 updateFlags(cpu,result);
-                *(cast(Type*)&cpu.state.D[reg]) = cast(Type)result;
+                *(cast(Type*)&cpu.state.D[reg]) = result;
             })(cpu);
     }
     else
     {
         addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,b)
             {
-                const result = val | b;
+                const result = cast(Type)(val | b);
                 updateFlags(cpu,result);
-                return cast(Type)result;
+                return result;
             })(cpu);
     }
 }
