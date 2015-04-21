@@ -49,6 +49,9 @@ auto createInstructions()
     import emul.m68k.instructions.movetosr;
     addMovetosrInstructions(ret);
 
+    import emul.m68k.instructions.movefromsr;
+    addMovefromsrInstructions(ret);
+
     import emul.m68k.instructions.move;
     addMoveInstructions(ret);
 
