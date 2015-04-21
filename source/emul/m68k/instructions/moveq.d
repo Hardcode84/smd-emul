@@ -8,7 +8,7 @@ void addMoveqInstructions(ref Instruction[ushort] ret)
     //moveq
     foreach(r; 0..8)
     {
-        foreach(val; 0..0xff)
+        foreach(val; 0..0x100)
         {
             const instr = 0x7000 | (r << 9) | val;
             ret.addInstruction(Instruction("moveq",cast(ushort)instr,0x2,&moveqImpl!void));
@@ -19,8 +19,9 @@ void addMoveqInstructions(ref Instruction[ushort] ret)
 private:
 void moveqImpl(Dummy)(CpuPtr cpu)
 {
-    const reg = ((cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
-    const int data = cpu.getMemValueNoHook!byte(cpu.state.PC - 0x1);
+    const word = cpu.getMemValueNoHook!ushort(cpu.state.PC - 0x2);
+    const reg = ((word >> 9) & 0b111);
+    const int data = word & 0xff;
     cpu.state.D[reg] = data;
     updateFlags(cpu, data);
 }
