@@ -30,6 +30,9 @@ auto createInstructions()
     import emul.m68k.instructions.cmp;
     addCmpInstructions(ret);
 
+    import emul.m68k.instructions.cmpa;
+    addCmpaInstructions(ret);
+
     import emul.m68k.instructions.lea;
     addLeaInstructions(ret);
 
