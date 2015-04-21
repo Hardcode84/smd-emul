@@ -14,7 +14,6 @@ import emul.m68k.instructions.create;
 class CpuRunner
 {
 public:
-pure:
     enum BreakReason
     {
         SingleStep = 0
@@ -46,11 +45,11 @@ private:
 
     struct Op
     {
-        @nogc pure nothrow:
+        @nogc nothrow:
         ushort size;
         ushort ticks = 1;
         void function(CpuPtr) impl;
-        this(in Instruction instr) @safe
+        this(in Instruction instr) @safe pure
         {
             size = instr.size;
             impl = instr.impl;

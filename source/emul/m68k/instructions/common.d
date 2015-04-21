@@ -18,7 +18,7 @@ struct Instruction
     string name;
     ushort opcode;
     ushort size;
-    void function(CpuPtr) @nogc pure nothrow impl;
+    void function(CpuPtr) @nogc nothrow impl;
 }
 
 package pure nothrow @safe:

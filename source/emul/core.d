@@ -15,7 +15,6 @@ import emul.vdp.vdp;
 class Core
 {
 public:
-pure:
     this(RomRef rom)
     {
         mRom = rom;

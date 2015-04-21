@@ -6,6 +6,7 @@ import std.typecons;
 import std.algorithm;
 import std.range;
 
+import emul.m68k.xsetjmp;
 import emul.m68k.cpu.cpustate;
 import emul.m68k.cpu.memory;
 import emul.m68k.cpu.exceptions;
@@ -14,7 +15,7 @@ import gamelib.memory.saferef;
 
 struct Cpu
 {
-pure nothrow:
+nothrow:
     CpuState state;
     Memory memory;
     Exceptions exceptions;
@@ -23,12 +24,12 @@ pure nothrow:
     alias MemReadHook    = uint delegate(CpuPtr,uint,size_t) pure nothrow @nogc;
     alias MemWriteHook   = void delegate(CpuPtr,uint,size_t,uint) pure nothrow @nogc;
 
-    void setInterruptsHook(InterruptsHook hook) @nogc
+    void setInterruptsHook(InterruptsHook hook) @nogc pure
     {
         mInterruptsHook = hook;
     }
 
-    void addReadHook(MemReadHook hook, uint begin, uint end)
+    void addReadHook(MemReadHook hook, uint begin, uint end) pure
     in
     {
         assert(hook !is null);
@@ -42,7 +43,7 @@ pure nothrow:
         mReadHooksRange = tuple(min(mReadHooksRange[0],begin),max(mReadHooksRange[1],end + uint.sizeof));
     }
 
-    void addWriteHook(MemWriteHook hook, uint begin, uint end)
+    void addWriteHook(MemWriteHook hook, uint begin, uint end) pure
     in
     {
         assert(hook !is null);
@@ -93,6 +94,12 @@ pure nothrow:
         return memory.getRawValue!T(offset);
     }
 
+    void triggerException(ExceptionCodes code)
+    {
+        exceptions.pendingExceptions |= (1 << priotitiesByExceptions[code]);
+        xlongjmp(mJumpBuf,code);
+    }
+
     void processExceptions()
     {
         mixin SafeThis;
@@ -124,7 +131,7 @@ pure nothrow:
             }
         }
     }
-
+pure:
 private:
     alias ReadHookTuple  = Tuple!(uint, "begin", uint, "end", MemReadHook,  "hook");
     alias WriteHookTuple = Tuple!(uint, "begin", uint, "end", MemWriteHook, "hook");
@@ -133,6 +140,7 @@ private:
     WriteHookTuple[] mWriteHooks;
     auto mReadHooksRange  = tuple(0xffffffff,0x0);
     auto mWriteHooksRange = tuple(0xffffffff,0x0);
+    xjmp_buf mJumpBuf;
 
     static void checkHooksRange(T)(in T[] hooks)
     {
