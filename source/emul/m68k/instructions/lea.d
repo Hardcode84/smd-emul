@@ -24,7 +24,7 @@ private:
 void leaImpl(ubyte Mode)(CpuPtr cpu)
 {
     const reg = ((cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
-    addressMode!(int,AddressModeType.ReadAddress,Mode,(a,b)
+    addressMode!(uint,AddressModeType.ReadAddress,Mode,(a,b)
         {
             a.state.A[reg] = b;
         })(cpu);

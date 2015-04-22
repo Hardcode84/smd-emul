@@ -36,6 +36,9 @@ auto createInstructions()
     import emul.m68k.instructions.lea;
     addLeaInstructions(ret);
 
+    import emul.m68k.instructions.pea;
+    addPeaInstructions(ret);
+
 
     import emul.m68k.instructions.movem;
     addMovemInstructions(ret);
