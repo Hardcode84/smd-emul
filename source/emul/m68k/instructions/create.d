@@ -108,6 +108,10 @@ auto createInstructions()
     addBtstInstructions(ret);
 
 
+    import emul.m68k.instructions.link;
+    addLinkInstructions(ret);
+
+
     import emul.m68k.instructions.jmp;
     addJmpInstructions(ret);
 
