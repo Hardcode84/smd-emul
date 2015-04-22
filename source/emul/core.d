@@ -45,14 +45,18 @@ public:
                 debugOut(cpu.state);
                 return false;
             }*/
-            if(cpu.state.PC == 0x4a8)
+            /*if(cpu.state.PC == 0x4a8)
+            {
+                trace = true;
+            }
+            if(cpu.state.PC == 0x210)
             {
                 trace = true;
             }
             if(cpu.state.PC == 0x4ba)
             {
                 trace = false;
-            }
+            }*/
             if(trace)
             {
                 //debugfOut("%x",cpu.state.PC);

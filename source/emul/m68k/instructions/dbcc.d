@@ -25,7 +25,7 @@ void dbccImpl(ubyte condition)(CpuPtr cpu)
     {
         const reg = cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x3) & 0b111;
         truncateReg!short(cpu.state.D[reg]) -= 1;
-        if(-1 != cpu.state.D[reg])
+        if(-1 != truncateReg!short(cpu.state.D[reg]))
         {
             const offset = cpu.getMemValueNoHook!short(cpu.state.PC - 0x2);
             cpu.state.PC += offset - 0x2;
