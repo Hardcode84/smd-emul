@@ -33,7 +33,7 @@ void subImpl(ubyte d,ubyte Mode)(CpuPtr cpu)
     {
         addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
             {
-                *(cast(Type*)&cpu.state.D[reg]) = sub(val, b, cpu);
+                truncateReg!Type(cpu.state.D[reg]) = sub(val, b, cpu);
             })(cpu);
     }
     else

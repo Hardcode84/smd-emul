@@ -70,7 +70,7 @@ void rotateImpl(Type,ubyte dr,ubyte ir)(CpuPtr cpu)
     cpu.state.clearFlags!(CCRFlags.V);
     cpu.state.setFlags!(CCRFlags.Z)(0 == val);
     cpu.state.setFlags!(CCRFlags.N)(0x0 != (val & (1 << (Type.sizeof * 8 - 1))));
-    *(cast(Type*)&cpu.state.D[reg]) = cast(Type)val;
+    truncateReg!Type(cpu.state.D[reg]) = cast(Type)val;
 }
 
 void rotatemImpl(ubyte dr,ubyte Mode)(CpuPtr cpu)

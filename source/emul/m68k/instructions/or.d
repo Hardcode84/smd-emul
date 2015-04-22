@@ -35,7 +35,7 @@ void orImpl(Type,ubyte d,ubyte Mode)(CpuPtr cpu)
             {
                 const result = cast(Type)(val | b);
                 updateFlags(cpu,result);
-                *(cast(Type*)&cpu.state.D[reg]) = result;
+                truncateReg!Type(cpu.state.D[reg]) = result;
             })(cpu);
     }
     else

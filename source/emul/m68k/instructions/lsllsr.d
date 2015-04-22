@@ -71,7 +71,7 @@ void lshiftImpl(Type,ubyte dr,ubyte ir)(CpuPtr cpu)
     }
     cpu.state.clearFlags!(CCRFlags.V);
     updateNZFlags(cpu,val);
-    *(cast(Type*)&cpu.state.D[reg]) = cast(Type)val;
+    truncateReg!Type(cpu.state.D[reg]) = cast(Type)val;
 }
 
 void lshiftmImpl(ubyte dr,ubyte Mode)(CpuPtr cpu)

@@ -33,7 +33,7 @@ void addImpl(ubyte d,ubyte Mode)(CpuPtr cpu)
     {
         addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
             {
-                *(cast(Type*)&cpu.state.D[reg]) = add(val, b, cpu);
+                truncateReg!Type(cpu.state.D[reg]) = add(val, b, cpu);
             })(cpu);
     }
     else

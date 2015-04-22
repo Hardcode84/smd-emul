@@ -13,6 +13,9 @@ import emul.m68k.cpu.exceptions;
 
 import gamelib.memory.saferef;
 
+auto ref truncateReg(T)(ref int val) pure nothrow @nogc { return *(cast(T*)&val); }
+auto ref truncateReg(T)(ref uint val) pure nothrow @nogc { return *(cast(T*)&val); }
+
 struct Cpu
 {
 nothrow:

@@ -21,9 +21,7 @@ struct Instruction
     void function(CpuPtr) @nogc nothrow impl;
 }
 
-package pure nothrow:
-auto ref truncateReg(T)(ref int val){ return *(cast(T*)&val); }
-@safe:
+package pure nothrow @safe:
 void addInstruction(ref Instruction[ushort] instructions, in Instruction instr) @safe
 {
     version(BigEndian)

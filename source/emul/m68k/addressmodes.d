@@ -54,7 +54,7 @@ pure nothrow @nogc:
             }
             else static if(Type == AddressModeType.WriteDontExtendRegister)
             {
-                *(cast(T*)&cpu.state.D[Reg]) = F(cpu);
+                truncateReg!T(cpu.state.D[Reg]) = F(cpu);
             }
             else static if(Type == AddressModeType.ReadWrite)
             {
@@ -62,7 +62,7 @@ pure nothrow @nogc:
             }
             else static if(Type == AddressModeType.ReadWriteDontExtendRegister)
             {
-                *(cast(T*)&cpu.state.D[Reg]) = F(cpu,cast(T)cpu.state.D[Reg]);
+                truncateReg!T(cpu.state.D[Reg]) = F(cpu,cast(T)cpu.state.D[Reg]);
             }
             else static if(Type == AddressModeType.Read || Type == AddressModeType.ReadAddress)
             {
@@ -81,7 +81,7 @@ pure nothrow @nogc:
             }
             else static if(Type == AddressModeType.WriteDontExtendRegister)
             {
-                *(cast(T*)&cpu.state.A[Reg]) = F(cpu);
+                truncateReg!T(cpu.state.A[Reg]) = F(cpu);
             }
             else static if(Type == AddressModeType.ReadWrite)
             {
@@ -89,7 +89,7 @@ pure nothrow @nogc:
             }
             else static if(Type == AddressModeType.ReadWriteDontExtendRegister)
             {
-                *(cast(T*)&cpu.state.A[Reg]) = F(cpu,cast(T)cpu.state.A[Reg]);
+                truncateReg!T(cpu.state.A[Reg]) = F(cpu,cast(T)cpu.state.A[Reg]);
             }
             else static if(Type == AddressModeType.Read || Type == AddressModeType.ReadAddress)
             {
