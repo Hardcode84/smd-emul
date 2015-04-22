@@ -36,6 +36,7 @@ public:
 
     void run()
     {
+        bool trace = false;
         CpuRunner.RunParams params;
         params.breakHandlers[CpuRunner.BreakReason.SingleStep] = (CpuPtr cpu)
         {
@@ -44,6 +45,19 @@ public:
                 debugOut(cpu.state);
                 return false;
             }*/
+            if(cpu.state.PC == 0x4a8)
+            {
+                trace = true;
+            }
+            if(cpu.state.PC == 0x4b8)
+            {
+                trace = false;
+            }
+            if(trace)
+            {
+                //debugfOut("%x",cpu.state.PC);
+                debugOut("-------\n",cpu.state);
+            }
             return true;
         };
 

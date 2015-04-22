@@ -31,7 +31,7 @@ void addSubqInstructions(ref Instruction[ushort] ret)
 private:
 void subqImpl(ubyte Mode)(CpuPtr cpu)
 {
-    const data = cast(byte)(cpu.getMemValueNoHook!ubyte(cpu.state.PC - 1) & 0b111);
+    const data = cast(byte)(cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x1) & 0b111);
     static if(addressModeTraits!Mode.Data)
     {
         addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,val)

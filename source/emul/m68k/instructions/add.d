@@ -27,7 +27,7 @@ private:
 void addImpl(ubyte d,ubyte Mode)(CpuPtr cpu)
 {
     alias Type = sizeField!(Mode >> 6);
-    const reg = (cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x2) >> 2) & 0b111;
+    const reg = (cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111;
     const val = cast(Type)cpu.state.D[reg];
     static if(0 == d)
     {
