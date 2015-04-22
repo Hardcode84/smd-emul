@@ -80,6 +80,9 @@ auto createInstructions()
     import emul.m68k.instructions.lsllsr;
     addLslLsrInstructions(ret);
 
+    import emul.m68k.instructions.ext;
+    addExtInstructions(ret);
+
     import emul.m68k.instructions.add;
     addAddInstructions(ret);
 
