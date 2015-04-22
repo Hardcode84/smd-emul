@@ -49,7 +49,7 @@ public:
             {
                 trace = true;
             }
-            if(cpu.state.PC == 0x4b8)
+            if(cpu.state.PC == 0x4ba)
             {
                 trace = false;
             }
