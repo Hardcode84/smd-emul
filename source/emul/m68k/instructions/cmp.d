@@ -5,7 +5,6 @@ import emul.m68k.instructions.common;
 package pure nothrow:
 void addCmpInstructions(ref Instruction[ushort] ret)
 {
-    //cmp
     foreach(v; TupleRange!(0,readAddressModesWSize.length))
     {
         enum mode = readAddressModesWSize[v];
