@@ -23,6 +23,9 @@ auto createInstructions()
     import emul.m68k.instructions.bcc;
     addBccInstructions(ret);
 
+    import emul.m68k.instructions.dbcc;
+    addDbccInstructions(ret);
+
 
     import emul.m68k.instructions.tst;
     addTstInstructions(ret);
@@ -96,6 +99,9 @@ auto createInstructions()
     import emul.m68k.instructions.add;
     addAddInstructions(ret);
 
+    import emul.m68k.instructions.adda;
+    addAddaInstructions(ret);
+
     import emul.m68k.instructions.addq;
     addAddqInstructions(ret);
 
@@ -117,8 +123,6 @@ auto createInstructions()
     import emul.m68k.instructions.swap;
     addSwapInstructions(ret);
 
-    import emul.m68k.instructions.dbcc;
-    addDbccInstructions(ret);
 
     import emul.m68k.instructions.btst;
     addBtstInstructions(ret);

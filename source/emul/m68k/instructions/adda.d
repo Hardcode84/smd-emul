@@ -1,9 +1,9 @@
-﻿module emul.m68k.instructions.suba;
+﻿module emul.m68k.instructions.adda;
 
 import emul.m68k.instructions.common;
 
 package pure nothrow:
-void addSubaInstructions(ref Instruction[ushort] ret)
+void addAddaInstructions(ref Instruction[ushort] ret)
 {
     foreach(v; TupleRange!(0,readAddressModes.length))
     {
@@ -14,18 +14,18 @@ void addSubaInstructions(ref Instruction[ushort] ret)
             else enum opm = 0b111;
             foreach(r; TupleRange!(0,8))
             {
-                const instr = 0x9000 | (r << 9) | (opm << 6) | mode;
-                ret.addInstruction(Instruction("suba",cast(ushort)instr,0x2,&subaImpl!(Type,r,mode)));
+                const instr = 0xd000 | (r << 9) | (opm << 6) | mode;
+                ret.addInstruction(Instruction("adda",cast(ushort)instr,0x2,&addaImpl!(Type,r,mode)));
             }
         }
     }
 }
 
 private:
-void subaImpl(Type,ubyte Reg,ubyte Mode)(CpuPtr cpu)
+void addaImpl(Type,ubyte Reg,ubyte Mode)(CpuPtr cpu)
 {
     addressMode!(Type,AddressModeType.Read,Mode,(cpu,val)
         {
-            cpu.state.A[Reg] -= val;
+            cpu.state.A[Reg] += val;
         })(cpu);
 }
