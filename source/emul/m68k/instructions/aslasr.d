@@ -9,7 +9,7 @@ void addAslAsrInstructions(ref Instruction[ushort] ret)
     {
         foreach(ir; TupleRange!(0,2))
         {
-            foreach(size, Type; TypeTuple!(ubyte,ushort,uint))
+            foreach(size, Type; TypeTuple!(byte,short,int))
             {
                 foreach(r; 0..8)
                 {
@@ -76,7 +76,8 @@ void ashiftImpl(Type,ubyte dr,ubyte ir)(CpuPtr cpu)
 
 void ashiftmImpl(ubyte dr,ubyte Mode)(CpuPtr cpu)
 {
-    addressMode!(ushort,AddressModeType.ReadWrite,Mode,(cpu,val)
+    alias Type = short;
+    addressMode!(Type,AddressModeType.ReadWrite,Mode,(cpu,val)
         {
             static if(0 == dr) //right
             {
@@ -85,12 +86,12 @@ void ashiftmImpl(ubyte dr,ubyte Mode)(CpuPtr cpu)
             }
             else
             {
-                cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != (val & (1 << (ushort.sizeof * 8 - 1))));
+                cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != (val & (1 << (Type.sizeof * 8 - 1))));
                 const result = val << 1;
             }
             cpu.state.clearFlags!(CCRFlags.V);
             cpu.state.setFlags!(CCRFlags.Z)(0 == val);
-            cpu.state.setFlags!(CCRFlags.N)(0x0 != (val & (1 << (ushort.sizeof * 8 - 1))));
+            cpu.state.setFlags!(CCRFlags.N)(0x0 != (val & (1 << (Type.sizeof * 8 - 1))));
             return cast(ushort)result;
         })(cpu);
 }

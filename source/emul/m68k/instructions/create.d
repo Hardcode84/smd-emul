@@ -102,6 +102,9 @@ auto createInstructions()
     import emul.m68k.instructions.sub;
     addSubInstructions(ret);
 
+    import emul.m68k.instructions.suba;
+    addSubaInstructions(ret);
+
     import emul.m68k.instructions.subq;
     addSubqInstructions(ret);
 
