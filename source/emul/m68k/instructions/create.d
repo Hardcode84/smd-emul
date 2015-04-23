@@ -90,6 +90,9 @@ auto createInstructions()
     import emul.m68k.instructions.rolror;
     addRolRorInstructions(ret);
 
+    import emul.m68k.instructions.roxlroxr;
+    addRoxlRoxrInstructions(ret);
+
     import emul.m68k.instructions.lsllsr;
     addLslLsrInstructions(ret);
 

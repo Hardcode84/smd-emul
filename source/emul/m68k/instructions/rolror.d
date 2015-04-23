@@ -5,7 +5,6 @@ import emul.m68k.instructions.common;
 package pure nothrow:
 void addRolRorInstructions(ref Instruction[ushort] ret)
 {
-    //rol ror
     foreach(dr; TupleRange!(0,2))
     {
         foreach(ir; TupleRange!(0,2))
