@@ -129,13 +129,14 @@ nothrow:
     void beginNextInstruction()
     {
         mCurrentInstructionBuff = mInstructionBuff[0..0];
+        mSavedPC = state.PC;
         fetchInstruction(ushort.sizeof);
-        mCurrentInstruction = getInstructionData!(ushort,true)(state.PC);
+        mCurrentInstruction = getInstructionData!(ushort,true)(mSavedPC);
     }
 
     void fetchInstruction(uint size)
     {
-        const start = state.PC + mCurrentInstructionBuff.length;
+        const start = mSavedPC + mCurrentInstructionBuff.length;
         memory.checkRange!true(start,size);
         const buffStart = mCurrentInstructionBuff.length;
         const buffEnd = buffStart + size;
@@ -149,11 +150,9 @@ pure @safe:
 
     auto getInstructionData(T,bool Raw = false)(uint pc) const
     {
-        const start = pc - state.PC;
+        const start = pc - mSavedPC;
         const end   = start + T.sizeof;
         import std.bitmanip;
-        debugfOut("%x",pc);
-        debugfOut("%x %x", start, end);
         static if(Raw)
         {
             import std.system;
@@ -178,6 +177,7 @@ private:
     ubyte[ushort.sizeof * 11] mInstructionBuff;
     ubyte[] mCurrentInstructionBuff;
     ushort mCurrentInstruction;
+    uint   mSavedPC;
 
     static void checkHooksRange(T)(in T[] hooks)
     {
