@@ -32,13 +32,6 @@ package:
         (cast(ubyte[])data)[o..o+T.sizeof] = temp;
     }
 
-    /*auto getRawValue(T)(uint offset) const
-    {
-        const o = offset & AddressMask;
-        assert((o + T.sizeof) <= data.length);
-        return *cast(T*)(data.ptr + o);
-    }*/
-
     auto getRawData(uint offset, size_t size) inout
     {
         const o = offset & AddressMask;

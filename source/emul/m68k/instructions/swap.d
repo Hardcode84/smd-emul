@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addSwapInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addSwapInstructions(ref Instruction[ushort] ret) pure
 {
     //swap
     foreach(r; TupleRange!(0,8))

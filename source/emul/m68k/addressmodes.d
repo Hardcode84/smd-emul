@@ -14,7 +14,7 @@ enum AddressModeType
 
 template addressMode(T, AddressModeType Type, ubyte Val, alias F)
 {
-pure nothrow @nogc:
+nothrow @nogc:
     private enum Mode = (Val >> 3) & 0b111;
     private enum Reg =  Val & 0b111;
     private enum Write = (
@@ -153,13 +153,15 @@ pure nothrow @nogc:
     {
         void addressMode(CpuPtr cpu)
         {
-            const address = cpu.state.A[Reg] + cpu.getMemValue!short(cpu.state.PC);
+            cpu.fetchInstruction(short.sizeof);
+            const address = cpu.state.A[Reg] + cpu.getInstructionData!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             memProxy(cpu,address);
         }
         void addressMode(CpuPtr cpu, int count)
         {
-            const address = cpu.state.A[Reg] + cpu.getMemValue!short(cpu.state.PC);
+            cpu.fetchInstruction(short.sizeof);
+            const address = cpu.state.A[Reg] + cpu.getInstructionData!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             foreach(i; 0..count)
             {
@@ -187,13 +189,15 @@ pure nothrow @nogc:
     {
         void addressMode(CpuPtr cpu)
         {
-            const address = cpu.state.PC + cpu.getMemValue!short(cpu.state.PC);
+            cpu.fetchInstruction(short.sizeof);
+            const address = cpu.state.PC + cpu.getInstructionData!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             memProxy(cpu,address);
         }
         void addressMode(CpuPtr cpu, int count)
         {
-            const address = cpu.state.PC + cpu.getMemValue!short(cpu.state.PC);
+            cpu.fetchInstruction(short.sizeof);
+            const address = cpu.state.PC + cpu.getInstructionData!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             foreach(i; 0..count)
             {
@@ -221,13 +225,15 @@ pure nothrow @nogc:
     {
         void addressMode(CpuPtr cpu)
         {
-            const address = cpu.getMemValue!short(cpu.state.PC);
+            cpu.fetchInstruction(short.sizeof);
+            const address = cpu.getInstructionData!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             memProxy(cpu,address);
         }
         void addressMode(CpuPtr cpu, int count)
         {
-            const address = cpu.getMemValue!short(cpu.state.PC);
+            cpu.fetchInstruction(short.sizeof);
+            const address = cpu.getInstructionData!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             foreach(i; 0..count)
             {
@@ -239,13 +245,15 @@ pure nothrow @nogc:
     {
         void addressMode(CpuPtr cpu)
         {
-            const address = cpu.getMemValue!uint(cpu.state.PC);
+            cpu.fetchInstruction(uint.sizeof);
+            const address = cpu.getInstructionData!uint(cpu.state.PC);
             cpu.state.PC += uint.sizeof;
             memProxy(cpu,address);
         }
         void addressMode(CpuPtr cpu, int count)
         {
-            const address = cpu.getMemValue!uint(cpu.state.PC);
+            cpu.fetchInstruction(uint.sizeof);
+            const address = cpu.getInstructionData!uint(cpu.state.PC);
             cpu.state.PC += uint.sizeof;
             foreach(i; 0..count)
             {
@@ -265,10 +273,12 @@ pure nothrow @nogc:
             {
                 const pc = cpu.state.PC;
             }
-            cpu.state.PC += max(T.sizeof,ushort.sizeof);
+            const sz = max(T.sizeof,ushort.sizeof);
+            cpu.fetchInstruction(sz);
+            cpu.state.PC += sz;
             static if(Type == AddressModeType.Read)
             {
-                F(cpu,cpu.getMemValue!T(pc));
+                F(cpu,cpu.getInstructionData!T(pc));
             }
             else static if(Type == AddressModeType.ReadAddress)
             {
@@ -449,11 +459,12 @@ unittest
     }
 }
 
-pure nothrow @nogc:
+nothrow @nogc:
 private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
 {
+    cpu.fetchInstruction(ushort.sizeof);
     auto pc = cpu.state.PC;
-    const word = cpu.getMemValueNoHook!ushort(pc);
+    const word = cpu.getInstructionData!ushort(pc);
     pc += ushort.sizeof;
     scope(exit) cpu.state.PC = pc;
     const bool da = (0 == (word & (1 << 15)));
@@ -471,24 +482,38 @@ private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
     {
         const bool BS = (0 == (word & (1 << 7)));
         const bool IS = (0 == (word & (1 << 6)));
+        const IIS = word & 0b111;
         const ushort BDSize = (word >> 4) & 0b11;
         int baseDisp = 0;
+
+        uint sizeToFetch;
+        if(2 == BDSize)      sizeToFetch = short.sizeof;
+        else if(3 == BDSize) sizeToFetch = int.sizeof;
+        else assert(false);
+
+        switch(IIS & 0b11)
+        {
+            case 2:
+                sizeToFetch += short.sizeof;
+                break;
+            case 3:
+                sizeToFetch += int.sizeof;
+                break;
+            default:
+                break;
+        }
+        cpu.fetchInstruction(sizeToFetch);
+
         if(2 == BDSize)
         {
-            baseDisp = cpu.getMemValueNoHook!short(pc);
-            pc +=short.sizeof;
+            baseDisp = cpu.getInstructionData!short(pc);
+            pc += short.sizeof;
         }
         else if(3 == BDSize)
         {
-            baseDisp = cpu.getMemValueNoHook!int(pc);
+            baseDisp = cpu.getInstructionData!int(pc);
             pc += int.sizeof;
         }
-        else
-        {
-            assert(false);
-        }
-
-        const IIS = word & 0b111;
 
         if(0 == IIS) // Address Register Indirect with Index
         {
@@ -500,11 +525,11 @@ private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
             switch(IIS & 0b11)
             {
                 case 2:
-                    outerDisp = cpu.getMemValueNoHook!short(pc);
+                    outerDisp = cpu.getInstructionData!short(pc);
                     pc += short.sizeof;
                     break;
                 case 3:
-                    outerDisp = cpu.getMemValueNoHook!int(pc);
+                    outerDisp = cpu.getInstructionData!int(pc);
                     pc += int.sizeof;
                     break;
                 default:

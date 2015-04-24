@@ -13,6 +13,8 @@ import emul.m68k.cpu.exceptions;
 
 import gamelib.memory.saferef;
 
+import gamelib.debugout;
+
 auto ref truncateReg(T)(ref int val) pure nothrow @nogc { return *(cast(T*)&val); }
 auto ref truncateReg(T)(ref uint val) pure nothrow @nogc { return *(cast(T*)&val); }
 
@@ -85,18 +87,6 @@ nothrow:
         memory.setValue!T(offset,val);
     }
 
-    auto getMemValueNoHook(T)(uint offset)
-    {
-        memory.checkRange!true(offset,T.sizeof);
-        return memory.getValue!T(offset);
-    }
-
-    auto getRawMemValue(T)(uint offset) const
-    {
-        memory.checkRange!true(offset,T.sizeof);
-        return memory.getRawValue!T(offset);
-    }
-
     void triggerException(ExceptionCodes code)
     {
         exceptions.setPendingException(code);
@@ -147,27 +137,32 @@ nothrow:
     {
         const start = state.PC + mCurrentInstructionBuff.length;
         memory.checkRange!true(start,size);
-        const end   = start + size;
-        mInstructionBuff[start..end] = memory.getRawData(start,size)[0..$];
-        mCurrentInstructionBuff = mInstructionBuff[0..end];
+        const buffStart = mCurrentInstructionBuff.length;
+        const buffEnd = buffStart + size;
+        mInstructionBuff[buffStart..buffEnd] = memory.getRawData(start,size)[0..$];
+        mCurrentInstructionBuff = mInstructionBuff[0..buffEnd];
     }
 
 pure @safe:
     @property auto ref jmpbuf() inout { return mJumpBuf; }
     @property auto currentInstruction() const { return mCurrentInstruction; }
 
-    auto getInstructionData(T,bool Raw)(uint pc) const
+    auto getInstructionData(T,bool Raw = false)(uint pc) const
     {
         const start = pc - state.PC;
         const end   = start + T.sizeof;
+        import std.bitmanip;
+        debugfOut("%x",pc);
+        debugfOut("%x %x", start, end);
         static if(Raw)
         {
-            const ubyte[T.sizeof] temp = mCurrentInstructionBuff[start..end];
-            return cast(T)temp;
+            import std.system;
+            return mCurrentInstructionBuff[start..end].peek!(T,endian)();
         }
         else
         {
-            return bigEndianToNative!(T,T.sizeof)(mCurrentInstructionBuff[start..end]);
+            ubyte[T.sizeof] temp = mCurrentInstructionBuff[start..end];
+            return bigEndianToNative!(T,T.sizeof)(temp);
         }
     }
 pure:

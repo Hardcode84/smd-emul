@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addRtsInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addRtsInstructions(ref Instruction[ushort] ret) pure
 {
     //rts
     ret.addInstruction(Instruction("rts",0x4e75,0x2,&rtsImpl!void));
@@ -12,6 +12,6 @@ void addRtsInstructions(ref Instruction[ushort] ret)
 private:
 void rtsImpl(Dummy)(CpuPtr cpu)
 {
-    cpu.state.PC = cpu.getMemValueNoHook!uint(cpu.state.SP);
+    cpu.state.PC = cpu.getInstructionData!uint(cpu.state.SP);
     cpu.state.SP += uint.sizeof;
 }

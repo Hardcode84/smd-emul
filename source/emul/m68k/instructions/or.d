@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addOrInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addOrInstructions(ref Instruction[ushort] ret) pure
 {
     //add
     foreach(v; TupleRange!(0,readAddressModesWSize.length))
@@ -27,7 +27,7 @@ void addOrInstructions(ref Instruction[ushort] ret)
 private:
 void orImpl(Type,ubyte d,ubyte Mode)(CpuPtr cpu)
 {
-    const reg = (cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111;
+    const reg = (cpu.getInstructionData!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111;
     const int val = cpu.state.D[reg];
     static if(0 == d)
     {

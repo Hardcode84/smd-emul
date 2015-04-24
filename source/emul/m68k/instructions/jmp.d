@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addJmpInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addJmpInstructions(ref Instruction[ushort] ret) pure
 {
     //jmp
     foreach(v; TupleRange!(0,readAddressModes.length))

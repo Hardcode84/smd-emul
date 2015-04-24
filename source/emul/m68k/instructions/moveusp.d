@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addMoveuspInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addMoveuspInstructions(ref Instruction[ushort] ret) pure
 {
     //move
     foreach(dr; TupleRange!(0,2))
@@ -19,7 +19,7 @@ void addMoveuspInstructions(ref Instruction[ushort] ret)
 private:
 void moveuspImpl(ubyte dr)(CpuPtr cpu)
 {
-    const reg = cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x1) & 0b111;
+    const reg = cpu.getInstructionData!ubyte(cpu.state.PC - 0x1) & 0b111;
     static if(0 == dr)
     {
         cpu.state.USP = cpu.state.A[reg];

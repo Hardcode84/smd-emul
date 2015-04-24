@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addBraInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addBraInstructions(ref Instruction[ushort] ret) pure
 {
     //bra
     foreach(i; 0x1..0xfe)
@@ -17,11 +17,11 @@ void addBraInstructions(ref Instruction[ushort] ret)
 private:
 void braImpl(T)(CpuPtr cpu)
 {
-    const offset = cpu.getMemValueNoHook!T(cast(uint)(cpu.state.PC - T.sizeof));
+    const offset = cpu.getInstructionData!T(cast(uint)(cpu.state.PC - T.sizeof));
     cpu.state.PC += offset - T.sizeof;
 }
 void braImpl(T : void)(CpuPtr cpu)
 {
-    const offset = cpu.getMemValueNoHook!byte(cpu.state.PC - 0x1);
+    const offset = cpu.getInstructionData!byte(cpu.state.PC - 0x1);
     cpu.state.PC += offset;
 }

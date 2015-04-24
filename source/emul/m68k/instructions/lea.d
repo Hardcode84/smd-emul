@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addLeaInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addLeaInstructions(ref Instruction[ushort] ret) pure
 {
     //lea
     foreach(r; 0..8)
@@ -23,7 +23,7 @@ void addLeaInstructions(ref Instruction[ushort] ret)
 private:
 void leaImpl(ubyte Mode)(CpuPtr cpu)
 {
-    const reg = ((cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
+    const reg = ((cpu.getInstructionData!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
     addressMode!(uint,AddressModeType.ReadAddress,Mode,(a,b)
         {
             a.state.A[reg] = b;

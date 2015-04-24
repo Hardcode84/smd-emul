@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addOritosrInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addOritosrInstructions(ref Instruction[ushort] ret) pure
 {
     //ori to sr
     ret.addInstruction(Instruction("ori to sr",0x007c,0x4,&oritosrImpl!void));
@@ -12,6 +12,6 @@ void addOritosrInstructions(ref Instruction[ushort] ret)
 private:
 void oritosrImpl(Dummy)(CpuPtr cpu)
 {
-    const val = cpu.getMemValueNoHook!ushort(cast(uint)(cpu.state.PC - ushort.sizeof));
+    const val = cpu.getInstructionData!ushort(cast(uint)(cpu.state.PC - ushort.sizeof));
     cpu.state.SR = cpu.state.SR | val;
 }

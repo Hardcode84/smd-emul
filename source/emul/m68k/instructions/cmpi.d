@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addCmpiInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addCmpiInstructions(ref Instruction[ushort] ret) pure
 {
     foreach(v; TupleRange!(0,readAddressModesWSize.length))
     {
@@ -22,7 +22,7 @@ private:
 void cmpiImpl(ubyte Mode)(CpuPtr cpu)
 {
     alias Type = sizeField!(Mode >> 6);
-    const vali = cpu.getMemValueNoHook!Type(cast(uint)(cpu.state.PC - Type.sizeof));
+    const vali = cpu.getInstructionData!Type(cast(uint)(cpu.state.PC - Type.sizeof));
     addressModeWSize!(AddressModeType.Read,Mode,(cpu,val)
         {
             cast(void)sub(val, vali, cpu);

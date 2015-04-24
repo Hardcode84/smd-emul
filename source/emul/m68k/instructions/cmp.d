@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addCmpInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addCmpInstructions(ref Instruction[ushort] ret) pure
 {
     foreach(v; TupleRange!(0,readAddressModesWSize.length))
     {

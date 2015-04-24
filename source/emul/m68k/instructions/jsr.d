@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addJsrInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addJsrInstructions(ref Instruction[ushort] ret) pure
 {
     //jsr
     foreach(v; TupleRange!(0,readAddressModes.length))

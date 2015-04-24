@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addRoxlRoxrInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addRoxlRoxrInstructions(ref Instruction[ushort] ret) pure
 {
     foreach(dr; TupleRange!(0,2))
     {

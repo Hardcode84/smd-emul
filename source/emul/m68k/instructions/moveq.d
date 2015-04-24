@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addMoveqInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addMoveqInstructions(ref Instruction[ushort] ret) pure
 {
     //moveq
     foreach(r; 0..8)
@@ -19,7 +19,7 @@ void addMoveqInstructions(ref Instruction[ushort] ret)
 private:
 void moveqImpl(Dummy)(CpuPtr cpu)
 {
-    const word = cpu.getMemValueNoHook!ushort(cpu.state.PC - 0x2);
+    const word = cpu.getInstructionData!ushort(cpu.state.PC - 0x2);
     const reg = ((word >> 9) & 0b111);
     const int data = word & 0xff;
     cpu.state.D[reg] = data;

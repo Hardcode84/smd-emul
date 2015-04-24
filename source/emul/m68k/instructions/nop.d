@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addNoplInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addNoplInstructions(ref Instruction[ushort] ret) pure
 {
     //nop
     ret.addInstruction(Instruction("nop",0x4e71,0x2,&nopImpl!void));

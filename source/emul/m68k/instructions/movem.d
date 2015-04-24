@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addMovemInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addMovemInstructions(ref Instruction[ushort] ret) pure
 {
     //movem
     foreach(s,T; TypeTuple!(short,int))
@@ -41,7 +41,7 @@ void movemImpl(ubyte dr, Type, ubyte mode)(CpuPtr cpu)
     import core.bitop;
     int*[16] regs = void;
     int** reg = regs.ptr;
-    const uint mask = cpu.getMemValueNoHook!ushort(cast(uint)(cpu.state.PC - ushort.sizeof));
+    const uint mask = cpu.getInstructionData!ushort(cast(uint)(cpu.state.PC - ushort.sizeof));
     const count = popcnt(mask);
     enum W = (0 == dr ? AddressModeType.Write : AddressModeType.Read);
     static if(W == AddressModeType.Write)

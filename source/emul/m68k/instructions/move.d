@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addMoveInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addMoveInstructions(ref Instruction[ushort] ret) pure
 {
     //move
     foreach(i,Type;TypeTuple!(byte,int,short))
@@ -38,7 +38,7 @@ void readFunc(T,ubyte Dest)(CpuPtr cpu, in T val)
 
 auto createReadFuncs(T)()
 {
-    void function(CpuPtr,in T) @nogc pure nothrow[] ret;
+    void function(CpuPtr,in T) @nogc nothrow[] ret;
     foreach(j; TupleRange!(0,writeAddressModes.length))
     {
         enum DestMode = writeAddressModes[j];
@@ -58,7 +58,7 @@ auto createReadFuncs(T)()
 
 void moveImpl(T,ubyte Src)(CpuPtr cpu)
 {
-    const dest = (cpu.getMemValueNoHook!ushort(cpu.state.PC - 0x2) >> 6) & 0b111111;
+    const dest = (cpu.getInstructionData!ushort(cpu.state.PC - 0x2) >> 6) & 0b111111;
     static immutable funcs = createReadFuncs!T();
     void readFuncThunk(CpuPtr cpu, in T val)
     {

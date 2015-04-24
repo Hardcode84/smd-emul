@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addOriInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addOriInstructions(ref Instruction[ushort] ret) pure
 {
     //ori
     foreach(v; TupleRange!(0,writeAddressModesWSize.length))
@@ -21,7 +21,7 @@ void addOriInstructions(ref Instruction[ushort] ret)
 private:
 void oriImpl(Type,ubyte Mode)(CpuPtr cpu)
 {
-    const val = cpu.getMemValueNoHook!Type(cast(uint)(cpu.state.PC - Type.sizeof));
+    const val = cpu.getInstructionData!Type(cast(uint)(cpu.state.PC - Type.sizeof));
     addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,b)
         {
             const result = cast(Type)(val | b);

@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addTstInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addTstInstructions(ref Instruction[ushort] ret) pure
 {
     //tst
     foreach(v; TupleRange!(0,readAddressModesWSize.length))

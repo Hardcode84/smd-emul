@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addBccInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addBccInstructions(ref Instruction[ushort] ret) pure
 {
     //bcc
     foreach(v; TupleRange!(0,conditionalTestsBcc.length))
@@ -24,7 +24,7 @@ void bccImpl(ubyte condition,T)(CpuPtr cpu)
 {
     if(conditionalTest!condition(cpu))
     {
-        const offset = cpu.getMemValueNoHook!T(cast(uint)(cpu.state.PC - T.sizeof));
+        const offset = cpu.getInstructionData!T(cast(uint)(cpu.state.PC - T.sizeof));
         cpu.state.PC += offset - T.sizeof;
     }
 }
@@ -32,7 +32,7 @@ void bccImpl(ubyte condition,T : void)(CpuPtr cpu)
 {
     if(conditionalTest!condition(cpu))
     {
-        const offset = cpu.getMemValueNoHook!byte(cpu.state.PC - 0x1);
+        const offset = cpu.getInstructionData!byte(cpu.state.PC - 0x1);
         cpu.state.PC += offset;
     }
 }

@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addAddqInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addAddqInstructions(ref Instruction[ushort] ret) pure
 {
     //addq
     foreach(v; TupleRange!(0,writeAddressModesWSize.length))
@@ -31,7 +31,7 @@ void addAddqInstructions(ref Instruction[ushort] ret)
 private:
 void addqImpl(ubyte Mode)(CpuPtr cpu)
 {
-    const data = cast(byte)((cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
+    const data = cast(byte)((cpu.getInstructionData!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
     static if(addressModeTraits!Mode.Data)
     {
         addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,val)

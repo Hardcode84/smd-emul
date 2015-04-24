@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addMovefromsrInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addMovefromsrInstructions(ref Instruction[ushort] ret) pure
 {
     //move to sr
     foreach(v; TupleRange!(0,writeAddressModes.length))

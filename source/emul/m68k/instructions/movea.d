@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addMoveaInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addMoveaInstructions(ref Instruction[ushort] ret) pure
 {
     //move
     foreach(i,Type;TypeTuple!(int,short))
@@ -24,7 +24,7 @@ void addMoveaInstructions(ref Instruction[ushort] ret)
 private:
 void moveaImpl(T,ubyte Src)(CpuPtr cpu)
 {
-    const reg = (cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111;
+    const reg = (cpu.getInstructionData!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111;
     void readFunc(CpuPtr cpu, in T val)
     {
         cpu.state.A[reg] = val;

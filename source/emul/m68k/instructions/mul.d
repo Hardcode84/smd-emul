@@ -2,8 +2,8 @@
 
 import emul.m68k.instructions.common;
 
-package pure nothrow:
-void addAddMulInstructions(ref Instruction[ushort] ret)
+package nothrow:
+void addAddMulInstructions(ref Instruction[ushort] ret) pure
 {
     //mul
     foreach(v; TupleRange!(0,readAddressModes.length))
@@ -29,7 +29,7 @@ void addAddMulInstructions(ref Instruction[ushort] ret)
 private:
 void mulwImpl(bool Signed, ubyte Mode)(CpuPtr cpu)
 {
-    const reg = ((cpu.getMemValueNoHook!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
+    const reg = ((cpu.getInstructionData!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
     static if(Signed)
     {
         addressMode!(short,AddressModeType.Read,Mode,(cpu,val)
@@ -52,7 +52,7 @@ void mulwImpl(bool Signed, ubyte Mode)(CpuPtr cpu)
 
 void mulImpl(ubyte Mode)(CpuPtr cpu)
 {
-    const word = cpu.getMemValueNoHook!ushort(cpu.state.PC - 0x2);
+    const word = cpu.getInstructionData!ushort(cpu.state.PC - 0x2);
     static immutable funcs = [
         &mulImpl2!(false,false,Mode),
         &mulImpl2!(false,true,Mode),

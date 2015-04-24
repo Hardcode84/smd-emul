@@ -59,7 +59,7 @@ private:
 
     static void invalidOp(Dummy)(CpuPtr cpu)
     {
-        const pc = cpu.state.PC;
+        const pc = cpu.state.PC - 0x2;
         debugfOut("Invalid op: 0x%.6x 0x%.4x",pc,cpu.getMemValue!ushort(pc));
         assert(false, "Invalid op");
     }
@@ -67,7 +67,7 @@ private:
     void createOps()
     {
         mOps.length = ushort.max + 1;
-        mOps[] = Op(Instruction("illegal",0x0,0x0,&invalidOp!void));
+        mOps[] = Op(Instruction("illegal",0x0,0x2,&invalidOp!void));
         const instructions = createInstructions();
         debugfOut("Total instructions: %s",instructions.length);
         foreach(i,instr; instructions)
@@ -80,7 +80,6 @@ private:
     {
         assert((params.breakHandlers[BreakReason.SingleStep] !is null) == SingleStep);
         scope(failure) debugOut(cpu.state);
-        uint savedPC = 0;
         xsetjmp(cpu.jmpbuf);
     outer: while(true)
         {
@@ -94,9 +93,10 @@ private:
                         break outer;
                     }
                 }
-                savedPC = cpu.state.PC;
-                const opcode = cpu.getRawMemValue!ushort(savedPC);
-                const op = mOps[opcode];
+                cpu.beginNextInstruction();
+                const op = mOps[cpu.currentInstruction];
+                assert(op.size >= 0x2);
+                cpu.fetchInstruction(op.size - 0x2);
                 cpu.state.PC += op.size;
                 cpu.state.tickCounter += op.ticks;
                 op.impl(cpu);
