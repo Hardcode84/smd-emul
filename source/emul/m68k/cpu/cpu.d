@@ -135,7 +135,41 @@ nothrow:
             }
         }
     }
-    @property auto ref jmpbuf() pure nothrow @safe inout { return mJumpBuf; }
+
+    void beginNextInstruction()
+    {
+        mCurrentInstructionBuff = mInstructionBuff[0..0];
+        fetchInstruction(ushort.sizeof);
+        mCurrentInstruction = getInstructionData!(ushort,true)(state.PC);
+    }
+
+    void fetchInstruction(uint size)
+    {
+        const start = state.PC + mCurrentInstructionBuff.length;
+        memory.checkRange!true(start,size);
+        const end   = start + size;
+        mInstructionBuff[start..end] = memory.getRawData(start,size)[0..$];
+        mCurrentInstructionBuff = mInstructionBuff[0..end];
+    }
+
+pure @safe:
+    @property auto ref jmpbuf() inout { return mJumpBuf; }
+    @property auto currentInstruction() const { return mCurrentInstruction; }
+
+    auto getInstructionData(T,bool Raw)(uint pc) const
+    {
+        const start = pc - state.PC;
+        const end   = start + T.sizeof;
+        static if(Raw)
+        {
+            const ubyte[T.sizeof] temp = mCurrentInstructionBuff[start..end];
+            return cast(T)temp;
+        }
+        else
+        {
+            return bigEndianToNative!(T,T.sizeof)(mCurrentInstructionBuff[start..end]);
+        }
+    }
 pure:
 private:
     alias ReadHookTuple  = Tuple!(uint, "begin", uint, "end", MemReadHook,  "hook");
@@ -146,6 +180,9 @@ private:
     auto mReadHooksRange  = tuple(0xffffffff,0x0);
     auto mWriteHooksRange = tuple(0xffffffff,0x0);
     xjmp_buf mJumpBuf;
+    ubyte[ushort.sizeof * 11] mInstructionBuff;
+    ubyte[] mCurrentInstructionBuff;
+    ushort mCurrentInstruction;
 
     static void checkHooksRange(T)(in T[] hooks)
     {
