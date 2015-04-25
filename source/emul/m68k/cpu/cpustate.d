@@ -71,18 +71,9 @@ nothrow @nogc:
         }
         private ushort PrivateSR = SRFlags.S;
     }
-    void setFlags(CCRFlags flags)()
-    {
-        CCR |= flags; 
-    }
-    void clearFlags(CCRFlags flags)()
-    {
-        CCR &= ~flags;
-    }
-    bool testFlags(CCRFlags flags)() const
-    {
-        return 0x0 != (CCR & flags);
-    }
+    void setFlags(CCRFlags flags)() { CCR |= flags; }
+    void clearFlags(CCRFlags flags)() { CCR &= ~flags; }
+    bool testFlags(CCRFlags flags)() const { return 0x0 != (CCR & flags); }
     void setFlags(CCRFlags flags)(bool set) { if(set) setFlags!flags; else clearFlags!flags; }
 
     auto SR() const @property { return PrivateSR; }

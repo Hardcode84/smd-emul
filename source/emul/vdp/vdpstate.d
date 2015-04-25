@@ -16,7 +16,7 @@ enum VdpFlags
 
 struct VdpState
 {
-    ushort[32] R;
+    ubyte[23] R;
     union
     {
         struct
@@ -26,5 +26,11 @@ struct VdpState
         }
         ushort HV;
     }
+    ushort STATUS = 0x3400;
+
+    void setFlags(VdpFlags flags)() { STATUS |= flags; }
+    void clearFlags(VdpFlags flags)() { STATUS &= ~flags; }
+    bool testFlags(VdpFlags flags)() const { return 0x0 != (STATUS & flags); }
+    void setFlags(VdpFlags flags)(bool set) { if(set) setFlags!flags; else clearFlags!flags; }
 }
 

@@ -24,10 +24,16 @@ nothrow:
     CpuState state;
     Memory memory;
     Exceptions exceptions;
+    enum MemWordPart
+    {
+        Full,
+        UpperByte,
+        LowerByte
+    }
 
     alias InterruptsHook = void   delegate(const CpuPtr, ref Exceptions) pure nothrow @nogc;
-    alias MemReadHook    = ushort delegate(CpuPtr,uint,bool) pure nothrow @nogc;
-    alias MemWriteHook   = void   delegate(CpuPtr,uint,bool,ushort) pure nothrow @nogc;
+    alias MemReadHook    = ushort delegate(CpuPtr,uint,MemWordPart) pure nothrow @nogc;
+    alias MemWriteHook   = void   delegate(CpuPtr,uint,MemWordPart,ushort) pure nothrow @nogc;
 
     void setInterruptsHook(InterruptsHook hook) @nogc pure
     {
@@ -72,16 +78,17 @@ nothrow:
             mixin SafeThis;
             static if(1 == T.sizeof)
             {
-                return cast(T)((hook(safeThis, offset & ~0x1, true) >> (0x0 == (offset & 0x1) ? 0 : 8)) & 0xff);
+                const lower = (0x0 == (offset & 0x1));
+                return cast(T)((hook(safeThis, offset & ~0x1, (lower ? MemWordPart.LowerByte : MemWordPart.UpperByte)) >> (lower ? 0 : 8)) & 0xff);
             }
             else static if(2 == T.sizeof)
             {
-                return cast(T)hook(safeThis, offset, false);
+                return cast(T)hook(safeThis, offset, MemWordPart.Full);
             }
             else static if(4 == T.sizeof)
             {
-                const upper = hook(safeThis, offset, false);
-                const lower = hook(safeThis, offset + 0x2, false);
+                const upper = hook(safeThis, offset, MemWordPart.Full);
+                const lower = hook(safeThis, offset + 0x2, MemWordPart.Full);
                 return cast(T)(lower | (upper << 16));
             }
             else static assert(false);
@@ -99,16 +106,17 @@ nothrow:
             mixin SafeThis;
             static if(1 == T.sizeof)
             {
-                hook(safeThis, offset & ~0x1, true, cast(ushort)(cast(ushort)val << (0x0 == (offset & 0x1) ? 0 : 8))) ;
+                const lower = (0x0 == (offset & 0x1));
+                hook(safeThis, offset & ~0x1, (lower ? MemWordPart.LowerByte : MemWordPart.UpperByte), cast(ushort)(cast(ushort)val << (lower ? 0 : 8))) ;
             }
             else static if(2 == T.sizeof)
             {
-                hook(safeThis, offset, false, cast(ushort)val);
+                hook(safeThis, offset, MemWordPart.Full, cast(ushort)val);
             }
             else static if(4 == T.sizeof)
             {
-                hook(safeThis, offset, false, cast(ushort)(val >>> 16));
-                hook(safeThis, offset + 0x2, false, cast(ushort)val);
+                hook(safeThis, offset, MemWordPart.Full, cast(ushort)(val >>> 16));
+                hook(safeThis, offset + 0x2, MemWordPart.Full, cast(ushort)val);
             }
             else static assert(false);
             return;

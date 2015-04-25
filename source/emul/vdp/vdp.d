@@ -5,6 +5,8 @@ import gamelib.debugout;
 
 import emul.m68k.cpu;
 
+import emul.vdp.vdpstate;
+
 struct Vdp
 {
 public:
@@ -19,9 +21,9 @@ pure nothrow:
 
 private:
 @nogc:
-    ushort readHook(CpuPtr cpu, uint offset, bool isByte)
+    ushort readHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart)
     {
-        debugfOut("vdp read : 0x%.6x 0x%.8x %s",cpu.state.PC,offset,isByte);
+        debugfOut("vdp read : 0x%.6x 0x%.8x %s",cpu.state.PC,offset,wpart);
         assert(0x0 == (offset & 0x1));
         if(0xc00000 == offset || 0xc00002 == offset)
         {
@@ -37,9 +39,9 @@ private:
         }
         assert(false);
     }
-    void writeHook(CpuPtr cpu, uint offset, bool isByte, ushort data)
+    void writeHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart, ushort data)
     {
-        debugfOut("vdp write : 0x%.6x 0x%.8x %s 0x%.4x",cpu.state.PC,offset,isByte,data);
+        debugfOut("vdp write : 0x%.6x 0x%.8x %s 0x%.4x",cpu.state.PC,offset,wpart,data);
         assert(0x0 == (offset & 0x1));
         if(0xc00000 == offset || 0xc00002 == offset)
         {
@@ -73,7 +75,7 @@ private:
     ushort readControlPort()
     {
         //debugOut("read control");
-        return 0;
+        return mState.STATUS;
     }
     void writeControlPort(ushort data)
     {
@@ -84,6 +86,8 @@ private:
         //debugOut("read HV counter");
         return 0;
     }
+
+    VdpState mState;
 }
 
 alias VpdPtr = SafeRef!Vdp;
