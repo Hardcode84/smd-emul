@@ -153,12 +153,12 @@ package:
     }
 }
 
-pure nothrow @nogc:
-bool isMemoryError(ExceptionCodes code) @safe
+nothrow @nogc:
+bool isMemoryError(ExceptionCodes code) @safe pure
 {
     return code == ExceptionCodes.Address_error || code == ExceptionCodes.Bus_error;
 }
-bool isIRQ(ExceptionCodes code) @safe
+bool isIRQ(ExceptionCodes code) @safe pure
 {
     return code >= ExceptionCodes.Spurious_exception && code <= ExceptionCodes.IRQ_7;
 }
@@ -179,6 +179,7 @@ bool enterException(CpuPtr cpu, ExceptionCodes code)
     }
     else if(isMemoryError(code))
     {
+        debugOut(code);
         assert(false,"Unimplemented");
     }
     else if(isIRQ(code))

@@ -25,9 +25,9 @@ nothrow:
     Memory memory;
     Exceptions exceptions;
 
-    alias InterruptsHook = void delegate(const CpuPtr, ref Exceptions) pure nothrow @nogc;
-    alias MemReadHook    = uint delegate(CpuPtr,uint,size_t) pure nothrow @nogc;
-    alias MemWriteHook   = void delegate(CpuPtr,uint,size_t,uint) pure nothrow @nogc;
+    alias InterruptsHook = void   delegate(const CpuPtr, ref Exceptions) pure nothrow @nogc;
+    alias MemReadHook    = ushort delegate(CpuPtr,uint,bool) pure nothrow @nogc;
+    alias MemWriteHook   = void   delegate(CpuPtr,uint,bool,ushort) pure nothrow @nogc;
 
     void setInterruptsHook(InterruptsHook hook) @nogc pure
     {
@@ -65,11 +65,26 @@ nothrow:
 @nogc:
     auto getMemValue(T)(uint offset)
     {
+        checkAddress!(T.sizeof)(offset);
         const hook = getHook!true(offset);
         if(hook !is null)
         {
             mixin SafeThis;
-            return cast(T)hook(safeThis, offset, T.sizeof);
+            static if(1 == T.sizeof)
+            {
+                return cast(T)((hook(safeThis, offset & ~0x1, true) >> (0x0 == (offset & 0x1) ? 0 : 8)) & 0xff);
+            }
+            else static if(2 == T.sizeof)
+            {
+                return cast(T)hook(safeThis, offset, false);
+            }
+            else static if(4 == T.sizeof)
+            {
+                const upper = hook(safeThis, offset, false);
+                const lower = hook(safeThis, offset + 0x2, false);
+                return cast(T)(lower | (upper << 16));
+            }
+            else static assert(false);
         }
         memory.checkRange!true(offset,T.sizeof);
         return memory.getValue!T(offset);
@@ -77,11 +92,26 @@ nothrow:
 
     void setMemValue(T)(uint offset, in T val)
     {
+        checkAddress!(T.sizeof)(offset);
         const hook = getHook!false(offset);
         if(hook !is null)
         {
             mixin SafeThis;
-            return hook(safeThis, offset, T.sizeof, cast(uint)val);
+            static if(1 == T.sizeof)
+            {
+                hook(safeThis, offset & ~0x1, true, cast(ushort)(cast(ushort)val << (0x0 == (offset & 0x1) ? 0 : 8))) ;
+            }
+            else static if(2 == T.sizeof)
+            {
+                hook(safeThis, offset, false, cast(ushort)val);
+            }
+            else static if(4 == T.sizeof)
+            {
+                hook(safeThis, offset, false, cast(ushort)(val >>> 16));
+                hook(safeThis, offset + 0x2, false, cast(ushort)val);
+            }
+            else static assert(false);
+            return;
         }
         memory.checkRange!false(offset,T.sizeof);
         memory.setValue!T(offset,val);
@@ -94,6 +124,18 @@ nothrow:
         assert(false);
     }
 
+    void checkAddress(ubyte Size)(uint offset)
+    {
+        static if(Size > 1)
+        {
+            if(0x0 != (offset & 0x1))
+            {
+                triggerException(ExceptionCodes.Address_error);
+                assert(false);
+            }
+        }
+    }
+
     void processExceptions()
     {
         mixin SafeThis;
@@ -104,7 +146,7 @@ nothrow:
 
         if(0 != exceptions.pendingExceptions)
         {
-            static if(size_t.sizeof == ulong.sizeof)
+            static if(size_t.sizeof == exceptions.pendingExceptions.sizeof)
             {
                 int ind = bsf(exceptions.pendingExceptions);
             }
@@ -164,7 +206,6 @@ pure @safe:
             return bigEndianToNative!(T,T.sizeof)(temp);
         }
     }
-pure:
 private:
     alias ReadHookTuple  = Tuple!(uint, "begin", uint, "end", MemReadHook,  "hook");
     alias WriteHookTuple = Tuple!(uint, "begin", uint, "end", MemWriteHook, "hook");

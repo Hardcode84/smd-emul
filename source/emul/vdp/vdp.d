@@ -19,14 +19,14 @@ pure nothrow:
 
 private:
 @nogc:
-    uint readHook(CpuPtr cpu, uint offset, size_t size)
+    ushort readHook(CpuPtr cpu, uint offset, bool isByte)
     {
-        debugfOut("vdp read : 0x%.6x 0x%.8x 0x%x",cpu.state.PC,offset,size);
+        debugfOut("vdp read : 0x%.6x 0x%.8x %s",cpu.state.PC,offset,isByte);
         return 0;
     }
-    void writeHook(CpuPtr cpu, uint offset, size_t size, uint data)
+    void writeHook(CpuPtr cpu, uint offset, bool isByte, ushort data)
     {
-        debugfOut("vdp write : 0x%.6x 0x%.8x 0x%x 0x%.8x",cpu.state.PC,offset,size,data);
+        debugfOut("vdp write : 0x%.6x 0x%.8x %s 0x%.8x",cpu.state.PC,offset,isByte,data);
     }
     void interruptsHook(const CpuPtr cpu, ref Exceptions e)
     {

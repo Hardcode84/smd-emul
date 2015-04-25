@@ -41,6 +41,11 @@ package:
 
     void checkRange(bool Read)(uint ptr, uint size) const
     {
+        if(size > 1 && (0x0 != (ptr & 0x1)))
+        {
+            debugfOut("unaligned %s access: %#.8x %x",(Read ? "read" : "write"),ptr,size);
+            assert(false);
+        }
         const ptrStart = ptr & AddressMask;
         const ptrEnd = (ptr + size - 1) & AddressMask;
         if(ptr >= 0xa00000 && ptrEnd <= 0xa14003) return;
