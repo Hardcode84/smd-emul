@@ -7,7 +7,7 @@ import emul.m68k.cpu;
 
 import emul.vdp.vdpstate;
 
-struct Vdp
+final class Vdp
 {
 public:
 pure nothrow:
@@ -43,6 +43,15 @@ private:
     {
         debugfOut("vdp write : 0x%.6x 0x%.8x %s 0x%.4x",cpu.state.PC,offset,wpart,data);
         assert(0x0 == (offset & 0x1));
+        if(wpart == Cpu.MemWordPart.LowerByte)
+        {
+            data = cast(ushort)(data | (data << 8));
+        }
+        else if(wpart == Cpu.MemWordPart.UpperByte)
+        {
+            data = cast(ushort)(data | (data >> 8));
+        }
+
         if(0xc00000 == offset || 0xc00002 == offset)
         {
             return writeDataPort(data);
@@ -75,11 +84,12 @@ private:
     ushort readControlPort()
     {
         //debugOut("read control");
-        return mState.STATUS;
+        return mState.readControl();
     }
     void writeControlPort(ushort data)
     {
         //debugfOut("write control 0x%.4x",data);
+        mState.writeControl(data);
     }
     ushort readHVCounter()
     {
@@ -90,4 +100,4 @@ private:
     VdpState mState;
 }
 
-alias VpdPtr = SafeRef!Vdp;
+alias VdpRef = SafeRef!Vdp;

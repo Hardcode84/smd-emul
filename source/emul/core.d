@@ -19,6 +19,7 @@ public:
     {
         mRom = rom;
         mCpuRunner = makeSafe!CpuRunner();
+        mVdp = makeSafe!Vdp();
         enforce(mRom.header.romEndAddress < mRom.header.ramEndAddress,
             format("Invalid memory ranges %s %s", mRom.header.romEndAddress, mRom.header.ramEndAddress));
         mCpu.memory.data.length = mRom.header.ramEndAddress + 1;
@@ -77,7 +78,7 @@ private:
     RomRef mRom;
     CpuRunnerRef mCpuRunner;
     Cpu mCpu;
-    Vdp mVdp;
+    VdpRef mVdp;
 }
 
 alias CoreRef = SafeRef!Core;
