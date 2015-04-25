@@ -22,11 +22,34 @@ private:
     ushort readHook(CpuPtr cpu, uint offset, bool isByte)
     {
         debugfOut("vdp read : 0x%.6x 0x%.8x %s",cpu.state.PC,offset,isByte);
-        return 0;
+        assert(0x0 == (offset & 0x1));
+        if(0xc00000 == offset || 0xc00002 == offset)
+        {
+            return readDataPort();
+        }
+        else if(0xc00004 == offset || 0xc00006 == offset)
+        {
+            return readControlPort();
+        }
+        else if(0xc00008 == offset || 0xc0000a == offset || 0xc0000c == offset || 0xc0000e == offset)
+        {
+            return readHVCounter();
+        }
+        assert(false);
     }
     void writeHook(CpuPtr cpu, uint offset, bool isByte, ushort data)
     {
-        debugfOut("vdp write : 0x%.6x 0x%.8x %s 0x%.8x",cpu.state.PC,offset,isByte,data);
+        debugfOut("vdp write : 0x%.6x 0x%.8x %s 0x%.4x",cpu.state.PC,offset,isByte,data);
+        assert(0x0 == (offset & 0x1));
+        if(0xc00000 == offset || 0xc00002 == offset)
+        {
+            return writeDataPort(data);
+        }
+        else if(0xc00004 == offset || 0xc00006 == offset)
+        {
+            return writeControlPort(data);
+        }
+        assert(false);
     }
     void interruptsHook(const CpuPtr cpu, ref Exceptions e)
     {
@@ -38,6 +61,29 @@ private:
         }
     }
     int mCounter = 0;
+    ushort readDataPort()
+    {
+        //debugOut("read data");
+        return 0;
+    }
+    void writeDataPort(ushort data)
+    {
+        //debugfOut("write data 0x%.4x",data);
+    }
+    ushort readControlPort()
+    {
+        //debugOut("read control");
+        return 0;
+    }
+    void writeControlPort(ushort data)
+    {
+        //debugfOut("write control 0x%.4x",data);
+    }
+    ushort readHVCounter()
+    {
+        //debugOut("read HV counter");
+        return 0;
+    }
 }
 
 alias VpdPtr = SafeRef!Vdp;
