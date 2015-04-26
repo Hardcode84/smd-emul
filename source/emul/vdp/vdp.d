@@ -22,11 +22,15 @@ public:
         cpu.setInterruptsHook(&interruptsHook);
     }
 
+    void update()
+    {
+    }
+
 private:
 @nogc:
     ushort readHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart)
     {
-        debugfOut("vdp read : 0x%.6x 0x%.8x %s",cpu.state.PC,offset,wpart);
+        //debugfOut("vdp read : 0x%.6x 0x%.8x %s",cpu.state.PC,offset,wpart);
         assert(0x0 == (offset & 0x1));
         if(0xc00000 == offset || 0xc00002 == offset)
         {
@@ -44,7 +48,7 @@ private:
     }
     void writeHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart, ushort data)
     {
-        debugfOut("vdp write : 0x%.6x 0x%.8x %s 0x%.4x",cpu.state.PC,offset,wpart,data);
+        //debugfOut("vdp write : 0x%.6x 0x%.8x %s 0x%.4x",cpu.state.PC,offset,wpart,data);
         assert(0x0 == (offset & 0x1));
         if(wpart == Cpu.MemWordPart.LowerByte)
         {
@@ -78,6 +82,7 @@ private:
     ushort readDataPort(CpuPtr cpu)
     {
         //debugOut("read data");
+        debugfOut("data port: %s 0x%.6x",mState.CodeReg,mState.AddressReg);
         flushControl(cpu);
         return 0;
     }
@@ -91,6 +96,7 @@ private:
             return;
         }
         flushControl(cpu);
+        debugfOut("data port: %s 0x%.6x 0x%.4x",mState.CodeReg,mState.AddressReg,data);
         switch(mState.CodeReg)
         {
             case VdpCodeRegState.VRamWrite:  mMemory.writeVram(mState.AddressReg, data);  break;
@@ -144,16 +150,21 @@ private:
 
     void flushControl(CpuPtr cpu)
     {
-        mState.AddressReg =                       (mPendingControlBuff[0] & ~0xc000) |  (mPendingControlBuff[1] << 14);
-        mState.CodeReg    = cast(VdpCodeRegState)((mPendingControlBuff[0] >> 14)     | ((mPendingControlBuff[1] >> 2) & 0b1100));
-        debugfOut("flushControl ar=0x%.8x cr=%s",mState.AddressReg,mState.CodeReg);
-        mPendingControlWrite = false;
+        if(mPendingControlWrite)
+        {
+            mState.AddressReg =                       (mPendingControlBuff[0] & ~0xc000) |  (mPendingControlBuff[1] << 14);
+            mState.CodeReg    = cast(VdpCodeRegState)((mPendingControlBuff[0] >> 14)     | ((mPendingControlBuff[1] >> 2) & 0b1100));
+            //debugfOut("flushControl ar=0x%.8x cr=%s",mState.AddressReg,mState.CodeReg);
+            mPendingControlWrite = false;
+        }
         mPendingVramFill = false;
     }
 
     void executeDma(CpuPtr cpu)
     {
-        debugfOut("exec dma: %s %s %s",mState.dmaEnabled,mState.dmaType,mState.CodeReg);
+        debugfOut("exec dma: enbl=%s %s %s",mState.dmaEnabled,mState.dmaType,mState.CodeReg);
+        debugfOut("src= 0x%.8x start=0x%.4x inc=%s len=%s",
+            (DmaType.Transfer ==mState.dmaType ? mState.dmaSrcAddress:0),mState.AddressReg,mState.autoIncrement,mState.dmaLen);
         if(mState.dmaEnabled)
         {
             final switch(mState.dmaType)
@@ -190,6 +201,7 @@ private:
     }
     void dmaFill(ushort val)
     {
+        debugfOut("fill val=0x%.4x",val);
         auto len = mState.dmaLen;
         if(len > 0)
         {
