@@ -81,7 +81,7 @@ private:
         flushControl(cpu);
         return 0;
     }
-    void writeDataPort(CpuPtr cpu,ushort data)
+    void writeDataPort(CpuPtr cpu, ushort data)
     {
         //debugfOut("write data 0x%.4x",data);
         if(mPendingVramFill)
@@ -91,6 +91,14 @@ private:
             return;
         }
         flushControl(cpu);
+        switch(mState.CodeReg)
+        {
+            case VdpCodeRegState.VRamWrite:  mMemory.writeVram(mState.AddressReg, data);  break;
+            case VdpCodeRegState.CRamWrite:  mMemory.writeCram(mState.AddressReg, data);  break;
+            case VdpCodeRegState.VSRamWrite: mMemory.writeVsram(mState.AddressReg, data); break;
+            default: return;
+        }
+        mState.AddressReg += mState.autoIncrement;
     }
     ushort readControlPort(CpuPtr cpu)
     {
@@ -98,7 +106,7 @@ private:
         flushControl(cpu);
         return mState.Status;
     }
-    void writeControlPort(CpuPtr cpu,ushort data)
+    void writeControlPort(CpuPtr cpu, ushort data)
     {
         //debugfOut("write control 0x%.4x",data);
         if(mPendingControlWrite)
@@ -172,28 +180,9 @@ private:
         scope void delegate(size_t, ushort val) nothrow @nogc writeFunc = (size_t, ushort val)
         {
             const addr = mState.AddressReg;
-            static if(VdpCodeRegState.VRamWrite == Dir)
-            {
-                const swapBytes = (0x0 != (addr & 0x1));
-                if(swapBytes)
-                {
-                    mMemory.writeVram(addr + 0, cast(ubyte)(val));
-                    mMemory.writeVram(addr + 1, cast(ubyte)(val >> 8));
-                }
-                else
-                {
-                    mMemory.writeVram(addr + 0, cast(ubyte)(val >> 8));
-                    mMemory.writeVram(addr + 1, cast(ubyte)(val));
-                }
-            }
-            else static if(VdpCodeRegState.CRamWrite == Dir)
-            {
-                mMemory.writeCram(addr, val);
-            }
-            else static if(VdpCodeRegState.VSRamWrite == Dir)
-            {
-                mMemory.writeVsram(addr, val);
-            }
+            static if(VdpCodeRegState.VRamWrite == Dir)       mMemory.writeVram(addr, val);
+            else static if(VdpCodeRegState.CRamWrite == Dir)  mMemory.writeCram(addr, val);
+            else static if(VdpCodeRegState.VSRamWrite == Dir) mMemory.writeVsram(addr, val);
             else static assert(false);
             mState.AddressReg += mState.autoIncrement;
         };
