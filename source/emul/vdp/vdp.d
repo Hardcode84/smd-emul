@@ -78,11 +78,19 @@ private:
     ushort readDataPort(CpuPtr cpu)
     {
         //debugOut("read data");
+        flushControl(cpu);
         return 0;
     }
     void writeDataPort(CpuPtr cpu,ushort data)
     {
         //debugfOut("write data 0x%.4x",data);
+        if(mPendingVramFill)
+        {
+            flushControl(cpu);
+            dmaFill(data);
+            return;
+        }
+        flushControl(cpu);
     }
     ushort readControlPort(CpuPtr cpu)
     {
@@ -132,6 +140,7 @@ private:
         mState.CodeReg    = cast(VdpCodeRegState)((mPendingControlBuff[0] >> 14)     | ((mPendingControlBuff[1] >> 2) & 0b1100));
         debugfOut("flushControl ar=0x%.8x cr=%s",mState.AddressReg,mState.CodeReg);
         mPendingControlWrite = false;
+        mPendingVramFill = false;
     }
 
     void executeDma(CpuPtr cpu)
@@ -142,7 +151,7 @@ private:
             final switch(mState.dmaType)
             {
                 case DmaType.Transfer: dmaTransfer(cpu); break;
-                case DmaType.Fill:     dmaFill(); break;
+                case DmaType.Fill:     mPendingVramFill = true; break;
                 case DmaType.Copy:     dmaCopy(); break;
             }
         }
@@ -190,9 +199,19 @@ private:
         };
         cpu.getMemRange(mState.dmaSrcAddress,mState.dmaLen,writeFunc);
     }
-    void dmaFill()
+    void dmaFill(ushort val)
     {
-        assert(false);
+        auto len = mState.dmaLen;
+        if(len > 0)
+        {
+            mMemory.writeVram(mState.AddressReg, cast(ubyte)val);
+            do
+            {
+                mMemory.writeVram(mState.AddressReg ^ 1, cast(ubyte)(val >> 8));
+                mState.AddressReg += mState.autoIncrement();
+            }
+            while(--len > 0);
+        }
     }
     void dmaCopy()
     {
@@ -201,6 +220,7 @@ private:
 
     bool mPendingControlWrite = false;
     ushort[2] mPendingControlBuff;
+    bool mPendingVramFill = false;
 
     VdpState mState;
     VdpMemory mMemory;
