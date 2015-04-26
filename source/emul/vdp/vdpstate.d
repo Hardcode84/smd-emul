@@ -16,10 +16,27 @@ enum VdpFlags
     FIFIEmpty         = 1 << 9
 }
 
+enum VdpCodeRegState
+{
+    VRamRead   = 0b0000,
+    VRamWrite  = 0b0001,
+    CRamWrite  = 0b0011,
+    VSRamRead  = 0b0100,
+    VSRamWrite = 0b0101,
+    CRamRead   = 0b1000
+}
+
+enum DmaType
+{
+    Transfer,
+    Fill,
+    Copy
+}
+
 struct VdpState
 {
 pure nothrow @nogc @safe:
-    ubyte[23] R;
+    ubyte[24] R;
     union
     {
         struct
@@ -30,54 +47,30 @@ pure nothrow @nogc @safe:
         ushort HV;
     }
 
+    ushort Status = 0x3400;
+
+    uint AddressReg;
+    VdpCodeRegState CodeReg = VdpCodeRegState.VRamRead;
+
+    @property bool dmaEnabled() const { return 0x0 != (R[1] & (1 << 4)); }
+    @property auto autoIncrement() const { return R[15]; }
+    @property auto dmaType() const
+    {
+        if(0x0 == (R[23] & 0x80)) return DmaType.Transfer;
+        else if(0x0 == (R[23] & 0x40)) return DmaType.Fill;
+        else return DmaType.Copy;
+    }
+    @property auto dmaLen() const { return R[19] | (R[20] << 8); }
+    @property auto dmaSrcAddress() const
+    {
+        assert(0x0 == (R[23] & 0x80));
+        return R[21] | (R[22] << 8) | (R[23] << 16);
+    }
+
     void setFlags(VdpFlags flags)() { status |= flags; }
     void clearFlags(VdpFlags flags)() { status &= ~flags; }
     bool testFlags(VdpFlags flags)() const { return 0x0 != (status & flags); }
     void setFlags(VdpFlags flags)(bool set) { if(set) setFlags!flags; else clearFlags!flags; }
 
-    ushort readControl()
-    {
-        flushControl();
-        return status;
-    }
-
-    void writeControl(ushort data)
-    {
-        if(pendingControlWrite)
-        {
-            pendingControlBuff[1] = data;
-            flushControl();
-        }
-        else if(0x8000 == (data & 0xc000))
-        {
-            const reg = (data >> 8) & 0b11111;
-            const val = cast(ubyte)(data & 0xff);
-            debugfOut("vdp reg %s 0x%.2x",reg,val);
-            if(reg < R.length)
-            {
-                R[reg] = val;
-            }
-        }
-        else
-        {
-            pendingControlBuff[0] = data;
-            pendingControlWrite = true;
-        }
-    }
-
-private:
-    ushort status = 0x3400;
-    bool pendingControlWrite = false;
-    ushort[2] pendingControlBuff;
-    uint addressReg;
-    uint codeReg;
-
-    void flushControl()
-    {
-        addressReg = (pendingControlBuff[0] & ~0xc000) | (pendingControlBuff[1] << 14);
-        codeReg = (pendingControlBuff[0] >> 14) | ((pendingControlBuff[1] >> 2) & 0b111111);
-        debugfOut("flushControl ar=0x%.8x cr=0x%x",addressReg,codeReg);
-        pendingControlWrite = false;
-    }
 }
 

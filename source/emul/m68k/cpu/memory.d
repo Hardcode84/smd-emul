@@ -39,7 +39,7 @@ package:
         return cast(inout(ubyte)[])data[o..o+size];
     }
 
-    void checkRange(bool Read)(uint ptr, uint size) const
+    void checkRange(bool Read)(uint ptr, size_t size) const
     {
         if(size > 1 && (0x0 != (ptr & 0x1)))
         {

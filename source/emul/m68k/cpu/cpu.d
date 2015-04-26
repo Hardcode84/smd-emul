@@ -31,9 +31,9 @@ nothrow:
         LowerByte
     }
 
-    alias InterruptsHook = void   delegate(const CpuPtr, ref Exceptions) pure nothrow @nogc;
-    alias MemReadHook    = ushort delegate(CpuPtr,uint,MemWordPart) pure nothrow @nogc;
-    alias MemWriteHook   = void   delegate(CpuPtr,uint,MemWordPart,ushort) pure nothrow @nogc;
+    alias InterruptsHook = void   delegate(const CpuPtr, ref Exceptions) nothrow @nogc;
+    alias MemReadHook    = ushort delegate(CpuPtr,uint,MemWordPart) nothrow @nogc;
+    alias MemWriteHook   = void   delegate(CpuPtr,uint,MemWordPart,ushort) nothrow @nogc;
 
     void setInterruptsHook(InterruptsHook hook) @nogc pure
     {
@@ -95,6 +95,18 @@ nothrow:
         }
         memory.checkRange!true(offset,T.sizeof);
         return memory.getValue!T(offset);
+    }
+
+    void getMemRange(T)(uint offset, size_t count, scope void delegate(size_t, T) nothrow @nogc sink)
+    {
+        assert(sink !is null);
+        checkAddress!(T.sizeof)(offset);
+        //TODO: check hooks
+        memory.checkRange!true(offset,count * T.sizeof);
+        foreach(i; 0..count)
+        {
+            sink(i,memory.getValue!T(offset + i * T.sizeof));
+        }
     }
 
     void setMemValue(T)(uint offset, in T val)
