@@ -21,8 +21,10 @@ public:
     }
     struct RunParams
     {
-        alias BreakHandler = bool delegate(CpuPtr cpu) pure nothrow;
+        alias BreakHandler = bool delegate(CpuPtr cpu) nothrow;
+        alias ProcessHandler = bool delegate(CpuPtr cpu) nothrow;
         BreakHandler[BreakReason.max + 1] breakHandlers;
+        ProcessHandler processHandler;
     }
 
     this()
@@ -31,6 +33,11 @@ public:
     }
 
     void run(CpuPtr cpu,in RunParams params)
+    in
+    {
+        assert(params.processHandler !is null);
+    }
+    body
     {
         if(params.breakHandlers[BreakReason.SingleStep] is null)
         {
@@ -79,12 +86,13 @@ private:
     void runImpl(bool SingleStep)(CpuPtr cpu, in RunParams params)
     {
         assert((params.breakHandlers[BreakReason.SingleStep] !is null) == SingleStep);
+        assert(params.processHandler !is null);
         scope(failure) debugOut(cpu.state);
         xsetjmp(cpu.jmpbuf);
-    outer: while(true)
+    outer: while(params.processHandler(cpu))
         {
-            cpu.processExceptions();
-            foreach(i;0..10)
+            cpu.process();
+            while(!cpu.processed)
             {
                 static if(SingleStep)
                 {
@@ -100,6 +108,7 @@ private:
                 cpu.state.PC += op.size;
                 cpu.state.TickCounter += op.ticks;
                 op.impl(cpu);
+                cpu.endInstruction();
             }
         }
     }

@@ -65,6 +65,11 @@ public:
             }
             return true;
         };
+        params.processHandler = (CpuPtr cpu)
+        {
+            mVdp.update(cpu);
+            return true;
+        };
 
         convertSafe2((CpuPtr cpu)
             {

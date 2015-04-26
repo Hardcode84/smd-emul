@@ -39,6 +39,11 @@ public:
         cpu.addWriteHook(&writeHook, 0xc00000, 0xc0000A);
         cpu.setInterruptsHook(&interruptsHook);
     }
+
+    void update(CpuPtr cpu)
+    {
+    }
+
 @nogc:
     alias RenderCallback = void delegate(const VdpRef,in ubyte[]) pure nothrow @nogc @safe;
 

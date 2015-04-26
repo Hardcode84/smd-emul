@@ -156,40 +156,15 @@ nothrow:
         }
     }
 
-    void processExceptions()
+    void process(int ticks = 100)
     {
-        mixin SafeThis;
-        if(mInterruptsHook !is null)
-        {
-            mInterruptsHook(safeThis, exceptions);
-        }
-
-        if(0 != exceptions.pendingExceptions)
-        {
-            static if(size_t.sizeof == exceptions.pendingExceptions.sizeof)
-            {
-                int ind = bsf(exceptions.pendingExceptions);
-            }
-            else
-            {
-                int ind = void;
-                if(0 != exceptions.pendingExceptionsLo) ind = bsf(exceptions.pendingExceptionsLo);
-                else ind = bsf(exceptions.pendingExceptionsHi) + 32;
-            }
-            if(!enterException(safeThis,exceptionsByPriotities[ind]))
-            {
-                while(ind > 0)
-                {
-                    --ind;
-                    const ex = exceptionsByPriotities[ind];
-                    if((0x0 != (exceptions.pendingExceptions & (1 << ind))) && enterException(safeThis,ex)) break;
-                }
-            }
-        }
+        mExecuteTicks = ticks;
+        processExceptions();
     }
 
     void beginNextInstruction()
     {
+        mSavedTicks = state.TickCounter;
         mCurrentInstructionBuff = mInstructionBuff[0..0];
         mSavedPC = state.PC;
         fetchInstruction(ushort.sizeof);
@@ -206,11 +181,26 @@ nothrow:
         mCurrentInstructionBuff = mInstructionBuff[0..buffEnd];
     }
 
-pure @safe:
-    @property auto ref jmpbuf() inout { return mJumpBuf; }
-    @property auto currentInstruction() const { return mCurrentInstruction; }
+    void endInstruction()
+    {
+        const delta = cast(int)(state.TickCounter - mSavedTicks);
+        mExecuteTicks = max(0,mExecuteTicks - delta);
+    }
 
-    auto getInstructionData(T,bool Raw = false)(uint pc) const
+    void scheduleProcess(int ticks) pure @safe
+    in
+    {
+        assert(ticks > 0);
+    }
+    body
+    {
+        mExecuteTicks = min(mExecuteTicks, ticks);
+    }
+    @property bool processed() pure @safe const { return mExecuteTicks <= 0; }
+    @property auto ref jmpbuf() pure @safe inout { return mJumpBuf; }
+    @property auto currentInstruction() pure @safe const { return mCurrentInstruction; }
+
+    auto getInstructionData(T,bool Raw = false)(uint pc) const pure @safe
     {
         const start = pc - mSavedPC;
         const end   = start + T.sizeof;
@@ -239,7 +229,42 @@ private:
     ubyte[] mCurrentInstructionBuff;
     ushort mCurrentInstruction;
     uint   mSavedPC;
+    uint   mSavedTicks;
+    int    mExecuteTicks;
 
+    void processExceptions()
+    {
+        mixin SafeThis;
+        if(mInterruptsHook !is null)
+        {
+            mInterruptsHook(safeThis, exceptions);
+        }
+        
+        if(0 != exceptions.pendingExceptions)
+        {
+            static if(size_t.sizeof == exceptions.pendingExceptions.sizeof)
+            {
+                int ind = bsf(exceptions.pendingExceptions);
+            }
+            else
+            {
+                int ind = void;
+                if(0 != exceptions.pendingExceptionsLo) ind = bsf(exceptions.pendingExceptionsLo);
+                else ind = bsf(exceptions.pendingExceptionsHi) + 32;
+            }
+            if(!enterException(safeThis,exceptionsByPriotities[ind]))
+            {
+                while(ind > 0)
+                {
+                    --ind;
+                    const ex = exceptionsByPriotities[ind];
+                    if((0x0 != (exceptions.pendingExceptions & (1 << ind))) && enterException(safeThis,ex)) break;
+                }
+            }
+        }
+    }
+
+pure @safe:
     static void checkHooksRange(T)(in T[] hooks)
     {
         foreach(i, h2;hooks[1..$])
