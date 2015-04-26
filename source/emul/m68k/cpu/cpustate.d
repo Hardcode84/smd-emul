@@ -43,7 +43,7 @@ pure @safe:
         formattedWrite(ret, "SSP = 0x%.8x\n",SSP);
         formattedWrite(ret, "PC  = 0x%.8x\n",PC);
         formattedWrite(ret, "flags = 0x%.4x\n",SR);
-        formattedWrite(ret, "ticks = %s",tickCounter);
+        formattedWrite(ret, "ticks = %s",TickCounter);
         return ret.data;
     }
 nothrow @nogc:
@@ -112,6 +112,6 @@ nothrow @nogc:
         return cast(ubyte)(SRupper & 0b111);
     }
 
-    uint tickCounter = 0;
+    uint TickCounter = 0;
 }
 

@@ -10,10 +10,28 @@ import emul.m68k.cpu;
 import emul.vdp.vdpstate;
 import emul.vdp.vdpmemory;
 
+enum DisplayFormat
+{
+    NTSC,
+    PAL
+}
+
+struct VdpSettings
+{
+    DisplayFormat format = DisplayFormat.NTSC;
+}
+
 final class Vdp
 {
 public:
 /*pure*/ nothrow:
+
+    this(in VdpSettings settings = VdpSettings()) pure
+    {
+        mSettings = settings;
+        mLineBuff.length = 400;
+        updateDisplayMode();
+    }
 
     void register(CpuPtr cpu) pure
     {
@@ -21,13 +39,26 @@ public:
         cpu.addWriteHook(&writeHook, 0xc00000, 0xc0000A);
         cpu.setInterruptsHook(&interruptsHook);
     }
+@nogc:
+    alias RenderCallback = void delegate(const VdpRef,in ubyte[]) pure nothrow @nogc @safe;
 
-    void update()
-    {
-    }
+    void setRenderCallback(RenderCallback callback) pure nothrow @nogc @safe { mRenderCallback = callback; }
+
+    @property auto ref state()  const pure @nogc @safe { return mState; }
+    @property auto ref memory() const pure @nogc @safe { return mMemory; }
 
 private:
-@nogc:
+    const VdpSettings mSettings;
+    ubyte[] mLineBuff;
+    RenderCallback mRenderCallback;
+
+    bool mPendingControlWrite = false;
+    ushort[2] mPendingControlBuff;
+    bool mPendingVramFill = false;
+
+    VdpState mState;
+    VdpMemory mMemory;
+
     ushort readHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart)
     {
         //debugfOut("vdp read : 0x%.6x 0x%.8x %s",cpu.state.PC,offset,wpart);
@@ -71,14 +102,14 @@ private:
     }
     void interruptsHook(const CpuPtr cpu, ref Exceptions e)
     {
-        if((cpu.state.tickCounter - mCounter) < 100_000)
+        if(!mState.displayEnable()) return;
+        if(mState.CurrentLine >= mState.EndLine)
         {
-            //debugOut("hblank");
-            //e.setInterrupt(ExceptionCodes.IRQ_4);
-            mCounter = cpu.state.tickCounter;
+            mState.FrameStart = cpu.state.TickCounter;
+            mState.CurrentLine = mState.StartLine;
         }
     }
-    int mCounter = 0;
+
     ushort readDataPort(CpuPtr cpu)
     {
         //debugOut("read data");
@@ -132,6 +163,10 @@ private:
             if(reg < mState.R.length)
             {
                 mState.R[reg] = val;
+                if(0 == reg || 1 == reg || 12 == reg)
+                {
+                    updateDisplayMode();
+                }
             }
             mState.CodeReg = VdpCodeRegState.VRamRead;
             mState.AddressReg = 0;
@@ -219,12 +254,45 @@ private:
         assert(false);
     }
 
-    bool mPendingControlWrite = false;
-    ushort[2] mPendingControlBuff;
-    bool mPendingVramFill = false;
+    void updateDisplayMode() pure @safe
+    {
+        mState.TotalWidth  = (mSettings.format == DisplayFormat.NTSC ? 262 : 322);
+        mState.TotalHeight = (mSettings.format == DisplayFormat.NTSC ? 262 : 312);
 
-    VdpState mState;
-    VdpMemory mMemory;
+        mState.CellWidth   = (mSettings.format == DisplayFormat.PAL && mState.wideDisplayMode ? 40 : 32);
+        mState.CellHeight  = (mState.tallDisplayMode ? 30 : 28);
+        mState.Width  = mState.CellWidth * 8;
+        mState.Height = mState.CellHeight * 8;
+
+        mState.StartLine = -(mState.TotalHeight - mState.Height) / 2;
+        mState.EndLine = mState.StartLine + mState.TotalHeight;
+
+        const fps = (mSettings.format == DisplayFormat.NTSC ? 60 : 50);
+        const ticksPerFrame = 7_600_000 / fps; //TODO
+        const ticksPerLine = ticksPerFrame / mState.TotalHeight;
+        mState.TicksPerScan = (ticksPerLine * mState.Width) / mState.TotalWidth;
+        mState.TicksPerRetrace = ticksPerLine - mState.TicksPerScan;
+        if(!mState.displayEnable)
+        {
+            mState.CurrentLine = mState.EndLine;
+        }
+    }
+
+    void renderLine()
+    {
+        assert(mState.displayEnable);
+        if(mRenderCallback !is null)
+        {
+            const wdth = mState.Width;
+            mLineBuff[0..wdth] = mState.backdropColor;
+            if(!mState.displayBlank)
+            {
+                //TODO: render
+            }
+            mixin SafeThis;
+            mRenderCallback(safeThis, mLineBuff[0..wdth]);
+        }
+    }
 }
 
 alias VdpRef = SafeRef!Vdp;

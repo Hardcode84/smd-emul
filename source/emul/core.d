@@ -41,7 +41,7 @@ public:
         CpuRunner.RunParams params;
         params.breakHandlers[CpuRunner.BreakReason.SingleStep] = (CpuPtr cpu)
         {
-            if(cpu.state.tickCounter > 5000_000)
+            if(cpu.state.TickCounter > 5000_000)
             {
                 debugOut(cpu.state);
                 return false;

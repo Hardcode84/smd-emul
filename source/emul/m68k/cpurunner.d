@@ -98,7 +98,7 @@ private:
                 assert(op.size >= 0x2);
                 cpu.fetchInstruction(op.size - 0x2);
                 cpu.state.PC += op.size;
-                cpu.state.tickCounter += op.ticks;
+                cpu.state.TickCounter += op.ticks;
                 op.impl(cpu);
             }
         }

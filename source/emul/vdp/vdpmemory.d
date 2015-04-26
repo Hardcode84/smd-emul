@@ -3,12 +3,16 @@
 struct VdpMemory
 {
 pure nothrow @nogc @safe:
+    uint cramChanged = 1;
+    uint vsRamChanged = 1;
+    uint vramChanged = 1;
     ushort[64] cram;
     ushort[40] vsram;
     ubyte[0x10000] vram;
 
     void writeVram(uint address, ubyte value)
     {
+        ++vramChanged;
         vram[address & 0xffff] = value;
     }
     void writeVram(uint address, ushort value)
@@ -27,6 +31,7 @@ pure nothrow @nogc @safe:
     }
     void writeCram(uint address, ushort value)
     {
+        ++cramChanged;
         cram[(address >> 1) & 0b111_111] = value;
     }
     void writeVsram(uint address, ushort value)
@@ -34,6 +39,7 @@ pure nothrow @nogc @safe:
         const addr = (address >> 1) & 0b111_111;
         if(addr < vsram.length)
         {
+            ++vsRamChanged;
             cram[addr] = value;
         }
     }

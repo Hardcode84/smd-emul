@@ -43,15 +43,30 @@ pure nothrow @nogc @safe:
     uint AddressReg;
     VdpCodeRegState CodeReg = VdpCodeRegState.VRamRead;
 
-    int currentLine = 0;
+    int TotalWidth;
+    int TotalHeight;
+    int StartLine;
+    int EndLine;
+    int CellWidth;
+    int CellHeight;
+    int Width;
+    int Height;
+
+    uint TicksPerScan;
+    uint TicksPerRetrace;
+
+    int CurrentLine = 0;
+    uint FrameStart = 0;
 
     @property bool displayEnable() const { return 0x0 != (R[0] & 0x1); }
     @property bool displayBlank() const { return 0x0 != (R[1] & (1 << 6));}
     @property bool hInterruptEnabled() const { return 0x0 != (R[0] & (1 << 4)); }
     @property bool vInterruptEnabled() const { return 0x0 != (R[1] & (1 << 5)); }
-    @property auto backdropColor() const { return R[7] & 0b111_111; }
+    @property auto backdropColor() const { return cast(ubyte)(R[7] & 0b111_111); }
     @property auto interruptCounter() const { return R[10]; }
     @property bool dmaEnabled() const { return 0x0 != (R[1] & (1 << 4)); }
+    @property bool wideDisplayMode() const { return 0x0 != (R[12] & (1 << 7)); }
+    @property bool tallDisplayMode() const { return 0x0 != (R[7] & (1 << 3));}
     @property auto autoIncrement() const { return R[15]; }
     @property auto dmaType() const
     {
