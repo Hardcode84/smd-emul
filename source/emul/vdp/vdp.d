@@ -42,6 +42,52 @@ public:
 
     void update(CpuPtr cpu)
     {
+        if(!mState.displayEnable())
+        {
+            mState.HBlankScheduled = false;
+            mState.VBlankScheduled = false;
+            mState.clearFlags!(VdpFlags.HBlank | VdpFlags.VBlank);
+            return;
+        }
+
+        if(mState.CurrentLine >= mState.EndLine)
+        {
+            mState.FrameStart = cpu.state.TickCounter;
+            mState.CurrentLine = mState.StartLine;
+        }
+        else
+        {
+            const delta = cpu.state.TickCounter - mState.FrameStart;
+            const ticksPerLine = (mState.TicksPerScan + mState.TicksPerRetrace);
+            const reqLine = delta / ticksPerLine;
+            assert((reqLine - mState.CurrentLine) <= 1);
+            if(reqLine > mState.CurrentLine)
+            {
+                ++mState.CurrentLine;
+                if(mState.CurrentLine >= 0 && mState.CurrentLine < mState.Height)
+                {
+                    mState.clearFlags!(VdpFlags.HBlank | VdpFlags.VBlank);
+                    renderLine();
+                }
+                else
+                {
+                    if(!mState.testFlags!(VdpFlags.VBlank))
+                    {
+                        mState.VBlankScheduled = true;
+                    }
+                    mState.setFlags!(VdpFlags.HBlank | VdpFlags.VBlank);
+                }
+            }
+
+            if(mState.CurrentLine >= 0 && mState.CurrentLine < mState.Height)
+            {
+                if(delta > (mState.CurrentLine * ticksPerLine + mState.TicksPerScan) && !mState.testFlags!(VdpFlags.HBlank))
+                {
+                    mState.setFlags!(VdpFlags.HBlank);
+                    mState.HBlankScheduled = true;
+                }
+            }
+        }
     }
 
 @nogc:
@@ -107,11 +153,15 @@ private:
     }
     void interruptsHook(const CpuPtr cpu, ref Exceptions e)
     {
-        if(!mState.displayEnable()) return;
-        if(mState.CurrentLine >= mState.EndLine)
+        if(mState.HBlankScheduled)
         {
-            mState.FrameStart = cpu.state.TickCounter;
-            mState.CurrentLine = mState.StartLine;
+            e.setInterrupt(ExceptionCodes.IRQ_4);
+            mState.HBlankScheduled = false;
+        }
+        if(mState.VBlankScheduled)
+        {
+            e.setInterrupt(ExceptionCodes.IRQ_6);
+            mState.VBlankScheduled = false;
         }
     }
 

@@ -58,6 +58,9 @@ pure nothrow @nogc @safe:
     int CurrentLine = 0;
     uint FrameStart = 0;
 
+    bool HBlankScheduled = false;
+    bool VBlankScheduled = false;
+
     @property bool displayEnable() const { return 0x0 != (R[0] & 0x1); }
     @property bool displayBlank() const { return 0x0 != (R[1] & (1 << 6));}
     @property bool hInterruptEnabled() const { return 0x0 != (R[0] & (1 << 4)); }
@@ -81,9 +84,9 @@ pure nothrow @nogc @safe:
         return R[21] | (R[22] << 8) | (R[23] << 16);
     }
 
-    void setFlags(VdpFlags flags)() { status |= flags; }
-    void clearFlags(VdpFlags flags)() { status &= ~flags; }
-    bool testFlags(VdpFlags flags)() const { return 0x0 != (status & flags); }
+    void setFlags(VdpFlags flags)() { Status |= flags; }
+    void clearFlags(VdpFlags flags)() { Status &= ~flags; }
+    bool testFlags(VdpFlags flags)() const { return 0x0 != (Status & flags); }
     void setFlags(VdpFlags flags)(bool set) { if(set) setFlags!flags; else clearFlags!flags; }
 
 }

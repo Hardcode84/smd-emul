@@ -106,7 +106,7 @@ private:
                 assert(op.size >= 0x2);
                 cpu.fetchInstruction(op.size - 0x2);
                 cpu.state.PC += op.size;
-                cpu.state.TickCounter += op.ticks;
+                cpu.state.TickCounter = (cpu.state.TickCounter + op.ticks) & 0xfffffff;
                 op.impl(cpu);
                 cpu.endInstruction();
             }

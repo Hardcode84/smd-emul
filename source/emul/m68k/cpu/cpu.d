@@ -187,7 +187,7 @@ nothrow:
         mExecuteTicks = max(0,mExecuteTicks - delta);
     }
 
-    void scheduleProcess(int ticks) pure @safe
+    void scheduleProcessStop(int ticks) pure @safe
     in
     {
         assert(ticks > 0);
