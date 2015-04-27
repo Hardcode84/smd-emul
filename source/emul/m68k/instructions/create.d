@@ -78,6 +78,9 @@ auto createInstructions()
     import emul.m68k.instructions.not;
     addNotInstructions(ret);
 
+    import emul.m68k.instructions.and;
+    addAndInstructions(ret);
+
     import emul.m68k.instructions.andi;
     addAndiInstructions(ret);
 

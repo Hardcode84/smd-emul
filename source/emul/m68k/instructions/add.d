@@ -5,7 +5,6 @@ import emul.m68k.instructions.common;
 package nothrow:
 void addAddInstructions(ref Instruction[ushort] ret) pure
 {
-    //add
     foreach(v; TupleRange!(0,readAddressModesWSize.length))
     {
         enum mode = readAddressModesWSize[v];
