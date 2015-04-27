@@ -190,7 +190,7 @@ nothrow:
     void scheduleProcessStop(int ticks) pure @safe
     in
     {
-        assert(ticks > 0);
+        assert(ticks > 0,debugConv(ticks));
     }
     body
     {

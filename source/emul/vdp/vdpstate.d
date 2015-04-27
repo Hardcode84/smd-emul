@@ -52,8 +52,9 @@ pure nothrow @nogc @safe:
     int Width;
     int Height;
 
-    uint TicksPerScan;
-    uint TicksPerRetrace;
+    int TicksPerFrame;
+    int TicksPerScan;
+    int TicksPerRetrace;
 
     int CurrentLine = 0;
     uint FrameStart = 0;
@@ -62,7 +63,7 @@ pure nothrow @nogc @safe:
     bool HBlankScheduled = false;
     bool VBlankScheduled = false;
 
-    @property bool displayEnable() const { return 0x0 != (R[0] & 0x1); }
+    @property bool displayEnable() const { return 0x0 == (R[0] & 0x1); }
     @property bool displayBlank() const { return 0x0 != (R[1] & (1 << 6));}
     @property bool hInterruptEnabled() const { return 0x0 != (R[0] & (1 << 4)); }
     @property bool vInterruptEnabled() const { return 0x0 != (R[1] & (1 << 5)); }

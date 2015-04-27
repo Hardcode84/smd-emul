@@ -31,6 +31,7 @@ public:
         mSettings = settings;
         mLineBuff.length = 400;
         updateDisplayMode();
+        mState.CurrentLine = mState.EndLine;
     }
 
     void register(CpuPtr cpu) pure
@@ -47,6 +48,7 @@ public:
             mState.HBlankScheduled = false;
             mState.VBlankScheduled = false;
             mState.clearFlags!(VdpFlags.HBlank | VdpFlags.VBlank);
+            mState.CurrentLine = mState.EndLine;
             return;
         }
 
@@ -60,12 +62,17 @@ public:
         }
         else
         {
-            const delta = cpu.state.TickCounter - mState.FrameStart;
-            const reqLine = delta / ticksPerLine;
+            const int delta = cpu.state.TickCounter - mState.FrameStart;
+            const reqLine = delta / ticksPerLine + mState.StartLine;
             assert((reqLine - mState.CurrentLine) <= 1);
             if(reqLine > mState.CurrentLine)
             {
                 ++mState.CurrentLine;
+                if(mState.CurrentLine == 0)
+                {
+                    callEventCallback(FrameEvent.Start);
+                }
+
                 if(mState.CurrentLine >= 0 && mState.CurrentLine < mState.Height)
                 {
                     mState.clearFlags!(VdpFlags.HBlank | VdpFlags.VBlank);
@@ -80,11 +87,15 @@ public:
                     mState.setFlags!(VdpFlags.HBlank | VdpFlags.VBlank);
                 }
 
+                if(mState.CurrentLine == (mState.Height - 1))
+                {
+                    callEventCallback(FrameEvent.End);
+                }
             }
 
             if(mState.CurrentLine >= 0 && mState.CurrentLine < mState.Height)
             {
-                const hblankPos = (mState.CurrentLine * ticksPerLine + mState.TicksPerScan);
+                const hblankPos = ((mState.CurrentLine - mState.StartLine) * ticksPerLine + mState.TicksPerScan);
                 if(delta > hblankPos && !mState.testFlags!(VdpFlags.HBlank))
                 {
                     mState.setFlags!(VdpFlags.HBlank);
@@ -92,11 +103,16 @@ public:
                     {
                         mState.HInterruptCounter = mState.interruptCounter;
                     }
+                    else
+                    {
+                        --mState.HInterruptCounter;
+                    }
+
                     if(mState.hInterruptEnabled && 0 == mState.HInterruptCounter)
                     {
                         mState.HBlankScheduled = true;
                     }
-                    --mState.HInterruptCounter;
+
                     cpu.scheduleProcessStop(hblankPos + mState.TicksPerRetrace - delta + 1);
                 }
                 else
@@ -104,9 +120,9 @@ public:
                     cpu.scheduleProcessStop(hblankPos - delta + 1);
                 }
             }
-            else if(mState.CurrentLine > mState.Height)
+            else if(mState.CurrentLine >= mState.Height)
             {
-                cpu.scheduleProcessStop(mState.TotalHeight * ticksPerLine - delta + 1);
+                cpu.scheduleProcessStop(mState.TicksPerFrame - delta + 1);
             }
             else
             {
@@ -116,9 +132,19 @@ public:
     }
 
 @nogc:
-    alias RenderCallback = void delegate(const VdpRef,in ubyte[]) pure nothrow @nogc @safe;
+    enum FrameEvent
+    {
+        Start,
+        End
+    }
+    alias FrameEventCallback = void delegate(const VdpRef,FrameEvent) pure nothrow @nogc @safe;
+    alias RenderCallback     = void delegate(const VdpRef,in ubyte[]) pure nothrow @nogc @safe;
 
-    void setRenderCallback(RenderCallback callback) pure nothrow @nogc @safe { mRenderCallback = callback; }
+    void setCallbacks(FrameEventCallback eventCallbak, RenderCallback renderCallback) pure nothrow @nogc @safe
+    {
+        mEventCallback  = eventCallbak;
+        mRenderCallback = renderCallback;
+    }
 
     @property auto ref state()  const pure @nogc @safe { return mState; }
     @property auto ref memory() const pure @nogc @safe { return mMemory; }
@@ -126,6 +152,7 @@ public:
 private:
     const VdpSettings mSettings;
     ubyte[] mLineBuff;
+    FrameEventCallback mEventCallback;
     RenderCallback mRenderCallback;
 
     bool mPendingControlWrite = false;
@@ -180,11 +207,13 @@ private:
     {
         if(mState.HBlankScheduled)
         {
+            debugOut("hinterrupt");
             e.setInterrupt(ExceptionCodes.IRQ_4);
             mState.HBlankScheduled = false;
         }
         if(mState.VBlankScheduled)
         {
+            debugOut("vinterrupt");
             e.setInterrupt(ExceptionCodes.IRQ_6);
             mState.VBlankScheduled = false;
         }
@@ -348,14 +377,11 @@ private:
         mState.EndLine = mState.StartLine + mState.TotalHeight;
 
         const fps = (mSettings.format == DisplayFormat.NTSC ? 60 : 50);
-        const ticksPerFrame = 7_600_000 / fps; //TODO
-        const ticksPerLine = ticksPerFrame / mState.TotalHeight;
-        mState.TicksPerScan = (ticksPerLine * mState.Width) / mState.TotalWidth;
+        const ticksPerFrame    = 7_600_000 / fps; //TODO
+        const ticksPerLine     = ticksPerFrame / mState.TotalHeight;
+        mState.TicksPerFrame   = ticksPerFrame;
+        mState.TicksPerScan    = (ticksPerLine * mState.Width) / mState.TotalWidth;
         mState.TicksPerRetrace = ticksPerLine - mState.TicksPerScan;
-        if(!mState.displayEnable)
-        {
-            mState.CurrentLine = mState.EndLine;
-        }
     }
 
     void renderLine()
@@ -369,8 +395,25 @@ private:
             {
                 //TODO: render
             }
+            callRenderCallback(mLineBuff[0..wdth]);
+        }
+    }
+
+    void callEventCallback(FrameEvent event)
+    {
+        if(mEventCallback !is null)
+        {
             mixin SafeThis;
-            mRenderCallback(safeThis, mLineBuff[0..wdth]);
+            mEventCallback(safeThis, event);
+        }
+    }
+
+    void callRenderCallback(in ubyte[] buff)
+    {
+        if(mRenderCallback !is null)
+        {
+            mixin SafeThis;
+            mRenderCallback(safeThis, buff);
         }
     }
 }
