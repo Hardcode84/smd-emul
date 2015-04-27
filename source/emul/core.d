@@ -2,6 +2,7 @@
 
 import std.exception;
 import std.string;
+import std.range;
 
 import gamelib.memory.saferef;
 import gamelib.debugout;
@@ -39,6 +40,16 @@ public:
     {
         bool trace = false;
         CpuRunner.RunParams params;
+        uint[20] pos;
+        auto buf = pos[].cycle;
+        scope(exit)
+        {
+            foreach(i; 0..pos.length)
+            {
+                debugfOut("0x%.6x",buf.front);
+                buf.popFront;
+            }
+        }
         params.breakHandlers[CpuRunner.BreakReason.SingleStep] = (CpuPtr cpu)
         {
             if(cpu.state.TickCounter > 5000_000)
@@ -63,6 +74,8 @@ public:
                 //debugfOut("%x",cpu.state.PC);
                 debugOut("-------\n",cpu.state);
             }
+            buf.front = cpu.state.PC;
+            buf.popFront;
             return true;
         };
         params.processHandler = (CpuPtr cpu)
