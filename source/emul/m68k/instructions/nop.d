@@ -13,6 +13,6 @@ private:
 void nopImpl(Dummy)(CpuPtr)
 {
     //TODO
-    import gamelib.debugout;
-    debugOut("nop");
+    //import gamelib.debugout;
+    //debugOut("nop");
 }

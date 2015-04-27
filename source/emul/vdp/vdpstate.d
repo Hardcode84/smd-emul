@@ -83,7 +83,7 @@ pure nothrow @nogc @safe:
     @property auto dmaSrcAddress() const
     {
         assert(0x0 == (R[23] & 0x80));
-        return R[21] | (R[22] << 8) | (R[23] << 16);
+        return (R[21] | (R[22] << 8) | (R[23] << 16)) << 1;
     }
 
     void setFlags(VdpFlags flags)() { Status |= flags; }

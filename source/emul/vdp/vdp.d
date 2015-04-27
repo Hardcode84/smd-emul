@@ -289,7 +289,8 @@ private:
     ushort readHVCounter(CpuPtr cpu)
     {
         debugOut("read HV counter");
-        return 0;
+        assert(false);
+        //return 0;
     }
 
     void flushControl(CpuPtr cpu)
