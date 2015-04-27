@@ -57,6 +57,7 @@ pure nothrow @nogc @safe:
 
     int CurrentLine = 0;
     uint FrameStart = 0;
+    int HInterruptCounter = 0;
 
     bool HBlankScheduled = false;
     bool VBlankScheduled = false;

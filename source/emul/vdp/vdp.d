@@ -50,15 +50,17 @@ public:
             return;
         }
 
+        const ticksPerLine = (mState.TicksPerScan + mState.TicksPerRetrace);
         if(mState.CurrentLine >= mState.EndLine)
         {
             mState.FrameStart = cpu.state.TickCounter;
             mState.CurrentLine = mState.StartLine;
+            mState.HInterruptCounter = mState.interruptCounter;
+            cpu.scheduleProcessStop(-mState.StartLine * ticksPerLine + 1);
         }
         else
         {
             const delta = cpu.state.TickCounter - mState.FrameStart;
-            const ticksPerLine = (mState.TicksPerScan + mState.TicksPerRetrace);
             const reqLine = delta / ticksPerLine;
             assert((reqLine - mState.CurrentLine) <= 1);
             if(reqLine > mState.CurrentLine)
@@ -71,21 +73,44 @@ public:
                 }
                 else
                 {
-                    if(!mState.testFlags!(VdpFlags.VBlank))
+                    if(mState.vInterruptEnabled && !mState.testFlags!(VdpFlags.VBlank))
                     {
                         mState.VBlankScheduled = true;
                     }
                     mState.setFlags!(VdpFlags.HBlank | VdpFlags.VBlank);
                 }
+
             }
 
             if(mState.CurrentLine >= 0 && mState.CurrentLine < mState.Height)
             {
-                if(delta > (mState.CurrentLine * ticksPerLine + mState.TicksPerScan) && !mState.testFlags!(VdpFlags.HBlank))
+                const hblankPos = (mState.CurrentLine * ticksPerLine + mState.TicksPerScan);
+                if(delta > hblankPos && !mState.testFlags!(VdpFlags.HBlank))
                 {
                     mState.setFlags!(VdpFlags.HBlank);
-                    mState.HBlankScheduled = true;
+                    if(mState.HInterruptCounter <= 0)
+                    {
+                        mState.HInterruptCounter = mState.interruptCounter;
+                    }
+                    if(mState.hInterruptEnabled && 0 == mState.HInterruptCounter)
+                    {
+                        mState.HBlankScheduled = true;
+                    }
+                    --mState.HInterruptCounter;
+                    cpu.scheduleProcessStop(hblankPos + mState.TicksPerRetrace - delta + 1);
                 }
+                else
+                {
+                    cpu.scheduleProcessStop(hblankPos - delta + 1);
+                }
+            }
+            else if(mState.CurrentLine > mState.Height)
+            {
+                cpu.scheduleProcessStop(mState.TotalHeight * ticksPerLine - delta + 1);
+            }
+            else
+            {
+                cpu.scheduleProcessStop(-mState.StartLine * ticksPerLine - delta + 1);
             }
         }
     }
