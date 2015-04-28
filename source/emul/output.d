@@ -23,6 +23,11 @@ public:
 
     void dispose() nothrow
     {
+        if(mInsideFrame)
+        {
+            mSurface.unlock;
+            mInsideFrame = false;
+        }
         mSurface.dispose();
         mWindow.dispose();
     }
@@ -32,9 +37,12 @@ public:
         vdp.setCallbacks(&frameEvent, &renderCallback);
     }
 
+    @property bool insideFrame() const pure nothrow @nogc { return mInsideFrame; }
+
 private:
     SafeRef!Window mWindow;
     SafeRef!(FFSurface!Color) mSurface;
+    bool mInsideFrame = false;
 
     auto createSurface()
     {
@@ -59,6 +67,9 @@ private:
             const ubyte b = cast(ubyte)(((col >> 9) & 0b111) << 4);
             mColorCache[i] = Color(r,g,b);
         }
+        //debugOut("update color cache");
+        //debugOut(vdp.memory.cram[]);
+        //debugOut(mColorCache);
     }
 
     void frameEvent(const VdpRef vdp, Vdp.FrameEvent event)
@@ -67,11 +78,13 @@ private:
         {
             //debugOut("begin");
             mSurface.lock;
+            mInsideFrame = true;
         }
         else if(Vdp.FrameEvent.End == event)
         {
             //debugOut("end");
             mSurface.unlock;
+            mInsideFrame = false;
             mWindow.updateSurface(mSurface);
         }
     }

@@ -103,7 +103,7 @@ public:
                 if(delta > hblankPos && !mState.testFlags!(VdpFlags.HBlank))
                 {
                     mState.setFlags!(VdpFlags.HBlank);
-                    if(mState.HInterruptCounter <= 0)
+                    if(mState.HInterruptCounter <= 0 || mState.CurrentLine == 0)
                     {
                         mState.HInterruptCounter = mState.interruptCounter;
                     }
@@ -112,6 +112,7 @@ public:
                         --mState.HInterruptCounter;
                     }
 
+                    //debugOut(mState.hInterruptEnabled, " ", mState.HInterruptCounter);
                     if(mState.hInterruptEnabled && 0 == mState.HInterruptCounter)
                     {
                         mState.HBlankScheduled = true;
@@ -251,7 +252,7 @@ private:
     }
     ushort readControlPort(CpuPtr cpu) nothrow @nogc
     {
-        //debugOut("read control");
+        debugOut("read control");
         flushControl(cpu);
         return mState.Status;
     }

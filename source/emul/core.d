@@ -74,7 +74,7 @@ public:
         uint ticks = 0;
         params.processHandler = (CpuPtr cpu)
         {
-            if(cpu.state.TickCounter > (ticks + 100_000))
+            if(cpu.state.TickCounter > (ticks + 100_000) && !mOutput.insideFrame)
             {
                 ticks = cpu.state.TickCounter;
                 return false;
