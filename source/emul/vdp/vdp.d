@@ -34,7 +34,7 @@ public:
         mState.CurrentLine = mState.EndLine;
     }
 
-    void register(CpuPtr cpu) pure
+    void register(CpuPtr cpu) pure nothrow
     {
         cpu.addReadHook(&readHook,   0xc00000, 0xc0000A);
         cpu.addWriteHook(&writeHook, 0xc00000, 0xc0000A);
@@ -48,7 +48,11 @@ public:
             mState.HBlankScheduled = false;
             mState.VBlankScheduled = false;
             mState.clearFlags!(VdpFlags.HBlank | VdpFlags.VBlank);
-            mState.CurrentLine = mState.EndLine;
+            if(mState.CurrentLine != mState.EndLine)
+            {
+                callEventCallback(FrameEvent.End);
+                mState.CurrentLine = mState.EndLine;
+            }
             return;
         }
 
@@ -131,14 +135,13 @@ public:
         }
     }
 
-@nogc:
     enum FrameEvent
     {
         Start,
         End
     }
-    alias FrameEventCallback = void delegate(const VdpRef,FrameEvent) nothrow;
-    alias RenderCallback     = void delegate(const VdpRef,int,in ubyte[]) nothrow;
+    alias FrameEventCallback = void delegate(const VdpRef,FrameEvent);
+    alias RenderCallback     = void delegate(const VdpRef,int,in ubyte[]) nothrow @nogc;
 
     void setCallbacks(FrameEventCallback eventCallbak, RenderCallback renderCallback) pure nothrow @nogc @safe
     {
@@ -146,8 +149,8 @@ public:
         mRenderCallback = renderCallback;
     }
 
-    @property auto ref state()  const pure @nogc @safe { return mState; }
-    @property auto ref memory() const pure @nogc @safe { return mMemory; }
+    @property auto ref state()  const pure @nogc @safe nothrow { return mState; }
+    @property auto ref memory() const pure @nogc @safe nothrow { return mMemory; }
 
 private:
     const VdpSettings mSettings;
@@ -162,7 +165,7 @@ private:
     VdpState mState;
     VdpMemory mMemory;
 
-    ushort readHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart) nothrow
+    ushort readHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart) nothrow @nogc
     {
         //debugfOut("vdp read : 0x%.6x 0x%.8x %s",cpu.state.PC,offset,wpart);
         assert(0x0 == (offset & 0x1));
@@ -180,7 +183,7 @@ private:
         }
         assert(false);
     }
-    void writeHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart, ushort data) nothrow
+    void writeHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart, ushort data) nothrow @nogc
     {
         //debugfOut("vdp write : 0x%.6x 0x%.8x %s 0x%.4x",cpu.state.PC,offset,wpart,data);
         assert(0x0 == (offset & 0x1));
@@ -203,7 +206,7 @@ private:
         }
         assert(false);
     }
-    void interruptsHook(const CpuPtr cpu, ref Exceptions e) nothrow
+    void interruptsHook(const CpuPtr cpu, ref Exceptions e) nothrow @nogc
     {
         if(mState.HBlankScheduled)
         {
@@ -219,14 +222,14 @@ private:
         }
     }
 
-    ushort readDataPort(CpuPtr cpu) nothrow
+    ushort readDataPort(CpuPtr cpu) nothrow @nogc
     {
         //debugOut("read data");
         debugfOut("data port: %s 0x%.6x",mState.CodeReg,mState.AddressReg);
         flushControl(cpu);
         return 0;
     }
-    void writeDataPort(CpuPtr cpu, ushort data) nothrow
+    void writeDataPort(CpuPtr cpu, ushort data) nothrow @nogc
     {
         //debugfOut("write data 0x%.4x",data);
         if(mPendingVramFill)
@@ -246,13 +249,13 @@ private:
         }
         mState.AddressReg += mState.autoIncrement;
     }
-    ushort readControlPort(CpuPtr cpu) nothrow
+    ushort readControlPort(CpuPtr cpu) nothrow @nogc
     {
         //debugOut("read control");
         flushControl(cpu);
         return mState.Status;
     }
-    void writeControlPort(CpuPtr cpu, ushort data) nothrow
+    void writeControlPort(CpuPtr cpu, ushort data) nothrow @nogc
     {
         //debugfOut("write control 0x%.4x",data);
         if(mPendingControlWrite)
@@ -286,14 +289,14 @@ private:
             mPendingControlWrite = true;
         }
     }
-    ushort readHVCounter(CpuPtr cpu) nothrow
+    ushort readHVCounter(CpuPtr cpu) nothrow @nogc
     {
         debugOut("read HV counter");
         assert(false);
         //return 0;
     }
 
-    void flushControl(CpuPtr cpu) nothrow
+    void flushControl(CpuPtr cpu) nothrow @nogc
     {
         if(mPendingControlWrite)
         {
@@ -305,7 +308,7 @@ private:
         mPendingVramFill = false;
     }
 
-    void executeDma(CpuPtr cpu) nothrow
+    void executeDma(CpuPtr cpu) nothrow @nogc
     {
         debugfOut("exec dma: enbl=%s %s %s",mState.dmaEnabled,mState.dmaType,mState.CodeReg);
         debugfOut("src= 0x%.8x start=0x%.4x inc=%s len=%s",
@@ -321,7 +324,7 @@ private:
         }
     }
 
-    void dmaTransfer(CpuPtr cpu) nothrow
+    void dmaTransfer(CpuPtr cpu) nothrow @nogc
     {
         switch(mState.CodeReg)
         {
@@ -331,7 +334,7 @@ private:
             default: assert(false);
         }
     }
-    void dmaTransferImpl(VdpCodeRegState Dir)(CpuPtr cpu) nothrow
+    void dmaTransferImpl(VdpCodeRegState Dir)(CpuPtr cpu) nothrow @nogc
     {
         scope void delegate(size_t, ushort val) nothrow @nogc writeFunc = (size_t, ushort val)
         {
@@ -344,7 +347,7 @@ private:
         };
         cpu.getMemRange(mState.dmaSrcAddress,mState.dmaLen,writeFunc);
     }
-    void dmaFill(ushort val) nothrow
+    void dmaFill(ushort val) nothrow @nogc
     {
         debugfOut("fill val=0x%.4x",val);
         auto len = mState.dmaLen;
@@ -359,12 +362,12 @@ private:
             while(--len > 0);
         }
     }
-    void dmaCopy() nothrow
+    void dmaCopy() nothrow @nogc
     {
         assert(false);
     }
 
-    void updateDisplayMode() pure @safe nothrow
+    void updateDisplayMode() pure @safe nothrow @nogc
     {
         mState.TotalWidth  = (mSettings.format == DisplayFormat.NTSC ? 262 : 322);
         mState.TotalHeight = (mSettings.format == DisplayFormat.NTSC ? 262 : 312);
@@ -385,7 +388,7 @@ private:
         mState.TicksPerRetrace = ticksPerLine - mState.TicksPerScan;
     }
 
-    void renderLine() nothrow
+    void renderLine()
     {
         assert(mState.displayEnable);
         if(mRenderCallback !is null)
@@ -409,7 +412,7 @@ private:
         }
     }
 
-    void callRenderCallback(in ubyte[] buff) nothrow
+    void callRenderCallback(in ubyte[] buff)
     {
         if(mRenderCallback !is null)
         {

@@ -4,6 +4,8 @@ import std.exception;
 import std.string;
 import std.range;
 
+import gamelib.types;
+
 import gamelib.core;
 import gamelib.memory.saferef;
 import gamelib.debugout;
@@ -59,44 +61,54 @@ public:
         }
         params.breakHandlers[CpuRunner.BreakReason.SingleStep] = (CpuPtr cpu)
         {
-            if(cpu.state.TickCounter > 5000_000)
+            /*if(cpu.state.TickCounter > 5000_000)
             {
                 debugOut(cpu.state);
                 return false;
-            }
-            /*if(cpu.state.PC == 0x4a8)
-            {
-                trace = true;
-            }
-            if(cpu.state.PC == 0x210)
-            {
-                trace = true;
-            }
-            if(cpu.state.PC == 0x4ba)
-            {
-                trace = false;
             }*/
-            if(trace)
-            {
-                //debugfOut("%x",cpu.state.PC);
-                debugOut("-------\n",cpu.state);
-            }
             buf.front = cpu.state.PC;
             buf.popFront;
             return true;
         };
+
+        uint ticks = 0;
         params.processHandler = (CpuPtr cpu)
         {
+            if(cpu.state.TickCounter > (ticks + 100_000))
+            {
+                ticks = cpu.state.TickCounter;
+                return false;
+            }
             mVdp.update(cpu);
             return true;
         };
 
-        convertSafe2((CpuPtr cpu)
+        bool quit = false;
+    mainloop: while(!quit)
+        {
+            SDL_Event e = void;
+            while(SDL_PollEvent(&e))
             {
-                mCpuRunner.run(cpu,params);
-            },
-            () {assert(false);},
-            &mCpu);
+                switch(e.type)
+                {
+                    case SDL_KEYDOWN:
+                        /*if(SDL_SCANCODE_ESCAPE == e.key.keysym.scancode)
+                        {
+                            handleQuit();
+                        }*/
+                        break;
+                    case SDL_QUIT:
+                        break mainloop;
+                    default:
+                }
+            }
+            convertSafe2((CpuPtr cpu)
+                {
+                    mCpuRunner.run(cpu,params);
+                },
+                () {assert(false);},
+                &mCpu);
+        }
     }
 
     void dispose() nothrow
