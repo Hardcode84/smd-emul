@@ -21,6 +21,7 @@ void main(string[] args)
     auto rom = makeSafe!Rom(read(args[1]).assumeUnique);
     writeln(rom.header);
     auto core = makeSafe!Core(rom);
+    scope(exit) core.dispose();
     core.run();
 }
 

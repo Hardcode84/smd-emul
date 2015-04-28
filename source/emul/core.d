@@ -4,6 +4,7 @@ import std.exception;
 import std.string;
 import std.range;
 
+import gamelib.core;
 import gamelib.memory.saferef;
 import gamelib.debugout;
 
@@ -13,6 +14,8 @@ import emul.m68k.cpurunner;
 
 import emul.vdp.vdp;
 
+import emul.output;
+
 class Core
 {
 public:
@@ -21,6 +24,10 @@ public:
         mRom = rom;
         mCpuRunner = makeSafe!CpuRunner();
         mVdp = makeSafe!Vdp();
+        initSDL();
+        scope(failure) dispose();
+        mOutput = makeSafe!Output();
+        mOutput.register(mVdp);
         enforce(mRom.header.romEndAddress < mRom.header.ramEndAddress,
             format("Invalid memory ranges %s %s", mRom.header.romEndAddress, mRom.header.ramEndAddress));
         mCpu.memory.data.length = mRom.header.ramEndAddress + 1;
@@ -92,11 +99,18 @@ public:
             &mCpu);
     }
 
+    void dispose() nothrow
+    {
+        mOutput.dispose();
+        deinitSDL();
+    }
+
 private:
     RomRef mRom;
     CpuRunnerRef mCpuRunner;
     Cpu mCpu;
     VdpRef mVdp;
+    OutputRef mOutput;
 }
 
 alias CoreRef = SafeRef!Core;

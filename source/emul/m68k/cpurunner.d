@@ -21,8 +21,8 @@ public:
     }
     struct RunParams
     {
-        alias BreakHandler = bool delegate(CpuPtr cpu) nothrow;
-        alias ProcessHandler = bool delegate(CpuPtr cpu) nothrow;
+        alias BreakHandler = bool delegate(CpuPtr cpu);
+        alias ProcessHandler = bool delegate(CpuPtr cpu);
         BreakHandler[BreakReason.max + 1] breakHandlers;
         ProcessHandler processHandler;
     }
