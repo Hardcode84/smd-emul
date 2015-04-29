@@ -18,7 +18,7 @@ void addBsetInstructions(ref Instruction[ushort] ret) pure
             {
                 alias Type = ubyte;
             }
-            ret.addInstruction(Instruction("bset",0x00c0 | mode,0x4,&bsetiImpl!(Type,mode)));
+            ret.addInstruction(Instruction("bset",0x08c0 | mode,0x4,&bsetiImpl!(Type,mode)));
             foreach(r; 0..8)
             {
                 ret.addInstruction(Instruction("bset",cast(ushort)(0x01c0 | (r << 9) | mode),0x2,&bsetImpl!(Type,mode)));
