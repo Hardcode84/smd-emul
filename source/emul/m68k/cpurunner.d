@@ -91,7 +91,7 @@ private:
         xsetjmp(cpu.jmpbuf);
     outer: while(params.processHandler(cpu))
         {
-            cpu.process();
+            cpu.process(10);
             while(!cpu.processed)
             {
                 static if(SingleStep)

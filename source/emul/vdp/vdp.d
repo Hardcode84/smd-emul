@@ -100,22 +100,25 @@ public:
             if(mState.CurrentLine >= 0 && mState.CurrentLine < mState.Height)
             {
                 const hblankPos = ((mState.CurrentLine - mState.StartLine) * ticksPerLine + mState.TicksPerScan);
-                if(delta > hblankPos && !mState.testFlags!(VdpFlags.HBlank))
+                if(delta > hblankPos)
                 {
-                    mState.setFlags!(VdpFlags.HBlank);
-                    if(mState.HInterruptCounter <= 0 || mState.CurrentLine == 0)
+                    if(!mState.testFlags!(VdpFlags.HBlank))
                     {
-                        mState.HInterruptCounter = mState.interruptCounter;
-                    }
-                    else
-                    {
-                        --mState.HInterruptCounter;
-                    }
+                        mState.setFlags!(VdpFlags.HBlank);
+                        if(mState.HInterruptCounter <= 0 || mState.CurrentLine == 0)
+                        {
+                            mState.HInterruptCounter = mState.interruptCounter;
+                        }
+                        else
+                        {
+                            --mState.HInterruptCounter;
+                        }
 
-                    //debugOut(mState.hInterruptEnabled, " ", mState.HInterruptCounter);
-                    if(mState.hInterruptEnabled && 0 == mState.HInterruptCounter)
-                    {
-                        mState.HBlankScheduled = true;
+                        //debugOut(mState.hInterruptEnabled, " ", mState.HInterruptCounter);
+                        if(mState.hInterruptEnabled && 0 == mState.HInterruptCounter)
+                        {
+                            mState.HBlankScheduled = true;
+                        }
                     }
 
                     cpu.scheduleProcessStop(hblankPos + mState.TicksPerRetrace - delta + 1);
