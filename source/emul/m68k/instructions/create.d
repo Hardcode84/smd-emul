@@ -114,6 +114,9 @@ auto createInstructions()
     import emul.m68k.instructions.ext;
     addExtInstructions(ret);
 
+    import emul.m68k.instructions.neg;
+    addNegInstructions(ret);
+
     import emul.m68k.instructions.add;
     addAddInstructions(ret);
 
