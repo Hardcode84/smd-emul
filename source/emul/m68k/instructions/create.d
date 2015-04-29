@@ -84,6 +84,9 @@ auto createInstructions()
     import emul.m68k.instructions.andi;
     addAndiInstructions(ret);
 
+    import emul.m68k.instructions.anditosr;
+    addAnditosrInstructions(ret);
+
     import emul.m68k.instructions.or;
     addOrInstructions(ret);
 

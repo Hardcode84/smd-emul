@@ -5,7 +5,6 @@ import emul.m68k.instructions.common;
 package nothrow:
 void addAndiInstructions(ref Instruction[ushort] ret) pure
 {
-    //andi
     foreach(v; TupleRange!(0,writeAddressModesWSize.length))
     {
         enum mode = writeAddressModesWSize[v];
