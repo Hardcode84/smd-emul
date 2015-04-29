@@ -151,6 +151,9 @@ auto createInstructions()
     import emul.m68k.instructions.bset;
     addBsetInstructions(ret);
 
+    import emul.m68k.instructions.bclr;
+    addBclrInstructions(ret);
+
 
     import emul.m68k.instructions.link;
     addLinkInstructions(ret);
