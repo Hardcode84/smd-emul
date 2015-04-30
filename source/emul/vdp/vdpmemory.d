@@ -18,16 +18,18 @@ pure nothrow @nogc @safe:
     void writeVram(uint address, ushort value)
     {
         const swapBytes = (0x0 != (address & 0x1));
+        const addr = address & 0xfffe;
         if(swapBytes)
         {
-            writeVram(address + 0, cast(ubyte)(value));
-            writeVram(address + 1, cast(ubyte)(value >> 8));
+            vram[addr + 0] = cast(ubyte)(value);
+            vram[addr + 1] = cast(ubyte)(value >> 8);
         }
         else
         {
-            writeVram(address + 0, cast(ubyte)(value >> 8));
-            writeVram(address + 1, cast(ubyte)(value));
+            vram[addr + 0] = cast(ubyte)(value >> 8);
+            vram[addr + 1] = cast(ubyte)(value);
         }
+        ++vramChanged;
     }
     void writeCram(uint address, ushort value)
     {
