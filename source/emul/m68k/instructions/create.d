@@ -96,6 +96,9 @@ auto createInstructions()
     import emul.m68k.instructions.eor;
     addEorInstructions(ret);
 
+    import emul.m68k.instructions.eori;
+    addEoriInstructions(ret);
+
     import emul.m68k.instructions.oritosr;
     addOritosrInstructions(ret);
 
