@@ -21,7 +21,7 @@ void moveqImpl(Dummy)(CpuPtr cpu)
 {
     const word = cpu.getInstructionData!ushort(cpu.state.PC - 0x2);
     const reg = ((word >> 9) & 0b111);
-    const int data = word & 0xff;
+    const data = cast(byte)(word & 0xff);
     cpu.state.D[reg] = data;
     updateFlags(cpu, data);
 }
