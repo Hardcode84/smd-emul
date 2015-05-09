@@ -46,4 +46,3 @@ pure nothrow @nogc @safe:
         }
     }
 }
-

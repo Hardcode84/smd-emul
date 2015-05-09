@@ -5,7 +5,6 @@ import emul.m68k.instructions.common;
 package nothrow:
 void addMoveqInstructions(ref Instruction[ushort] ret) pure
 {
-    //moveq
     foreach(r; 0..8)
     {
         foreach(val; 0..0x100)

@@ -5,7 +5,6 @@ import emul.m68k.instructions.common;
 package nothrow:
 void addAddqInstructions(ref Instruction[ushort] ret) pure
 {
-    //addq
     foreach(v; TupleRange!(0,writeAddressModesWSize.length))
     {
         enum mode = writeAddressModesWSize[v];

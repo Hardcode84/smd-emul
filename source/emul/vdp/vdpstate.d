@@ -67,6 +67,7 @@ pure nothrow @nogc @safe:
     @property bool displayBlank() const { return 0x0 != (R[1] & (1 << 6));}
     @property bool hInterruptEnabled() const { return 0x0 != (R[0] & (1 << 4)); }
     @property bool vInterruptEnabled() const { return 0x0 != (R[1] & (1 << 5)); }
+    @property uint spriteAttributeTableAddress() const { return (R[5] & 0x7f) << 9;}
     @property auto backdropColor() const { return cast(ubyte)(R[7] & 0b111_111); }
     @property auto interruptCounter() const { return R[10]; }
     @property bool dmaEnabled() const { return 0x0 != (R[1] & (1 << 4)); }

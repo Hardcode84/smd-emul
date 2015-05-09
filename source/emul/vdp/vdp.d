@@ -9,6 +9,7 @@ import emul.m68k.cpu;
 
 import emul.vdp.vdpstate;
 import emul.vdp.vdpmemory;
+import emul.vdp.vdpspritetable;
 
 enum DisplayFormat
 {
@@ -168,6 +169,7 @@ private:
 
     VdpState mState;
     VdpMemory mMemory;
+    VdpSpriteTable mSpriteTable;
 
     ushort readHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart) nothrow @nogc
     {
@@ -214,13 +216,13 @@ private:
     {
         if(mState.HBlankScheduled)
         {
-            debugOut("hinterrupt");
+            //debugOut("hinterrupt");
             e.setInterrupt(ExceptionCodes.IRQ_4);
             mState.HBlankScheduled = false;
         }
         if(mState.VBlankScheduled)
         {
-            debugOut("vinterrupt");
+            //debugOut("vinterrupt");
             e.setInterrupt(ExceptionCodes.IRQ_6);
             mState.VBlankScheduled = false;
         }
@@ -228,8 +230,7 @@ private:
 
     ushort readDataPort(CpuPtr cpu) nothrow @nogc
     {
-        //debugOut("read data");
-        debugfOut("data port: %s 0x%.6x",mState.CodeReg,mState.AddressReg);
+        //debugfOut("data port: %s 0x%.6x",mState.CodeReg,mState.AddressReg);
         flushControl(cpu);
         return 0;
     }
@@ -243,7 +244,7 @@ private:
             return;
         }
         flushControl(cpu);
-        debugfOut("data port: %s 0x%.6x 0x%.4x",mState.CodeReg,mState.AddressReg,data);
+        //debugfOut("data port: %s 0x%.6x 0x%.4x",mState.CodeReg,mState.AddressReg,data);
         switch(mState.CodeReg)
         {
             case VdpCodeRegState.VRamWrite:  mMemory.writeVram(mState.AddressReg, data);  break;
@@ -255,7 +256,7 @@ private:
     }
     ushort readControlPort(CpuPtr cpu) nothrow @nogc
     {
-        debugOut("read control");
+        //debugOut("read control");
         flushControl(cpu);
         return mState.Status;
     }
@@ -275,7 +276,7 @@ private:
         {
             const reg = (data >> 8) & 0b11111;
             const val = cast(ubyte)(data & 0xff);
-            debugfOut("vdp reg %s 0x%.2x",reg,val);
+            //debugfOut("vdp reg %s 0x%.2x",reg,val);
             if(reg < mState.R.length)
             {
                 mState.R[reg] = val;
@@ -296,8 +297,8 @@ private:
     ushort readHVCounter(CpuPtr cpu) nothrow @nogc
     {
         debugOut("read HV counter");
-        assert(false);
-        //return 0;
+        //assert(false);
+        return 0;
     }
 
     void flushControl(CpuPtr cpu) nothrow @nogc
@@ -402,6 +403,10 @@ private:
             if(!mState.displayBlank)
             {
                 //TODO: render
+                mSpriteTable.update(mState, mMemory);
+                foreach_reverse(i; mSpriteTable.currentOrder[])
+                {
+                }
             }
             callRenderCallback(mLineBuff[0..wdth]);
         }
