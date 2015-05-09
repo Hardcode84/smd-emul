@@ -6,6 +6,8 @@ import gamelib.memory.saferef;
 import std.stdio;
 import std.file;
 import std.exception;
+import std.path;
+import std.algorithm;
 
 import emul.rom;
 import emul.core;
@@ -18,7 +20,12 @@ void main(string[] args)
         return;
     }
 
-    auto rom = makeSafe!Rom(read(args[1]).assumeUnique);
+    const RomFormat format = args[1].extension.predSwitch(
+        ".bin", RomFormat.BIN,
+        ".md", RomFormat.MD,
+        { enforce(false, "Unknown file extension"); }() );
+
+    auto rom = createRom(format, read(args[1]).assumeUnique);
     writeln(rom.header);
     auto core = makeSafe!Core(rom);
     scope(exit) core.dispose();

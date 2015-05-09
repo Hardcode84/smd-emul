@@ -135,9 +135,9 @@ enum RomFormat
     MD,
 }
 
-RomRef createRom(in RomFormat format, in immutable(void)[] data) pure @safe
+RomRef createRom(in RomFormat format, in immutable(void)[] data) pure
 {
-    immutable(void[] decoded;
+    immutable(void)[] decoded;
     final switch(format)
     {
         case RomFormat.BIN:
@@ -150,9 +150,9 @@ RomRef createRom(in RomFormat format, in immutable(void)[] data) pure @safe
     return makeSafe!Rom(decoded);
 }
 
-RomRef createRom(in RomFormat format, in void[] data) pure @safe
+RomRef createRom(in RomFormat format, in void[] data) pure
 {
-    immutable void[] decoded;
+    immutable(void)[] decoded;
     final switch(format)
     {
         case RomFormat.BIN:
@@ -165,7 +165,7 @@ RomRef createRom(in RomFormat format, in void[] data) pure @safe
     return makeSafe!Rom(decoded);
 }
 
-private auto decodeMD(T)(in void[] data) pure @safe
+private auto decodeMD(in void[] data) pure nothrow
 {
     ubyte[] ret;
     const size = data.length;
