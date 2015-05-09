@@ -66,7 +66,7 @@ pure:
         }
     }
 
-    this(immutable(void)[] data)
+    this(immutable void[] data)
     {
         mData = data;
         header = readHeader();
@@ -124,7 +124,63 @@ const:
     }
 
 private:
-    immutable(void)[] mData;
+    immutable void[] mData;
 }
 
 alias RomRef = SafeRef!Rom;
+
+enum RomFormat
+{
+    BIN,
+    MD,
+}
+
+RomRef createRom(in RomFormat format, in immutable(void)[] data) pure @safe
+{
+    immutable(void[] decoded;
+    final switch(format)
+    {
+        case RomFormat.BIN:
+            decoded = data;
+            break;
+        case RomFormat.MD:
+            decoded = decodeMD(data);
+            break;
+    }
+    return makeSafe!Rom(decoded);
+}
+
+RomRef createRom(in RomFormat format, in void[] data) pure @safe
+{
+    immutable void[] decoded;
+    final switch(format)
+    {
+        case RomFormat.BIN:
+            decoded = data.idup;
+            break;
+        case RomFormat.MD:
+            decoded = decodeMD(data);
+            break;
+    }
+    return makeSafe!Rom(decoded);
+}
+
+private auto decodeMD(T)(in void[] data) pure @safe
+{
+    ubyte[] ret;
+    const size = data.length;
+    const middle = size / 2;
+    ret.length = size;
+    foreach(i, b; (cast(const ubyte[])data)[])
+    {
+        if(i <= middle)
+        {
+            ret[i * 2] = b;
+        }
+        else
+        {
+            ret[i * 2 - size - 1] = b;
+        }
+    }
+    return cast(immutable(void)[])ret;
+}
