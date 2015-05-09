@@ -1,6 +1,8 @@
 ﻿module emul.vdp.vdp;
 
 import std.bitmanip;
+import std.algorithm;
+import std.range;
 
 import gamelib.memory.saferef;
 import gamelib.debugout;
@@ -158,6 +160,8 @@ public:
     @property auto ref memory() const pure @nogc @safe nothrow { return mMemory; }
 
 private:
+    enum CellWidth = 8;
+    enum CellHeight = 8;
     const VdpSettings mSettings;
     ubyte[] mLineBuff;
     FrameEventCallback mEventCallback;
@@ -216,13 +220,13 @@ private:
     {
         if(mState.HBlankScheduled)
         {
-            //debugOut("hinterrupt");
+            debugOut("hinterrupt");
             e.setInterrupt(ExceptionCodes.IRQ_4);
             mState.HBlankScheduled = false;
         }
         if(mState.VBlankScheduled)
         {
-            //debugOut("vinterrupt");
+            debugOut("vinterrupt");
             e.setInterrupt(ExceptionCodes.IRQ_6);
             mState.VBlankScheduled = false;
         }
@@ -296,7 +300,7 @@ private:
     }
     ushort readHVCounter(CpuPtr cpu) nothrow @nogc
     {
-        debugOut("read HV counter");
+        //debugOut("read HV counter");
         //assert(false);
         return 0;
     }
@@ -398,17 +402,27 @@ private:
         assert(mState.displayEnable);
         if(mRenderCallback !is null)
         {
+            const currLine = mState.CurrentLine;
             const wdth = mState.Width;
             mLineBuff[0..wdth] = mState.backdropColor;
             if(!mState.displayBlank)
             {
                 //TODO: render
                 mSpriteTable.update(mState, mMemory);
-                foreach_reverse(i; mSpriteTable.currentOrder[])
+                foreach(const ref sprite; mSpriteTable.currentOrder[].retro.map!(a => mSpriteTable.sprites[a]))
                 {
+                    const miny = sprite.y;
+                    const maxy = miny + sprite.hsize * CellHeight;
+                    if(currLine >= miny && currLine < maxy)
+                    {
+                        const minx = max(0, sprite.x - 128);
+                        const maxx = max(minx, min(mState.Width, sprite.x - 128 + sprite.vsize * CellWidth));
+                        import std.random;
+                        mLineBuff[minx..maxx] = cast(ubyte)uniform(0,64);
+                    }
                 }
             }
-            callRenderCallback(mLineBuff[0..wdth]);
+            callRenderCallback(currLine, mLineBuff[0..wdth]);
         }
     }
 
@@ -421,12 +435,12 @@ private:
         }
     }
 
-    void callRenderCallback(in ubyte[] buff)
+   void callRenderCallback(int currentLine, in ubyte[] buff)
     {
         if(mRenderCallback !is null)
         {
             mixin SafeThis;
-            mRenderCallback(safeThis, mState.CurrentLine, buff);
+            mRenderCallback(safeThis, currentLine, buff);
         }
     }
 }

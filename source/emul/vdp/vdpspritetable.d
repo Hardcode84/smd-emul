@@ -71,7 +71,7 @@ pure nothrow @nogc @safe:
                 currentLink = sprites[currentLink].link;
             }
             //debugOut("sprites: ",sprites);
-            //debugOut("order: ",currentOrder);
+            debugOut("order: ",currentOrder);
         }
     }
 }
