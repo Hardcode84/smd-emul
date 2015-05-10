@@ -1,5 +1,7 @@
 ﻿module emul.vdp.vdpmemory;
 
+import std.bitmanip;
+
 struct VdpMemory
 {
 pure nothrow @nogc @safe:
@@ -44,5 +46,17 @@ pure nothrow @nogc @safe:
             ++vsRamChanged;
             cram[addr] = value;
         }
+    }
+
+    auto readVram(T)(uint address) const
+    in
+    {
+        assert(0 == (address % T.sizeof));
+    }
+    body
+    {
+        const addr = address & 0xffff;
+        const ubyte[T.sizeof] temp = vram[addr..addr + T .sizeof];
+        return bigEndianToNative!(T,T.sizeof)(temp);
     }
 }

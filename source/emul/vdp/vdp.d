@@ -11,6 +11,7 @@ import emul.m68k.cpu;
 
 import emul.vdp.vdpstate;
 import emul.vdp.vdpmemory;
+import emul.vdp.vdplayers;
 import emul.vdp.vdpspritetable;
 
 enum DisplayFormat
@@ -173,6 +174,7 @@ private:
 
     VdpState mState;
     VdpMemory mMemory;
+    VdpLayers mVdpLayers;
     VdpSpriteTable mSpriteTable;
 
     ushort readHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart) nothrow @nogc
@@ -408,6 +410,7 @@ private:
             if(!mState.displayBlank)
             {
                 //TODO: render
+                mVdpLayers.update(mState, mMemory);
                 mSpriteTable.update(mState, mMemory);
                 foreach(const ref sprite; mSpriteTable.currentOrder[].retro.map!(a => mSpriteTable.sprites[a]))
                 {

@@ -51,10 +51,10 @@ pure nothrow @nogc @safe:
     int[] currentOrder;
     void update(in ref VdpState state, in ref VdpMemory memory)
     {
-        if(vramBase != state.spriteAttributeTableAddress || vramChanged != memory.vramChanged)
+        if(vramBase != state.spriteAttributeTable || vramChanged != memory.vramChanged)
         {
             debugOut("VdpSpriteTable.update");
-            vramBase = state.spriteAttributeTableAddress;
+            vramBase = state.spriteAttributeTable;
             vramChanged = memory.vramChanged;
             foreach(i; 0..MaxSprites)
             {
