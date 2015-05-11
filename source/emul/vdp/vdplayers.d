@@ -36,19 +36,13 @@ pure nothrow @nogc @safe:
             palette = ((data >> 13) & 0b11);
             vflip = (0 != (data & (1 << 12)));
             hflip = (0 != (data & (1 << 11)));
-            const patternAddress = (data << 5);
+            const patternAddress = (data << 5) & 0xffff;
             pattern = VdpPattern(memory.vram[patternAddress..patternAddress + 32],palette);
         }
 
-        void getData(ubyte[] outData, int line) const
-        in
+        void getData(ubyte[] outData, int line, int start, int end) const
         {
-            assert(outData.length == 8);
-            assert(line >= 0 && line < 8);
-        }
-        body
-        {
-            pattern.getData(outData, line, vflip, hflip);
+            pattern.getData(outData, line, vflip, hflip, start, end);
         }
     }
 
@@ -67,7 +61,7 @@ pure nothrow @nogc @safe:
            height != state.layerHeight ||
            vramchanged != memory.vramChanged)
         {
-            debugOut("VdpLayers.update");
+            //debugOut("VdpLayers.update");
             planeAbase = state.patternNameTableLayerA;
             planeBbase = state.patternnameTableLayerB;
             width = state.layerWidth;
@@ -85,7 +79,7 @@ pure nothrow @nogc @safe:
         }
     }
 
-    void drawPlanes(Priotity pri)(in ref VdpState state, in ref VdpMemory memory, int line, ubyte[] outData) const
+    void drawPlanes(Priotity pri)(ubyte[] outData, in ref VdpState state, in ref VdpMemory memory, int line) const
     {
         const hscroll = getHScrollValue(state, memory, line);
         foreach(i, const ref plane; planes[])
@@ -93,23 +87,21 @@ pure nothrow @nogc @safe:
             const begin = hscroll[i];
             const end = begin + outData.length;
             const beginCell = begin / 8;
-            const endCell = end / 8;
+            const endCell = (end + 7) / 8;
             //special case for the 1st cell
-            ubyte[8] temp = void;
-            getCellData(temp[], state, memory, line, beginCell, i);
+
             const outBegin = begin % 8;
             const len = 8 - outBegin;
-            outData[0..len] == temp[outBegin..$];
+            getCellData(outData[0..len], state, memory, line, beginCell, cast(Plane)i, outBegin, outBegin + len);
             int currPos = len;
             foreach(j; (beginCell + 1)..(endCell - 1))
             {
-                getCellData(outData[currPos..currPos + 8], state, memory, line, j, i);
+                getCellData(outData[currPos..currPos + 8], state, memory, line, j, cast(Plane)i);
                 currPos += 8;
             }
             //special case for the last cell
-            getCellData(temp[], state, memory, line, endCell - 1, i);
             const remLen = outData.length - currPos;
-            outData[currPos..$] = temp[0..remLen];
+            getCellData(outData[currPos..$], state, memory, line, endCell - 1, cast(Plane)i, 0, remLen);
         }
     }
 
@@ -152,17 +144,21 @@ pure nothrow @nogc @safe:
         final switch(state.vscrollMode)
         {
             case VScrollMode.FullScreen:
-                return memory.vsram[plane] & 0x7ff;
+                return memory.readVsram(plane);
             case VScrollMode.TwoCell:
-                return memory.vsram[plane + cell & ~0x1] & 0x7ff;
+                return memory.readVsram(plane + (cell % 40) & ~0x1);
         }
         assert(false);
     }
 
-    void getCellData(ubyte[] data, in ref VdpState state, in ref VdpMemory memory, int line, int cell, Plane plane) const
+    void getCellData(
+        ubyte[] data,
+        in ref VdpState state,
+        in ref VdpMemory memory,
+        int line, int cell, Plane plane, int start = 0, int end = 8) const
     in
     {
-        assert(data.length == 8);
+        assert(data.length == (end - start));
         assert(line >= 0);
         assert(cell >= 0);
     }
@@ -173,7 +169,7 @@ pure nothrow @nogc @safe:
         const y = line + vscroll;
         const ycell = (y / 8) % height;
         const ypat = y % 8;
-        planes[plane][xcell + ycell * width].getData(data,ypat);
+        planes[plane][xcell + ycell * width].getData(data,ypat,start,end);
     }
 }
 

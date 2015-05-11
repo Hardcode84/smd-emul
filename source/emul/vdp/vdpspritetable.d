@@ -53,7 +53,7 @@ pure nothrow @nogc @safe:
     {
         if(vramBase != state.spriteAttributeTable || vramChanged != memory.vramChanged)
         {
-            debugOut("VdpSpriteTable.update");
+            //debugOut("VdpSpriteTable.update");
             vramBase = state.spriteAttributeTable;
             vramChanged = memory.vramChanged;
             foreach(i; 0..MaxSprites)
@@ -71,7 +71,7 @@ pure nothrow @nogc @safe:
                 currentLink = sprites[currentLink].link;
             }
             //debugOut("sprites: ",sprites);
-            debugOut("order: ",currentOrder);
+            //debugOut("order: ",currentOrder);
         }
     }
 }

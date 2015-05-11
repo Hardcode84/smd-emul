@@ -62,10 +62,11 @@ private:
     {
         foreach(i, col; vdp.memory.cram[])
         {
-            const ubyte r = cast(ubyte)(((col >> 1) & 0b111) << 4);
-            const ubyte g = cast(ubyte)(((col >> 5) & 0b111) << 4);
-            const ubyte b = cast(ubyte)(((col >> 9) & 0b111) << 4);
-            mColorCache[i] = Color(r,g,b);
+            const ubyte r_ = cast(ubyte)(((col >> 1) & 0b111) << 5);
+            const ubyte g_ = cast(ubyte)(((col >> 5) & 0b111) << 5);
+            const ubyte b_ = cast(ubyte)(((col >> 9) & 0b111) << 5);
+            Color color = {r:r_, g:g_, b:b_};
+            mColorCache[i] = color;
         }
         //debugOut("update color cache");
         //debugOut(vdp.memory.cram[]);
@@ -96,10 +97,15 @@ private:
             buildColorCache(vdp);
             mColorCacheVer = vdp.memory.cramChanged;
         }
+
         auto surfLine = mSurface[line];
         foreach(i, d; data[])
         {
             surfLine[i] = mColorCache[d];
+        }
+        foreach(i;0..64)
+        {
+            mSurface[line][400 + i] = mColorCache[i];
         }
     }
 }

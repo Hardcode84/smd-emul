@@ -2,6 +2,8 @@
 
 import std.bitmanip;
 
+import gamelib.debugout;
+
 struct VdpMemory
 {
 pure nothrow @nogc @safe:
@@ -21,6 +23,7 @@ pure nothrow @nogc @safe:
     {
         const swapBytes = (0x0 != (address & 0x1));
         const addr = address & 0xfffe;
+        ++vramChanged;
         if(swapBytes)
         {
             vram[addr + 0] = cast(ubyte)(value);
@@ -31,10 +34,10 @@ pure nothrow @nogc @safe:
             vram[addr + 0] = cast(ubyte)(value >> 8);
             vram[addr + 1] = cast(ubyte)(value);
         }
-        ++vramChanged;
     }
     void writeCram(uint address, ushort value)
     {
+        debugfOut("cram write 0x%x 0x%x",address,value);
         ++cramChanged;
         cram[(address >> 1) & 0b111_111] = value;
     }
@@ -58,5 +61,15 @@ pure nothrow @nogc @safe:
         const addr = address & 0xffff;
         const ubyte[T.sizeof] temp = vram[addr..addr + T .sizeof];
         return bigEndianToNative!(T,T.sizeof)(temp);
+    }
+
+    auto readVsram(uint address) const
+    in
+    {
+        assert(address < vsram.length, debugConv(address));
+    }
+    body
+    {
+        return vsram[address] & 0x7ff;
     }
 }

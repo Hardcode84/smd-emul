@@ -52,7 +52,7 @@ struct VdpState
 pure nothrow @nogc @safe:
     ubyte[24] R;
 
-    ushort Status = 0x3400;
+    ushort Status = 0x3600;
 
     uint AddressReg;
     VdpCodeRegState CodeReg = VdpCodeRegState.VRamRead;
@@ -80,7 +80,7 @@ pure nothrow @nogc @safe:
     @property const
     {
         bool displayEnable() { return 0x0 == (R[0] & 0x1); }
-        bool displayBlank() { return 0x0 != (R[1] & (1 << 6));}
+        bool displayBlank() { return 0x0 == (R[1] & (1 << 6));}
         bool hInterruptEnabled() { return 0x0 != (R[0] & (1 << 4)); }
         bool vInterruptEnabled() { return 0x0 != (R[1] & (1 << 5)); }
         uint patternNameTableLayerA() { return (R[2] & 0b111000) << 10; }

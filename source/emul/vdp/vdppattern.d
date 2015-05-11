@@ -3,6 +3,8 @@
 import std.range;
 import std.algorithm;
 
+import gamelib.debugout;
+
 struct VdpPattern
 {
 pure nothrow @nogc @safe:
@@ -18,21 +20,22 @@ pure nothrow @nogc @safe:
         const p = palette << 4;
         foreach(i, ref line; data[])
         {
-            int j = 0;
-            foreach(ref pixels; line[].chunks(2))
+            foreach(j; 0..4)
             {
                 const d = srcdata[i * 4 + j];
-                pixels[0] = cast(ubyte)(p | (d & 0b1111));
-                pixels[1] = cast(ubyte)(p | ((d >> 4) & 0b1111));
-                ++j;
+                line[j * 2 + 0] = cast(ubyte)(p | (d & 0b1111));
+                line[j * 2 + 1] = cast(ubyte)(p | ((d >> 4) & 0b1111));
             }
         }
     }
 
-    void getData(ubyte[] outData, int line, bool vflip, bool hflip) const
+    void getData(ubyte[] outData, int line, bool vflip, bool hflip, int start = 0, int end = 8) const
     in
     {
-        assert(outData.length == 8);
+        assert(start >= 0,debugConv(start));
+        assert(end <= 8,debugConv(end));
+        assert(end >= start);
+        assert(outData.length == (end - start));
         assert(line >= 0 && line < 8);
     }
     body
@@ -40,14 +43,14 @@ pure nothrow @nogc @safe:
         const srcLine = (vflip ? 7 - line : line);
         if(hflip)
         {
-            foreach(i, c; data[srcLine][])
+            foreach(i, c; data[srcLine][start..end])
             {
                 if(0 != c) outData[7 - i] = c;
             }
         }
         else
         {
-            foreach(i, c; data[srcLine][])
+            foreach(i, c; data[srcLine][start..end])
             {
                 if(0 != c) outData[i] = c;
             }

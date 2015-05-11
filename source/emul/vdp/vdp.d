@@ -236,9 +236,10 @@ private:
 
     ushort readDataPort(CpuPtr cpu) nothrow @nogc
     {
-        //debugfOut("data port: %s 0x%.6x",mState.CodeReg,mState.AddressReg);
+        //debugfOut("read data");
         flushControl(cpu);
-        return 0;
+        assert(false);
+        //return 0;
     }
     void writeDataPort(CpuPtr cpu, ushort data) nothrow @nogc
     {
@@ -253,16 +254,16 @@ private:
         //debugfOut("data port: %s 0x%.6x 0x%.4x",mState.CodeReg,mState.AddressReg,data);
         switch(mState.CodeReg)
         {
-            case VdpCodeRegState.VRamWrite:  mMemory.writeVram(mState.AddressReg, data);  break;
-            case VdpCodeRegState.CRamWrite:  mMemory.writeCram(mState.AddressReg, data);  break;
+            case VdpCodeRegState.VRamWrite:  mMemory.writeVram(mState.AddressReg,  data); break;
+            case VdpCodeRegState.CRamWrite:  mMemory.writeCram(mState.AddressReg,  data); break;
             case VdpCodeRegState.VSRamWrite: mMemory.writeVsram(mState.AddressReg, data); break;
-            default: return;
+            default: /*assert(false, debugConv(mState.CodeReg))*/debugOut("Invalid write: ",mState.CodeReg); return;
         }
         mState.AddressReg += mState.autoIncrement;
     }
     ushort readControlPort(CpuPtr cpu) nothrow @nogc
     {
-        //debugOut("read control");
+        debugOut("read control");
         flushControl(cpu);
         return mState.Status;
     }
@@ -291,8 +292,8 @@ private:
                     updateDisplayMode();
                 }
             }
-            mState.CodeReg = VdpCodeRegState.VRamRead;
-            mState.AddressReg = 0;
+            //mState.CodeReg = VdpCodeRegState.VRamRead;
+            //mState.AddressReg = 0;
         }
         else
         {
@@ -302,7 +303,7 @@ private:
     }
     ushort readHVCounter(CpuPtr cpu) nothrow @nogc
     {
-        //debugOut("read HV counter");
+        debugOut("read HV counter");
         //assert(false);
         return 0;
     }
@@ -413,6 +414,9 @@ private:
                 //TODO: render
                 mVdpLayers.update(mState, mMemory);
                 mSpriteTable.update(mState, mMemory);
+
+                mVdpLayers.drawPlanes!(VdpLayers.Priotity.Low)(mLineBuff[0..wdth],mState,mMemory,currLine);
+
                 foreach(const ref sprite; mSpriteTable.currentOrder[].retro.map!(a => mSpriteTable.sprites[a]))
                 {
                     const miny = sprite.y;
@@ -425,6 +429,7 @@ private:
                         mLineBuff[minx..maxx] = cast(ubyte)uniform(0,64);
                     }
                 }
+                mVdpLayers.drawPlanes!(VdpLayers.Priotity.High)(mLineBuff[0..wdth],mState,mMemory,currLine);
             }
             callRenderCallback(currLine, mLineBuff[0..wdth]);
         }
