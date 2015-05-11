@@ -406,6 +406,7 @@ private:
         {
             const currLine = mState.CurrentLine;
             const wdth = mState.Width;
+            //order: back > LP B > LP A > LP S > HP B > HP A > HP S
             mLineBuff[0..wdth] = mState.backdropColor;
             if(!mState.displayBlank)
             {
