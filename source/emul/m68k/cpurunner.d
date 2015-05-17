@@ -12,7 +12,7 @@ import emul.m68k.cpu;
 import emul.m68k.instructions.create;
 import emul.m68k.xsetjmp;
 
-class CpuRunner
+struct CpuRunner
 {
 public:
     enum BreakReason
@@ -27,9 +27,14 @@ public:
         ProcessHandler processHandler;
     }
 
-    this()
+    @disable this();
+
+    this(int dummy)
     {
-        createOps();
+        Op[] opsTemp;
+        opsTemp.length = ushort.max + 1;
+        createOps(opsTemp[]);
+        mOps = assumeUnique(opsTemp);
     }
 
     void run(CpuPtr cpu,in RunParams params)
@@ -49,7 +54,7 @@ public:
         }
     }
 private:
-    Op[] mOps;
+    immutable Op[] mOps;
 
     struct Op
     {
@@ -71,15 +76,14 @@ private:
         assert(false, "Invalid op");
     }
 
-    void createOps()
+    static void createOps(Op[] ops)
     {
-        mOps.length = ushort.max + 1;
-        mOps[] = Op(Instruction("illegal",0x0,0x2,&invalidOp!void));
+        ops[] = Op(Instruction("illegal",0x0,0x2,&invalidOp!void));
         const instructions = createInstructions();
         debugfOut("Total instructions: %s",instructions.length);
         foreach(i,instr; instructions)
         {
-            mOps[i] = Op(instr);
+            ops[i] = Op(instr);
         }
     }
 
@@ -114,4 +118,4 @@ private:
     }
 }
 
-alias CpuRunnerRef = SafeRef!CpuRunner;
+alias CpuRunnerPtr = SafeRef!CpuRunner;

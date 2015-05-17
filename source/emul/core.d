@@ -24,7 +24,7 @@ public:
     this(RomRef rom)
     {
         mRom = rom;
-        mCpuRunner = makeSafe!CpuRunner();
+        mCpuRunner = 0;
         mVdp = makeSafe!Vdp();
         initSDL();
         scope(failure) dispose();
@@ -53,6 +53,7 @@ public:
         auto buf = pos[].cycle;
         scope(exit)
         {
+            debugOut(mCpu.state);
             foreach(i; 0..pos.length)
             {
                 debugfOut("0x%.6x",buf.front);
@@ -92,10 +93,10 @@ public:
                 switch(e.type)
                 {
                     case SDL_KEYDOWN:
-                        /*if(SDL_SCANCODE_ESCAPE == e.key.keysym.scancode)
+                        if(SDL_SCANCODE_ESCAPE == e.key.keysym.scancode)
                         {
-                            handleQuit();
-                        }*/
+                            break mainloop;
+                        }
                         break;
                     case SDL_QUIT:
                         break mainloop;
@@ -119,7 +120,7 @@ public:
 
 private:
     RomRef mRom;
-    CpuRunnerRef mCpuRunner;
+    CpuRunner mCpuRunner;
     Cpu mCpu;
     VdpRef mVdp;
     OutputRef mOutput;
