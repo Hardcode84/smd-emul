@@ -79,7 +79,8 @@ public:
         bool invalidOpcode = false;
         params.breakHandlers[CpuRunner.BreakReason.InvalidOpCode] = (CpuPtr cpu)
         {
-            writeln("invalid opcode");
+            const pc = cpu.state.PC - 0x2;
+            debugfOut("Invalid op: 0x%.6x 0x%.4x",pc,cpu.getMemValue!ushort(pc));
             invalidOpcode = true;
             return false;
         };

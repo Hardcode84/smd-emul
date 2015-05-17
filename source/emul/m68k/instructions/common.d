@@ -63,28 +63,26 @@ void updateFlags(T)(CpuPtr cpu, in T val)
 T add(T)(in T x, in T y, CpuPtr cpu)
 {
     const r1 = cast(long)x + cast(long)y;
-    cpu.state.setFlags!(CCRFlags.V)(r1 < Signed!T.min || r1 > Signed!T.max);
-    const r2 = cast(Unsigned!T)x + cast(Unsigned!T)y;
-    cpu.state.setFlags!(CCRFlags.C | CCRFlags.X)(r2 < int.min || r2 > int.max);
-    cast(void)r2;
     updateNZFlags(cpu, cast(T)r1);
+    cpu.state.setFlags!(CCRFlags.V)(r1 < Signed!T.min || r1 > Signed!T.max);
+    cpu.state.setFlags!(CCRFlags.C | CCRFlags.X)((cast(Unsigned!T)x + cast(Unsigned!T)y) > Unsigned!T.max);
     return cast(T)r1;
 }
 
 T sub(T)(in T x, in T y, CpuPtr cpu)
 {
     const r1 = cast(long)x - cast(long)y;
+    updateNZFlags(cpu, cast(T)r1);
     cpu.state.setFlags!(CCRFlags.V)(r1 < Signed!T.min || r1 > Signed!T.max);
     cpu.state.setFlags!(CCRFlags.C | CCRFlags.X)(cast(Unsigned!T)x < cast(Unsigned!T)y);
-    updateNZFlags(cpu, cast(T)r1);
     return cast(T)r1;
 }
 
 T mul(T)(in T x, in T y, CpuPtr cpu)
 {
     const r1 = cast(long)x * cast(long)y;
+    updateNZFlags(cpu, cast(T)r1);
     cpu.state.setFlags!CCRFlags.V(r1 < Signed!T.min || r1 > Signed!T.max);
     cpu.state.clearFlags!(CCRFlags.C);
-    updateNZFlags(cpu, cast(T)r1);
     return cast(T)r1;
 }
