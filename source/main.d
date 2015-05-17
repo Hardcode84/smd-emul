@@ -2,6 +2,7 @@
 
 version(M68k_SharedLib)
 {
+    import std.c.stdio;
     import std.c.windows.windows;
     import core.sys.windows.dll;
     version(Windows) extern(Windows)

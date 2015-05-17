@@ -95,7 +95,6 @@ private:
     {
         const processHandler = (params.processHandler is null ? &defProcessHandler : params.processHandler);
         assert((params.breakHandlers[BreakReason.SingleStep] !is null) == SingleStep);
-        assert(params.processHandler !is null);
         scope(failure) debugOut(cpu.state);
         const res = xsetjmp(cpu.jmpbuf);
         if(res == InvalidOpCode)

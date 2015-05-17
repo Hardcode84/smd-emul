@@ -19,7 +19,7 @@ package:
     {
         if(offset == 0xa11100) return cast(T)0; // TODO
         const o = offset & AddressMask;
-        assert((o + T.sizeof) <= data.length);
+        assert((o + T.sizeof) <= data.length,debugConv(o));
         ubyte[T.sizeof] temp = (cast(const(ubyte)[])data)[o..o+T.sizeof];
         return bigEndianToNative!(T,T.sizeof)(temp);
     }
@@ -27,7 +27,7 @@ package:
     void setValue(T)(uint offset, in T val)
     {
         const o = offset & AddressMask;
-        assert((o + T.sizeof) <= data.length);
+        assert((o + T.sizeof) <= data.length,debugConv(o));
         ubyte[T.sizeof] temp = nativeToBigEndian(val);
         (cast(ubyte[])data)[o..o+T.sizeof] = temp;
     }
@@ -35,7 +35,7 @@ package:
     auto getRawData(uint offset, size_t size) inout
     {
         const o = offset & AddressMask;
-        assert((o + size) <= data.length);
+        assert((o + size) <= data.length,debugConv(o));
         return cast(inout(ubyte)[])data[o..o+size];
     }
 
