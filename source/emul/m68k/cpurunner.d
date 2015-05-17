@@ -17,7 +17,8 @@ struct CpuRunner
 public:
     enum BreakReason
     {
-        SingleStep = 0
+        SingleStep = 0,
+        InvalidOpCode
     }
     struct RunParams
     {
@@ -38,11 +39,6 @@ public:
     }
 
     void run(CpuPtr cpu,in RunParams params)
-    in
-    {
-        assert(params.processHandler !is null);
-    }
-    body
     {
         if(params.breakHandlers[BreakReason.SingleStep] is null)
         {
@@ -54,6 +50,7 @@ public:
         }
     }
 private:
+    enum InvalidOpCode = 0xffff;
     immutable Op[] mOps;
 
     struct Op
@@ -73,7 +70,9 @@ private:
     {
         const pc = cpu.state.PC - 0x2;
         debugfOut("Invalid op: 0x%.6x 0x%.4x",pc,cpu.getMemValue!ushort(pc));
-        assert(false, "Invalid op");
+        //assert(false, "Invalid op");
+        cpu.triggerBreak(InvalidOpCode);
+        assert(false);
     }
 
     static void createOps(Op[] ops)
@@ -87,13 +86,27 @@ private:
         }
     }
 
+    bool defProcessHandler(CpuPtr)
+    {
+        return true;
+    }
+
     void runImpl(bool SingleStep)(CpuPtr cpu, in RunParams params)
     {
+        const processHandler = (params.processHandler is null ? &defProcessHandler : params.processHandler);
         assert((params.breakHandlers[BreakReason.SingleStep] !is null) == SingleStep);
         assert(params.processHandler !is null);
         scope(failure) debugOut(cpu.state);
-        xsetjmp(cpu.jmpbuf);
-    outer: while(params.processHandler(cpu))
+        const res = xsetjmp(cpu.jmpbuf);
+        if(res == InvalidOpCode)
+        {
+            if(params.breakHandlers[BreakReason.InvalidOpCode] is null ||
+               !params.breakHandlers[BreakReason.InvalidOpCode](cpu))
+            {
+                return;
+            }
+        }
+    outer: while(processHandler(cpu))
         {
             cpu.process(10);
             while(!cpu.processed)

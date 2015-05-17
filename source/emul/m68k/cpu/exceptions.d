@@ -132,7 +132,7 @@ pure nothrow @nogc:
 package:
     union
     {
-        ulong pendingExceptions = (1 << priotitiesByExceptions[ExceptionCodes.Reset]);
+        ulong pendingExceptions = 0;
         struct
         {
             uint pendingExceptionsLo = void;

@@ -157,9 +157,20 @@ nothrow:
         memory.setValue!T(offset,val);
     }
 
+    void setReset()
+    {
+        exceptions.setPendingException(ExceptionCodes.Reset);
+    }
+
     void triggerException(ExceptionCodes code)
     {
         exceptions.setPendingException(code);
+        xlongjmp(mJumpBuf,code);
+        assert(false);
+    }
+
+    void triggerBreak(int code)
+    {
         xlongjmp(mJumpBuf,code);
         assert(false);
     }
@@ -219,6 +230,7 @@ nothrow:
     @property bool processed() pure @safe const { return mExecuteTicks <= 0; }
     @property auto ref jmpbuf() pure @safe inout { return mJumpBuf; }
     @property auto currentInstruction() pure @safe const { return mCurrentInstruction; }
+    @property auto savedPC() pure @safe const { return mSavedPC; }
 
     auto getInstructionData(T,bool Raw = false)(uint pc) const pure @safe
     {

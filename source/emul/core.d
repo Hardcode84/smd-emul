@@ -1,5 +1,6 @@
 ﻿module emul.core;
 
+import std.stdio;
 import std.exception;
 import std.string;
 import std.range;
@@ -42,6 +43,7 @@ public:
         params.ramEnd   = rom.header.ramEndAddress;
 
         mCpu = params;
+        mCpu.setReset();
 
         convertSafe2((CpuPtr cpu) { mVdp.register(cpu); },
             () {assert(false);},
@@ -73,6 +75,13 @@ public:
             buf.front = cpu.state.PC;
             buf.popFront;
             return true;
+        };
+        bool invalidOpcode = false;
+        params.breakHandlers[CpuRunner.BreakReason.InvalidOpCode] = (CpuPtr cpu)
+        {
+            writeln("invalid opcode");
+            invalidOpcode = true;
+            return false;
         };
 
         uint ticks = 0;
@@ -112,6 +121,10 @@ public:
                 },
                 () {assert(false);},
                 &mCpu);
+            if(invalidOpcode)
+            {
+                break;
+            }
         }
     }
 
