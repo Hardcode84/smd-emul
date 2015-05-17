@@ -32,13 +32,16 @@ public:
         mOutput.register(mVdp);
         enforce(mRom.header.romEndAddress < mRom.header.ramEndAddress,
             format("Invalid memory ranges %s %s", mRom.header.romEndAddress, mRom.header.ramEndAddress));
-        mCpu.memory.data.length = mRom.header.ramEndAddress + 1;
-        mCpu.memory.data[0..mRom.data.length] = mRom.data[];
+        CpuParams params;
+        params.memory.length = mRom.header.ramEndAddress + 1;
+        params.memory[0..mRom.data.length] = mRom.data[];
 
-        mCpu.memory.romStartAddress = rom.header.romStartAddress;
-        mCpu.memory.romEndAddress   = rom.header.romEndAddress;
-        mCpu.memory.ramStartAddress = rom.header.ramStartAddress;
-        mCpu.memory.ramEndAddress   = rom.header.ramEndAddress;
+        params.romStart = rom.header.romStartAddress;
+        params.romEnd   = rom.header.romEndAddress;
+        params.ramStart = rom.header.ramStartAddress;
+        params.ramEnd   = rom.header.ramEndAddress;
+
+        mCpu = params;
 
         convertSafe2((CpuPtr cpu) { mVdp.register(cpu); },
             () {assert(false);},

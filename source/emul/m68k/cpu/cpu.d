@@ -18,6 +18,15 @@ import gamelib.debugout;
 auto ref truncateReg(T)(ref int val) pure nothrow @nogc { return *(cast(T*)&val); }
 auto ref truncateReg(T)(ref uint val) pure nothrow @nogc { return *(cast(T*)&val); }
 
+struct CpuParams
+{
+    void[] memory;
+    uint ramStart;
+    uint ramEnd;
+    uint romStart;
+    uint romEnd;
+}
+
 struct Cpu
 {
 nothrow:
@@ -29,6 +38,17 @@ nothrow:
         Full,
         UpperByte,
         LowerByte
+    }
+
+    @disable this();
+
+    this(CpuParams params) @nogc @safe pure
+    {
+        memory.data = params.memory;
+        memory.romStartAddress = params.romStart;
+        memory.romEndAddress   = params.romEnd;
+        memory.ramStartAddress = params.ramStart;
+        memory.ramEndAddress   = params.ramEnd;
     }
 
     alias InterruptsHook = void   delegate(const CpuPtr, ref Exceptions) nothrow @nogc;
