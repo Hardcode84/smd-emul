@@ -45,53 +45,85 @@ void ashiftImpl(Type,ubyte dr,ubyte ir)(CpuPtr cpu)
     }
     else
     {
-        const count = cpu.state.D[cr] % 32;
+        const count = cpu.state.D[cr] % 64;
     }
     const reg = (word & 0b111);
     auto val = cast(Type)cpu.state.D[reg];
+
+    enum msbMask = (1 << (Type.sizeof * 8 - 1));
     if(count > 0)
     {
+        const oldVal = val;
         static if(0 == dr) //right
         {
-            val >>= (count - 1);
-            cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != (val & 0x1));
-            val >>= 1;
+            if(count <= (Type.sizeof * 8))
+            {
+                val >>= (count - 1);
+                cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != (val & 0x1));
+                val >>= 1;
+            }
+            else
+            {
+                val >>= (Type.sizeof * 8 - 1);
+                cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != (val & 0x1));
+            }
+            cpu.state.clearFlags!(CCRFlags.V);
         }
         else
         {
-            val <<= (count - 1);
-            cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != (val & (1 << (Type.sizeof * 8 - 1))));
-            val <<= 1;
+            if(count <= (Type.sizeof * 8))
+            {
+                val <<= (count - 1);
+                cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != (val & msbMask));
+                val <<= 1;
+            }
+            else
+            {
+                val = 0;
+                cpu.state.clearFlags!(CCRFlags.C|CCRFlags.X);
+            }
+            bool changed = false;
+            foreach(i; 0..min(count,Type.sizeof * 8))
+            {
+                if(0 != (((oldVal << (i + 1)) ^ oldVal) & msbMask))
+                {
+                    changed = true;
+                    break;
+                }
+            }
+            cpu.state.setFlags!(CCRFlags.V)(changed);
         }
     }
     else
     {
-        cpu.state.clearFlags!(CCRFlags.C);
+        cpu.state.clearFlags!(CCRFlags.C | CCRFlags.V);
     }
-    cpu.state.clearFlags!(CCRFlags.V);
+
     cpu.state.setFlags!(CCRFlags.Z)(0 == val);
-    cpu.state.setFlags!(CCRFlags.N)(0x0 != (val & (1 << (Type.sizeof * 8 - 1))));
+    cpu.state.setFlags!(CCRFlags.N)(0x0 != (val & msbMask));
     truncateReg!Type(cpu.state.D[reg]) = cast(Type)val;
 }
 
 void ashiftmImpl(ubyte dr,ubyte Mode)(CpuPtr cpu)
 {
     alias Type = short;
+    enum msbMask = (1 << (Type.sizeof * 8 - 1));
     addressMode!(Type,AddressModeType.ReadWrite,Mode,(cpu,val)
         {
             static if(0 == dr) //right
             {
                 cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != (val & 0x1));
                 const result = val >> 1;
+                cpu.state.clearFlags!(CCRFlags.V);
             }
             else
             {
-                cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != (val & (1 << (Type.sizeof * 8 - 1))));
+                cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != (val & msbMask));
                 const result = val << 1;
+                cpu.state.setFlags!(CCRFlags.V)(0 != ((val ^ result) & msbMask));
             }
-            cpu.state.clearFlags!(CCRFlags.V);
             cpu.state.setFlags!(CCRFlags.Z)(0 == val);
-            cpu.state.setFlags!(CCRFlags.N)(0x0 != (val & (1 << (Type.sizeof * 8 - 1))));
+            cpu.state.setFlags!(CCRFlags.N)(0x0 != (val & msbMask));
             return cast(ushort)result;
         })(cpu);
 }
