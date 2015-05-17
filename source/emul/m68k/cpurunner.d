@@ -117,6 +117,7 @@ private:
                         break outer;
                     }
                 }
+
                 cpu.beginNextInstruction();
                 const op = mOps[cpu.currentInstruction];
                 assert(op.size >= 0x2);

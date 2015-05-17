@@ -64,6 +64,14 @@ extern(C) export
 
     void m68k_reset(context* ctx)
     {
+        try
+        {
+            ctx.cpu.state = emul.m68k.cpu.CpuState.init;
+        }
+        catch(Throwable e)
+        {
+            printException(e);
+        }
     }
 
     void m68k_execute(context* ctx, uint pc)
@@ -176,7 +184,7 @@ extern(C) export
     {
         try
         {
-            return ctx.cpu.state.D[d];
+            return ctx.cpu.state.A[d];
         }
         catch(Throwable e)
         {
@@ -189,7 +197,7 @@ extern(C) export
     {
         try
         {
-            ctx.cpu.state.D[d] = value;
+            ctx.cpu.state.A[d] = value;
         }
         catch(Throwable e)
         {
