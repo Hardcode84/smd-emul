@@ -32,11 +32,14 @@ void main(string[] args)
     const string[] sourcePaths = ["d-gamelib","source"];
     const string buildDir = currPath ~ ".build/";
     const string compiler = "dmd";
-    const string config = args[1..$].canFind("unittest") ? "unittest" : "debug";
+    const string conf = args[1..$].find(["debug","unittest","release"]).chain(["debug"]).front;
+    const sharedLib = args[1..$].canFind("shared");
+    const string config = conf ~ (sharedLib ? " shared" : "");
+    const string exeExt = (sharedLib ? ".dll" : ".exe");
 
-    const dmdConfs = ["debug" : "-debug -g -w -c","unittest" : "-debug -g -w -c -unittest"];
+    const dmdConfs = ["debug" : "-debug -g -w -c","unittest" : "-debug -g -w -c -unittest", "debug shared" : "-debug -g -w -c -shared -version=M68k_SharedLib"];
     const string[string][string] compilerOpts = ["dmd" : dmdConfs];
-    const dmdLinkConfs = ["debug" : "-debug -g -w","unittest" : "-debug -g -w -unittest"];
+    const dmdLinkConfs = ["debug" : "-debug -g -w","unittest" : "-debug -g -w -unittest", "debug shared" : "-debug -g -w -shared -version=M68k_SharedLib"];
     const string[string][string] linkerOpts = ["dmd" : dmdLinkConfs];
 
     const string[string] importOpts = ["dmd" : "-I\"%s\""];
@@ -245,7 +248,7 @@ void main(string[] args)
         mkdirRecurse(outputDir);
     }
 
-    const cmd = compiler ~ " " ~ currentLinkerOpts ~ " " ~ objFiles.data.map!(a => "\""~a~"\"").join(" ") ~ " " ~ format(outputOpt,outputDir~exeName);
+    const cmd = compiler ~ " " ~ currentLinkerOpts ~ " " ~ objFiles.data.map!(a => "\""~a~"\"").join(" ") ~ " " ~ format(outputOpt,outputDir~exeName~exeExt);
     writeln("Linking...");
     writeln(cmd);
     const status = executeShell(cmd);

@@ -38,7 +38,7 @@ public:
         mOps = assumeUnique(opsTemp);
     }
 
-    void run(CpuPtr cpu,in RunParams params)
+    void run(CpuPtr cpu,in RunParams params = RunParams.init)
     {
         if(params.breakHandlers[BreakReason.SingleStep] is null)
         {
