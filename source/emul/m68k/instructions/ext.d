@@ -35,4 +35,5 @@ void extImpl(SrcT,DstT,ubyte Reg)(CpuPtr cpu)
 {
     static assert(DstT.sizeof > SrcT.sizeof);
     truncateReg!DstT(cpu.state.D[Reg]) = truncateReg!SrcT(cpu.state.D[Reg]);
+    updateFlags(cpu,truncateReg!DstT(cpu.state.D[Reg]));
 }
