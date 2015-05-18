@@ -27,6 +27,6 @@ void cmpaImpl(Type,ubyte Reg,ubyte Mode)(CpuPtr cpu)
 {
     addressMode!(Type,AddressModeType.Read,Mode,(cpu,val)
         {
-            cast(void)sub(cast(int)cpu.state.A[Reg], val, cpu);
+            cast(void)sub_no_x(cast(int)cpu.state.A[Reg], val, cpu);
         })(cpu);
 }

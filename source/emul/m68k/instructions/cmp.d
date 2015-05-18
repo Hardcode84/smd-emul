@@ -23,6 +23,6 @@ void cmpImpl(ubyte Reg,ubyte Mode)(CpuPtr cpu)
     alias Type = sizeField!(Mode >> 6);
     addressModeWSize!(AddressModeType.Read,Mode,(cpu,val)
         {
-            cast(void)sub(cast(Type)cpu.state.D[Reg], val, cpu);
+            cast(void)sub_no_x(cast(Type)cpu.state.D[Reg], val, cpu);
         })(cpu);
 }

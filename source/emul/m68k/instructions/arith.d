@@ -11,6 +11,15 @@ T add(T)(in T x, in T y, CpuPtr cpu)
     return cast(T)r1;
 }
 
+T sub_no_x(T)(in T x, in T y, CpuPtr cpu)
+{
+    const r1 = cast(long)x - cast(long)y;
+    updateNZFlags(cpu, cast(T)r1);
+    cpu.state.setFlags!(CCRFlags.V)(r1 < Signed!T.min || r1 > Signed!T.max);
+    cpu.state.setFlags!(CCRFlags.C)(cast(Unsigned!T)x < cast(Unsigned!T)y);
+    return cast(T)r1;
+}
+
 T sub(T)(in T x, in T y, CpuPtr cpu)
 {
     const r1 = cast(long)x - cast(long)y;

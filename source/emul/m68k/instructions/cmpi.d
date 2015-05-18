@@ -26,6 +26,6 @@ void cmpiImpl(ubyte Mode)(CpuPtr cpu)
     const vali = cpu.getInstructionData!Type(cast(uint)(cpu.state.PC - Type.sizeof));
     addressModeWSize!(AddressModeType.Read,Mode,(cpu,val)
         {
-            cast(void)sub(val, vali, cpu);
+            cast(void)sub_no_x(val, vali, cpu);
         })(cpu);
 }
