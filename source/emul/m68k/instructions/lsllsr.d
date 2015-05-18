@@ -45,7 +45,7 @@ void lshiftImpl(Type,ubyte dr,ubyte ir)(CpuPtr cpu)
     }
     else
     {
-        const count = cpu.state.D[cr] % 32;
+        const count = cpu.state.D[cr] % 64;
     }
     const reg = (word & 0b111);
     auto val = cast(Type)cpu.state.D[reg];
@@ -53,15 +53,31 @@ void lshiftImpl(Type,ubyte dr,ubyte ir)(CpuPtr cpu)
     {
         static if(0 == dr) //right
         {
-            val >>>= (count - 1);
-            cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != (val & 0x1));
-            val >>>= 1;
+            if(count <= (Type.sizeof * 8))
+            {
+                val >>>= (count - 1);
+                cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != (val & 0x1));
+                val >>>= 1;
+            }
+            else
+            {
+                val = 0;
+                cpu.state.clearFlags!(CCRFlags.C|CCRFlags.X);
+            }
         }
         else
         {
-            val <<= (count - 1);
-            cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != (val & (1 << (Type.sizeof * 8 - 1))));
-            val <<= 1;
+            if(count <= (Type.sizeof * 8))
+            {
+                val <<= (count - 1);
+                cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != (val & (1 << (Type.sizeof * 8 - 1))));
+                val <<= 1;
+            }
+            else
+            {
+                val = 0;
+                cpu.state.clearFlags!(CCRFlags.C|CCRFlags.X);
+            }
         }
     }
     else
