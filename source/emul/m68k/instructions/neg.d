@@ -1,6 +1,7 @@
 ﻿module emul.m68k.instructions.neg;
 
 import emul.m68k.instructions.common;
+import emul.m68k.instructions.arith;
 
 package nothrow:
 void addNegInstructions(ref Instruction[ushort] ret) pure

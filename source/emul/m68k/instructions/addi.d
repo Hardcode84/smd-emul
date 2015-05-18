@@ -1,6 +1,7 @@
 ﻿module emul.m68k.instructions.addi;
 
 import emul.m68k.instructions.common;
+import emul.m68k.instructions.arith;
 
 package nothrow:
 void addAddiInstructions(ref Instruction[ushort] ret) pure

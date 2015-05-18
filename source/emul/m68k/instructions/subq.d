@@ -1,6 +1,7 @@
 ﻿module emul.m68k.instructions.subq;
 
 import emul.m68k.instructions.common;
+import emul.m68k.instructions.arith;
 
 package nothrow:
 void addSubqInstructions(ref Instruction[ushort] ret) pure

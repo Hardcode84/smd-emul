@@ -1,6 +1,7 @@
 ﻿module emul.m68k.instructions.subi;
 
 import emul.m68k.instructions.common;
+import emul.m68k.instructions.arith;
 
 package nothrow:
 void addSubiInstructions(ref Instruction[ushort] ret) pure
