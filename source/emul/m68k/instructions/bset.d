@@ -34,7 +34,7 @@ void bsetiImpl(Type,ubyte Mode)(CpuPtr cpu)
     addressMode!(Type,AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,b)
         {
             cpu.state.setFlags!(CCRFlags.Z)(0 == ((b >> bit) & 0x1));
-            return cast(Type)(b & (1 << bit));
+            return cast(Type)(b | (1 << bit));
         })(cpu);
 }
 
@@ -45,6 +45,6 @@ void bsetImpl(Type,ubyte Mode)(CpuPtr cpu)
     addressMode!(Type,AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,b)
         {
             cpu.state.setFlags!(CCRFlags.Z)(0 == ((b >> bit) & 0x1));
-            return cast(Type)(b & (1 << bit));
+            return cast(Type)(b | (1 << bit));
         })(cpu);
 }
