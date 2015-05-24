@@ -301,7 +301,7 @@ pure @safe:
     {
         foreach(i, h2;hooks[1..$])
         {
-            const h1 = hooks[i - 1];
+            const h1 = hooks[i];
             if(h1.end >= h2.begin) assert(false, "Overlapping hooks");
         }
     }

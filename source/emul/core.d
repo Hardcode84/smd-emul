@@ -15,6 +15,8 @@ import emul.rom;
 import emul.m68k.cpu;
 import emul.m68k.cpurunner;
 
+import emul.misc.misc;
+import emul.z80.z80;
 import emul.vdp.vdp;
 
 import emul.output;
@@ -26,6 +28,8 @@ public:
     {
         mRom = rom;
         mCpuRunner = 0;
+        mMisc = makeSafe!Misc();
+        mZ80 = makeSafe!Z80();
         mVdp = makeSafe!Vdp();
         initSDL();
         scope(failure) dispose();
@@ -45,7 +49,12 @@ public:
         mCpu = params;
         mCpu.setReset();
 
-        convertSafe2((CpuPtr cpu) { mVdp.register(cpu); },
+        convertSafe2((CpuPtr cpu)
+            {
+                mMisc.register(cpu);
+                mZ80.register(cpu);
+                mVdp.register(cpu);
+            },
             () {assert(false);},
             &mCpu);
     }
@@ -139,6 +148,8 @@ private:
     RomRef mRom;
     CpuRunner mCpuRunner;
     Cpu mCpu;
+    MiscRef mMisc;
+    Z80Ref mZ80;
     VdpRef mVdp;
     OutputRef mOutput;
 }
