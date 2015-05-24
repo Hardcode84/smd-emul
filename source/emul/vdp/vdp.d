@@ -7,18 +7,14 @@ import std.range;
 import gamelib.memory.saferef;
 import gamelib.debugout;
 
+import emul.settings;
+
 import emul.m68k.cpu;
 
 import emul.vdp.vdpstate;
 import emul.vdp.vdpmemory;
 import emul.vdp.vdplayers;
 import emul.vdp.vdpspritetable;
-
-enum DisplayFormat
-{
-    NTSC,
-    PAL
-}
 
 struct VdpSettings
 {
