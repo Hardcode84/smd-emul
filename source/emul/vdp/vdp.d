@@ -248,6 +248,7 @@ private:
         }
         flushControl(cpu);
         //debugfOut("data port: %s 0x%.6x 0x%.4x",mState.CodeReg,mState.AddressReg,data);
+        //debugfOut("0x%x",cpu.state.PC);
         switch(mState.CodeReg)
         {
             case VdpCodeRegState.VRamWrite:  mMemory.writeVram(mState.AddressReg,  data); break;

@@ -28,6 +28,8 @@ public:
     {
         cpu.addReadHook(&readHook,   0xa10000, 0xa10020);
         cpu.addWriteHook(&writeHook, 0xa10000, 0xa10020);
+        cpu.addReadHook(&readHook,   0xc00011, 0xc00012);
+        cpu.addWriteHook(&writeHook, 0xc00011, 0xc00012);
     }
 
 private:
