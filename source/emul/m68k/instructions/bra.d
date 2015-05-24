@@ -6,7 +6,7 @@ package nothrow:
 void addBraInstructions(ref Instruction[ushort] ret) pure
 {
     //bra
-    foreach(i; 0x1..0xfe)
+    foreach(i; 0x1..0xff)
     {
         ret.addInstruction(Instruction("bra",cast(ushort)(0x6000 | i),0x2,&braImpl!void));
     }
