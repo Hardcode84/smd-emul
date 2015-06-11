@@ -15,7 +15,7 @@ public:
     this()
     {
         // Constructor code
-        mWindow = makeSafe!Window("smd-emul", 800,600,0);
+        mWindow = makeSafe!Window("smd-emul", 1024,768,0);
         mSurface = createSurface();
 
         scope(failure) mWindow.dispose();
@@ -98,14 +98,18 @@ private:
             mColorCacheVer = vdp.memory.cramChanged;
         }
 
-        auto surfLine = mSurface[line];
-        foreach(i, d; data[])
+        foreach(l;0..2)
         {
-            surfLine[i] = mColorCache[d];
+            auto surfLine = mSurface[line * 2 + l];
+            foreach(i, d; data[])
+            {
+                surfLine[i * 2 + 0] = mColorCache[d];
+                surfLine[i * 2 + 1] = mColorCache[d];
+            }
         }
         foreach(i;0..64)
         {
-            mSurface[line][400 + i] = mColorCache[i];
+            mSurface[line][900 + i] = mColorCache[i];
         }
     }
 }
