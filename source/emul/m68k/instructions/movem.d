@@ -67,9 +67,9 @@ void movemImpl(ubyte dr, Type, ubyte mode)(CpuPtr cpu)
         static immutable indices = iota(16).array;
     }
     int i = 0;
-    foreach(ind;indices[])
+    foreach(val,ind;indices[])
     {
-        if(0x0 != ((1 << ind) & mask))
+        if(0x0 != ((1 << val) & mask))
         {
             regs[i] = &cpu.state.AllregsS[ind];
             ++i;
