@@ -5,7 +5,6 @@ import emul.m68k.instructions.common;
 package nothrow:
 void addOritosrInstructions(ref Instruction[ushort] ret) pure
 {
-    //ori to sr
     ret.addInstruction(Instruction("ori to sr",0x007c,0x4,&oritosrImpl!void));
 }
 
