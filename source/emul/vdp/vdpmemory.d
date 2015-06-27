@@ -59,7 +59,7 @@ pure nothrow @nogc @safe:
     body
     {
         const addr = address & 0xffff;
-        const ubyte[T.sizeof] temp = vram[addr..addr + T .sizeof];
+        const ubyte[T.sizeof] temp = vram[addr..addr + T.sizeof];
         return bigEndianToNative!(T,T.sizeof)(temp);
     }
 

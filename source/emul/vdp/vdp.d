@@ -212,7 +212,7 @@ private:
         {
             return writeControlPort(cpu, data);
         }
-        assert(false);
+       assert(false);
     }
     void interruptsHook(const CpuPtr cpu, ref Exceptions e) nothrow @nogc
     {
@@ -234,8 +234,8 @@ private:
     {
         //debugfOut("read data");
         flushControl(cpu);
-        assert(false);
-        //return 0;
+        //assert(false);
+        return 0;
     }
     void writeDataPort(CpuPtr cpu, ushort data) nothrow @nogc
     {
@@ -260,7 +260,7 @@ private:
     }
     ushort readControlPort(CpuPtr cpu) nothrow @nogc
     {
-        debugOut("read control");
+        //debugOut("read control");
         flushControl(cpu);
         return mState.Status;
     }

@@ -1,6 +1,7 @@
 ﻿module emul.vdp.vdplayers;
 
 import gamelib.debugout;
+import gamelib.math;
 
 import emul.vdp.vdpstate;
 import emul.vdp.vdpmemory;
@@ -66,6 +67,8 @@ pure nothrow @nogc @safe:
             planeBbase = state.patternnameTableLayerB;
             width = state.layerWidth;
             height = state.layerHeight;
+            assert(ispow2(width),  debugConv(width));
+            assert(ispow2(height), debugConv(height));
             vramchanged = memory.vramChanged;
             foreach(i; 0..height)
             {
@@ -84,7 +87,7 @@ pure nothrow @nogc @safe:
         const hscroll = getHScrollValue(state, memory, line);
         foreach(i, const ref plane; planes[])
         {
-            const begin = hscroll[i];
+            const begin = (-hscroll[i]) & (width - 1);
             const end = begin + outData.length;
             const beginCell = begin / 8;
             const endCell = (end + 7) / 8;
@@ -141,14 +144,15 @@ pure nothrow @nogc @safe:
     }
     body
     {
-        final switch(state.vscrollMode)
+        /*final switch(state.vscrollMode)
         {
             case VScrollMode.FullScreen:
                 return memory.readVsram(plane);
             case VScrollMode.TwoCell:
                 return memory.readVsram(plane + (cell % 40) & ~0x1);
         }
-        assert(false);
+        assert(false);*/
+        return 0;
     }
 
     void getCellData(
