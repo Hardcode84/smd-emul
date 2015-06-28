@@ -215,6 +215,8 @@ void main(string[] args)
         cache.object["compiler"] = compiler;
         cache.object["config"] = config;
     }
+    int compiledFiles = 0;
+    const totalFiles = csourceList.length;
     void compilefunc(const ref BuildEntry e)
     {
         if(e.changed)
@@ -238,14 +240,15 @@ void main(string[] args)
         synchronized(mutex)
         {
             e.save();
+            ++compiledFiles;
             if(e.changed)
             {
                 ++numCompiledFiles;
-                writefln("Compiled: \"%s\"",e.prettyName);
+                writefln("[%s/%s] Compiled: \"%s\"",compiledFiles,totalFiles,e.prettyName);
             }
             else
             {
-                writefln("\"%s\" is up to date",e.prettyName);
+                writefln("[%s/%s] \"%s\" is up to date",compiledFiles,totalFiles,e.prettyName);
             }
             objFiles ~= e.objName;
         }
