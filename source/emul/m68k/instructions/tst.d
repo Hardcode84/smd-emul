@@ -14,10 +14,10 @@ void addTstInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void tstImpl(ubyte Mode)(CpuPtr cpu)
+void tstImpl(ubyte Mode)(ref Cpu cpu)
 {
-    addressModeWSize!(AddressModeType.Read,Mode,(a,b)
+    addressModeWSize!(AddressModeType.Read,Mode,(ref cpu,b)
         {
-            updateFlags(a,b);
+            updateFlags(cpu,b);
         })(cpu);
 }

@@ -26,12 +26,12 @@ void addAddMulInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void mulwImpl(bool Signed, ubyte Mode)(CpuPtr cpu)
+void mulwImpl(bool Signed, ubyte Mode)(ref Cpu cpu)
 {
     const reg = ((cpu.getInstructionData!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
     static if(Signed)
     {
-        addressMode!(short,AddressModeType.Read,Mode,(cpu,val)
+        addressMode!(short,AddressModeType.Read,Mode,(ref cpu,val)
             {
                 const result = cast(int)val * cast(int)cpu.state.D[reg];
                 updateFlags(cpu, result);
@@ -40,7 +40,7 @@ void mulwImpl(bool Signed, ubyte Mode)(CpuPtr cpu)
     }
     else
     {
-        addressMode!(ushort,AddressModeType.Read,Mode,(cpu,val)
+        addressMode!(ushort,AddressModeType.Read,Mode,(ref cpu,val)
             {
                 const result = cast(uint)val * cast(uint)cpu.state.D[reg];
                 updateFlags(cpu, cast(int)result);
@@ -49,7 +49,7 @@ void mulwImpl(bool Signed, ubyte Mode)(CpuPtr cpu)
     }
 }
 
-void mulImpl(ubyte Mode)(CpuPtr cpu)
+void mulImpl(ubyte Mode)(ref Cpu cpu)
 {
     const word = cpu.getInstructionData!ushort(cpu.state.PC - 0x2);
     static immutable funcs = [
@@ -60,7 +60,7 @@ void mulImpl(ubyte Mode)(CpuPtr cpu)
     funcs[(word >> 10) & 0b11](cpu,word);
 }
 
-void mulImpl2(bool S, bool Quad, ubyte Mode)(CpuPtr cpu, ushort word)
+void mulImpl2(bool S, bool Quad, ubyte Mode)(ref Cpu cpu, ushort word)
 {
     static if(S)
     {
@@ -73,7 +73,7 @@ void mulImpl2(bool S, bool Quad, ubyte Mode)(CpuPtr cpu, ushort word)
         alias ResType = ulong;
     }
     const regl = ((word >> 12) & 0b111);
-    addressMode!(Type,AddressModeType.Read,Mode,(cpu,val)
+    addressMode!(Type,AddressModeType.Read,Mode,(ref cpu,val)
         {
             const result = cast(ResType)val * cast(ResType)cpu.state.D[regl];
             updateNZFlags(cpu,cast(Signed!ResType)result);

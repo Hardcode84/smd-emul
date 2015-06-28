@@ -20,11 +20,11 @@ void addCmpiInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void cmpiImpl(ubyte Mode)(CpuPtr cpu)
+void cmpiImpl(ubyte Mode)(ref Cpu cpu)
 {
     alias Type = sizeField!(Mode >> 6);
     const vali = cpu.getInstructionData!Type(cast(uint)(cpu.state.PC - Type.sizeof));
-    addressModeWSize!(AddressModeType.Read,Mode,(cpu,val)
+    addressModeWSize!(AddressModeType.Read,Mode,(ref cpu,val)
         {
             cast(void)sub_no_x(val, vali, cpu);
         })(cpu);

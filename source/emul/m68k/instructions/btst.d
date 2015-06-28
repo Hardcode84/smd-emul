@@ -28,20 +28,20 @@ void addBtstInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void btstiImpl(Type,ubyte Mode)(CpuPtr cpu)
+void btstiImpl(Type,ubyte Mode)(ref Cpu cpu)
 {
     const bit = cpu.getInstructionData!ubyte(cpu.state.PC - 0x1) % (Type.sizeof * 8);
-    addressMode!(Type,AddressModeType.Read,Mode,(cpu,b)
+    addressMode!(Type,AddressModeType.Read,Mode,(ref cpu,b)
         {
             cpu.state.setFlags!(CCRFlags.Z)(0 == ((b >> bit) & 0x1));
         })(cpu);
 }
 
-void btstImpl(Type,ubyte Mode)(CpuPtr cpu)
+void btstImpl(Type,ubyte Mode)(ref Cpu cpu)
 {
     const reg = ((cpu.getInstructionData!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
     const bit = cpu.state.D[reg] % (Type.sizeof * 8);
-    addressMode!(Type,AddressModeType.Read,Mode,(cpu,b)
+    addressMode!(Type,AddressModeType.Read,Mode,(ref cpu,b)
         {
             cpu.state.setFlags!(CCRFlags.Z)(0 == ((b >> bit) & 0x1));
         })(cpu);

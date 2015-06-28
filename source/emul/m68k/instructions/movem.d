@@ -36,7 +36,7 @@ void addMovemInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void movemImpl(ubyte dr, Type, ubyte mode)(CpuPtr cpu)
+void movemImpl(ubyte dr, Type, ubyte mode)(ref Cpu cpu)
 {
     import core.bitop;
     int*[16] regs = void;
@@ -46,14 +46,14 @@ void movemImpl(ubyte dr, Type, ubyte mode)(CpuPtr cpu)
     enum W = (0 == dr ? AddressModeType.Write : AddressModeType.Read);
     static if(W == AddressModeType.Write)
     {
-        auto func(CpuPtr cpu)
+        auto func(ref Cpu cpu)
         {
             return cast(Type)(**(reg++));
         }
     }
     else
     {
-        void func(CpuPtr cpu, in Type val)
+        void func(ref Cpu cpu, in Type val)
         {
             **(reg++) = val;
         }

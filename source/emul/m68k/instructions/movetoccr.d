@@ -16,9 +16,9 @@ void addMovetoccrInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void movetoccrImpl(ubyte Mode)(CpuPtr cpu)
+void movetoccrImpl(ubyte Mode)(ref Cpu cpu)
 {
-    addressMode!(ushort,AddressModeType.Read,Mode,(cpu,val)
+    addressMode!(ushort,AddressModeType.Read,Mode,(ref cpu,val)
         {
             cpu.state.CCR = cast(ubyte)val;
         })(cpu);

@@ -17,10 +17,10 @@ void addNegInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void negImpl(ubyte Mode)(CpuPtr cpu)
+void negImpl(ubyte Mode)(ref Cpu cpu)
 {
     alias Type = sizeField!(Mode >> 6);
-    addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,val)
+    addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(ref cpu,val)
         {
             return sub(cast(Type)0,val,cpu);
         })(cpu);

@@ -23,9 +23,9 @@ void addCmpaInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void cmpaImpl(Type,ubyte Reg,ubyte Mode)(CpuPtr cpu)
+void cmpaImpl(Type,ubyte Reg,ubyte Mode)(ref Cpu cpu)
 {
-    addressMode!(Type,AddressModeType.Read,Mode,(cpu,val)
+    addressMode!(Type,AddressModeType.Read,Mode,(ref cpu,val)
         {
             cast(void)sub_no_x(cast(int)cpu.state.A[Reg], val, cpu);
         })(cpu);

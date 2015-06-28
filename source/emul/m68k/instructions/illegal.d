@@ -22,7 +22,7 @@ void addIllegalInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void illegalImpl(Dummy)(CpuPtr cpu)
+void illegalImpl(Dummy)(ref Cpu cpu)
 {
     //TODO
     import gamelib.debugout;
@@ -31,7 +31,7 @@ void illegalImpl(Dummy)(CpuPtr cpu)
     assert(false);
 }
 
-void e1111Impl(Dummy)(CpuPtr cpu)
+void e1111Impl(Dummy)(ref Cpu cpu)
 {
     //TODO
     import gamelib.debugout;
@@ -40,7 +40,7 @@ void e1111Impl(Dummy)(CpuPtr cpu)
     assert(false);
 }
 
-void e1010Impl(Dummy)(CpuPtr cpu)
+void e1010Impl(Dummy)(ref Cpu cpu)
 {
     //TODO
     import gamelib.debugout;

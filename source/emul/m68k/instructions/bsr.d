@@ -15,14 +15,14 @@ void addBsrInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void bsrImpl(T)(CpuPtr cpu)
+void bsrImpl(T)(ref Cpu cpu)
 {
     cpu.state.SP -= uint.sizeof;
     cpu.setMemValue(cpu.state.SP,cpu.state.PC);
     const offset = cpu.getInstructionData!T(cast(uint)(cpu.state.PC - T.sizeof));
     cpu.state.PC += offset - T.sizeof;
 }
-void bsrImpl(T : void)(CpuPtr cpu)
+void bsrImpl(T : void)(ref Cpu cpu)
 {
     cpu.state.SP -= uint.sizeof;
     cpu.setMemValue(cpu.state.SP,cpu.state.PC);

@@ -9,7 +9,7 @@ void addOritoccrInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void oritoccrImpl(Dummy)(CpuPtr cpu)
+void oritoccrImpl(Dummy)(ref Cpu cpu)
 {
     const val = cpu.getInstructionData!ubyte(cast(uint)(cpu.state.PC - ubyte.sizeof));
     cpu.state.CCR = cpu.state.CCR | val;

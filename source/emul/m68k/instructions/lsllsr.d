@@ -35,7 +35,7 @@ void addLslLsrInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void lshiftImpl(Type,ubyte dr,ubyte ir)(CpuPtr cpu)
+void lshiftImpl(Type,ubyte dr,ubyte ir)(ref Cpu cpu)
 {
     const word = cpu.getMemValue!ushort(cpu.state.PC - 0x2);
     const cr = ((word >> 9) & 0b111);
@@ -89,9 +89,9 @@ void lshiftImpl(Type,ubyte dr,ubyte ir)(CpuPtr cpu)
     truncateReg!Type(cpu.state.D[reg]) = cast(Type)val;
 }
 
-void lshiftmImpl(ubyte dr,ubyte Mode)(CpuPtr cpu)
+void lshiftmImpl(ubyte dr,ubyte Mode)(ref Cpu cpu)
 {
-    addressMode!(short,AddressModeType.ReadWrite,Mode,(cpu,val)
+    addressMode!(short,AddressModeType.ReadWrite,Mode,(ref cpu,val)
         {
             static if(0 == dr) //right
             {

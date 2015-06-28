@@ -16,9 +16,9 @@ void addClrInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void clrImpl(ubyte Mode)(CpuPtr cpu)
+void clrImpl(ubyte Mode)(ref Cpu cpu)
 {
-    addressModeWSize!(AddressModeType.WriteDontExtendRegister,Mode,(cpu)
+    addressModeWSize!(AddressModeType.WriteDontExtendRegister,Mode,(ref cpu)
         {
             cpu.state.clearFlags!(CCRFlags.N | CCRFlags.V | CCRFlags.C);
             cpu.state.setFlags!(CCRFlags.Z);

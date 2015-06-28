@@ -19,10 +19,10 @@ void addSubiInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void subiImpl(Type,ubyte Mode)(CpuPtr cpu)
+void subiImpl(Type,ubyte Mode)(ref Cpu cpu)
 {
     const val = cpu.getInstructionData!Type(cast(uint)(cpu.state.PC - Type.sizeof));
-    addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,b)
+    addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(ref cpu,b)
         {
             const result = sub(val, b, cpu);
             return result;

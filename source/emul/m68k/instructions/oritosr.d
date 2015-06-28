@@ -9,7 +9,7 @@ void addOritosrInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void oritosrImpl(Dummy)(CpuPtr cpu)
+void oritosrImpl(Dummy)(ref Cpu cpu)
 {
     const val = cpu.getInstructionData!ushort(cast(uint)(cpu.state.PC - ushort.sizeof));
     cpu.state.SR = cpu.state.SR | val;

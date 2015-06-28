@@ -10,7 +10,7 @@ void addNoplInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void nopImpl(Dummy)(CpuPtr)
+void nopImpl(Dummy)(ref Cpu)
 {
     //TODO
     //import gamelib.debugout;

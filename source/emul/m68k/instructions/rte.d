@@ -10,7 +10,7 @@ void addRteInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void rteImpl(Dummy)(CpuPtr cpu)
+void rteImpl(Dummy)(ref Cpu cpu)
 {
     //TODO: check priviledge mode
     returnFromException(cpu);

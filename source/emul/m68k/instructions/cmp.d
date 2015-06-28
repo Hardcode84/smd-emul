@@ -18,10 +18,10 @@ void addCmpInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void cmpImpl(ubyte Reg,ubyte Mode)(CpuPtr cpu)
+void cmpImpl(ubyte Reg,ubyte Mode)(ref Cpu cpu)
 {
     alias Type = sizeField!(Mode >> 6);
-    addressModeWSize!(AddressModeType.Read,Mode,(cpu,val)
+    addressModeWSize!(AddressModeType.Read,Mode,(ref cpu,val)
         {
             cast(void)sub_no_x(cast(Type)cpu.state.D[Reg], val, cpu);
         })(cpu);

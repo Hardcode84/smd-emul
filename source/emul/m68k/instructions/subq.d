@@ -30,19 +30,19 @@ void addSubqInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void subqImpl(ubyte Mode)(CpuPtr cpu)
+void subqImpl(ubyte Mode)(ref Cpu cpu)
 {
     const data = cast(byte)((cpu.getInstructionData!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
     static if(addressModeTraits!Mode.Data)
     {
-        addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,val)
+        addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(ref cpu,val)
             {
                return sub(val, data, cpu);
             })(cpu);
     }
     else
     {
-        addressMode!(uint,AddressModeType.ReadWrite,Mode,(cpu,val)
+        addressMode!(uint,AddressModeType.ReadWrite,Mode,(ref cpu,val)
             {
                 return val - data;
             })(cpu);

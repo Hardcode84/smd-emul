@@ -18,7 +18,7 @@ struct Instruction
     string name;
     ushort opcode;
     ushort size;
-    void function(CpuPtr) @nogc nothrow impl;
+    void function(ref Cpu) @nogc nothrow impl;
 }
 
 package pure nothrow @safe:
@@ -45,7 +45,7 @@ void addInstruction(ref Instruction[ushort] instructions, in Instruction instr) 
 }
 
 @nogc:
-void updateNZFlags(T)(CpuPtr cpu, in T val)
+void updateNZFlags(T)(ref Cpu cpu, in T val)
 {
     static assert(isSigned!T);
     if(val < 0) cpu.state.setFlags!(CCRFlags.N);
@@ -54,7 +54,7 @@ void updateNZFlags(T)(CpuPtr cpu, in T val)
     else         cpu.state.clearFlags!(CCRFlags.Z);
 }
 
-void updateFlags(T)(CpuPtr cpu, in T val)
+void updateFlags(T)(ref Cpu cpu, in T val)
 {
     updateNZFlags(cpu, val);
     cpu.state.clearFlags!(CCRFlags.V | CCRFlags.C);

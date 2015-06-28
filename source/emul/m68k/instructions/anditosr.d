@@ -9,7 +9,7 @@ void addAnditosrInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void anditosrImpl(Dummy)(CpuPtr cpu)
+void anditosrImpl(Dummy)(ref Cpu cpu)
 {
     const val = cpu.getInstructionData!ushort(cast(uint)(cpu.state.PC - ushort.sizeof));
     cpu.state.SR = cpu.state.SR & val;

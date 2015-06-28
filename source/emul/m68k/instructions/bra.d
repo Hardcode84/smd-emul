@@ -15,12 +15,12 @@ void addBraInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void braImpl(T)(CpuPtr cpu)
+void braImpl(T)(ref Cpu cpu)
 {
     const offset = cpu.getInstructionData!T(cast(uint)(cpu.state.PC - T.sizeof));
     cpu.state.PC += offset - T.sizeof;
 }
-void braImpl(T : void)(CpuPtr cpu)
+void braImpl(T : void)(ref Cpu cpu)
 {
     const offset = cpu.getInstructionData!byte(cpu.state.PC - 0x1);
     cpu.state.PC += offset;

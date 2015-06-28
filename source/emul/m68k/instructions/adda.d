@@ -22,9 +22,9 @@ void addAddaInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void addaImpl(Type,ubyte Reg,ubyte Mode)(CpuPtr cpu)
+void addaImpl(Type,ubyte Reg,ubyte Mode)(ref Cpu cpu)
 {
-    addressMode!(Type,AddressModeType.Read,Mode,(cpu,val)
+    addressMode!(Type,AddressModeType.Read,Mode,(ref cpu,val)
         {
             cpu.state.A[Reg] += val;
         })(cpu);

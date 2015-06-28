@@ -18,10 +18,10 @@ void addAndiInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void andiImpl(Type,ubyte Mode)(CpuPtr cpu)
+void andiImpl(Type,ubyte Mode)(ref Cpu cpu)
 {
     const val = cpu.getInstructionData!Type(cast(uint)(cpu.state.PC - Type.sizeof));
-    addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,b)
+    addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(ref cpu,b)
         {
             const result = cast(Type)(val & b);
             updateFlags(cpu,result);

@@ -24,7 +24,7 @@ public:
         mVersionReg = cast(ushort)val;
     }
 
-    void register(CpuPtr cpu) pure nothrow
+    void register(ref Cpu cpu) pure nothrow
     {
         cpu.addReadHook(&readHook,   0xa10000, 0xa10020);
         cpu.addWriteHook(&writeHook, 0xa10000, 0xa10020);
@@ -35,7 +35,7 @@ public:
 private:
     const ushort mVersionReg;
 
-    ushort readHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart) nothrow @nogc
+    ushort readHook(ref Cpu cpu, uint offset, Cpu.MemWordPart wpart) nothrow @nogc
     {
         debugfOut("misc read : 0x%.6x 0x%.8x %s",cpu.state.PC,offset,wpart);
         assert(0x0 == (offset & 0x1));
@@ -45,7 +45,7 @@ private:
         }
         return 0;
     }
-    void writeHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart, ushort data) nothrow @nogc
+    void writeHook(ref Cpu cpu, uint offset, Cpu.MemWordPart wpart, ushort data) nothrow @nogc
     {
         debugfOut("misc write : 0x%.6x 0x%.8x %s 0x%.4x",cpu.state.PC,offset,wpart,data);
         assert(0x0 == (offset & 0x1));

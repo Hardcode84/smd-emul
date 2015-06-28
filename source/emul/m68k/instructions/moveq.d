@@ -16,7 +16,7 @@ void addMoveqInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void moveqImpl(Dummy)(CpuPtr cpu)
+void moveqImpl(Dummy)(ref Cpu cpu)
 {
     const word = cpu.getInstructionData!ushort(cpu.state.PC - 0x2);
     const reg = ((word >> 9) & 0b111);

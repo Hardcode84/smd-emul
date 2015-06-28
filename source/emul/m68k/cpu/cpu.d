@@ -11,10 +11,6 @@ import emul.m68k.cpu.cpustate;
 import emul.m68k.cpu.memory;
 import emul.m68k.cpu.exceptions;
 
-import gamelib.memory.saferef;
-
-import gamelib.debugout;
-
 auto ref truncateReg(T)(ref int val) pure nothrow @nogc { return *(cast(T*)&val); }
 auto ref truncateReg(T)(ref uint val) pure nothrow @nogc { return *(cast(T*)&val); }
 
@@ -41,6 +37,7 @@ nothrow:
     }
 
     @disable this();
+    @disable this(this);
 
     this(CpuParams params) @nogc @safe pure
     {
@@ -51,9 +48,9 @@ nothrow:
         memory.ramEndAddress   = params.ramEnd;
     }
 
-    alias InterruptsHook = void   delegate(const CpuPtr, ref Exceptions) nothrow @nogc;
-    alias MemReadHook    = ushort delegate(CpuPtr,uint,MemWordPart) nothrow @nogc;
-    alias MemWriteHook   = void   delegate(CpuPtr,uint,MemWordPart,ushort) nothrow @nogc;
+    alias InterruptsHook = void   delegate(const ref Cpu, ref Exceptions) nothrow @nogc;
+    alias MemReadHook    = ushort delegate(ref Cpu,uint,MemWordPart) nothrow @nogc;
+    alias MemWriteHook   = void   delegate(ref Cpu,uint,MemWordPart,ushort) nothrow @nogc;
 
     void setInterruptsHook(InterruptsHook hook) @nogc pure
     {
@@ -95,20 +92,19 @@ nothrow:
         const hook = getHook!true(offset);
         if(hook !is null)
         {
-            mixin SafeThis;
             static if(1 == T.sizeof)
             {
                 const lower = (0x0 == (offset & 0x1));
-                return cast(T)((hook(safeThis, offset & ~0x1, (lower ? MemWordPart.LowerByte : MemWordPart.UpperByte)) >> (lower ? 0 : 8)) & 0xff);
+                return cast(T)((hook(this, offset & ~0x1, (lower ? MemWordPart.LowerByte : MemWordPart.UpperByte)) >> (lower ? 0 : 8)) & 0xff);
             }
             else static if(2 == T.sizeof)
             {
-                return cast(T)hook(safeThis, offset, MemWordPart.Full);
+                return cast(T)hook(this, offset, MemWordPart.Full);
             }
             else static if(4 == T.sizeof)
             {
-                const upper = hook(safeThis, offset, MemWordPart.Full);
-                const lower = hook(safeThis, offset + 0x2, MemWordPart.Full);
+                const upper = hook(this, offset, MemWordPart.Full);
+                const lower = hook(this, offset + 0x2, MemWordPart.Full);
                 return cast(T)(lower | (upper << 16));
             }
             else static assert(false);
@@ -135,20 +131,19 @@ nothrow:
         const hook = getHook!false(offset);
         if(hook !is null)
         {
-            mixin SafeThis;
             static if(1 == T.sizeof)
             {
                 const lower = (0x0 == (offset & 0x1));
-                hook(safeThis, offset & ~0x1, (lower ? MemWordPart.LowerByte : MemWordPart.UpperByte), cast(ushort)(cast(ushort)val << (lower ? 0 : 8))) ;
+                hook(this, offset & ~0x1, (lower ? MemWordPart.LowerByte : MemWordPart.UpperByte), cast(ushort)(cast(ushort)val << (lower ? 0 : 8))) ;
             }
             else static if(2 == T.sizeof)
             {
-                hook(safeThis, offset, MemWordPart.Full, cast(ushort)val);
+                hook(this, offset, MemWordPart.Full, cast(ushort)val);
             }
             else static if(4 == T.sizeof)
             {
-                hook(safeThis, offset, MemWordPart.Full, cast(ushort)(val >>> 16));
-                hook(safeThis, offset + 0x2, MemWordPart.Full, cast(ushort)val);
+                hook(this, offset, MemWordPart.Full, cast(ushort)(val >>> 16));
+                hook(this, offset + 0x2, MemWordPart.Full, cast(ushort)val);
             }
             else static assert(false);
             return;
@@ -221,7 +216,7 @@ nothrow:
     void scheduleProcessStop(int ticks) pure @safe
     in
     {
-        assert(ticks > 0,debugConv(ticks));
+        assert(ticks > 0);
     }
     body
     {
@@ -266,10 +261,9 @@ private:
 
     void processExceptions()
     {
-        mixin SafeThis;
         if(mInterruptsHook !is null)
         {
-            mInterruptsHook(safeThis, exceptions);
+            mInterruptsHook(this, exceptions);
         }
         
         if(0 != exceptions.pendingExceptions)
@@ -284,13 +278,13 @@ private:
                 if(0 != exceptions.pendingExceptionsLo) ind = bsf(exceptions.pendingExceptionsLo);
                 else ind = bsf(exceptions.pendingExceptionsHi) + 32;
             }
-            if(!enterException(safeThis,exceptionsByPriotities[ind]))
+            if(!enterException(this,exceptionsByPriotities[ind]))
             {
                 while(ind > 0)
                 {
                     --ind;
                     const ex = exceptionsByPriotities[ind];
-                    if((0x0 != (exceptions.pendingExceptions & (1 << ind))) && enterException(safeThis,ex)) break;
+                    if((0x0 != (exceptions.pendingExceptions & (1 << ind))) && enterException(this,ex)) break;
                 }
             }
         }
@@ -327,5 +321,3 @@ pure @safe:
         return null;
     }
 }
-
-alias CpuPtr = SafeRef!Cpu;

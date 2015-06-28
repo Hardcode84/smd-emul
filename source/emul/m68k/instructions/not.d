@@ -16,9 +16,9 @@ void addNotInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void notImpl(ubyte Mode)(CpuPtr cpu)
+void notImpl(ubyte Mode)(ref Cpu cpu)
 {
-    addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,val)
+    addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(ref cpu,val)
         {
             const res = ~val;
             updateFlags(cpu,res);

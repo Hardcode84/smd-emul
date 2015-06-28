@@ -22,7 +22,7 @@ nothrow @nogc:
         Type == AddressModeType.WriteDontExtendRegister ||
         Type == AddressModeType.ReadWrite ||
         Type == AddressModeType.ReadWriteDontExtendRegister);
-    private void memProxy(CpuPtr cpu, uint address)
+    private void memProxy(ref Cpu cpu, uint address)
     {
         static if(Type == AddressModeType.Write || Type == AddressModeType.WriteDontExtendRegister)
         {
@@ -46,7 +46,7 @@ nothrow @nogc:
 
     static if(0b000 == Mode)
     {
-        void addressMode(CpuPtr cpu)
+        void addressMode(ref Cpu cpu)
         {
             static if(Type == AddressModeType.Write)
             {
@@ -73,7 +73,7 @@ nothrow @nogc:
     }
     else static if(0b001 == Mode)
     {
-        void addressMode(CpuPtr cpu)
+        void addressMode(ref Cpu cpu)
         {
             static if(Type == AddressModeType.Write)
             {
@@ -100,11 +100,11 @@ nothrow @nogc:
     }
     else static if(0b010 == Mode)
     {
-        void addressMode(CpuPtr cpu)
+        void addressMode(ref Cpu cpu)
         {
             memProxy(cpu,cpu.state.A[Reg]);
         }
-        void addressMode(CpuPtr cpu, int count)
+        void addressMode(ref Cpu cpu, int count)
         {
             const address = cpu.state.A[Reg];
             foreach(i;0..count)
@@ -115,12 +115,12 @@ nothrow @nogc:
     }
     else static if(0b011 == Mode)
     {
-        void addressMode(CpuPtr cpu)
+        void addressMode(ref Cpu cpu)
         {
             memProxy(cpu,cpu.state.A[Reg]);
             cpu.state.A[Reg] += RegInc;
         }
-        void addressMode(CpuPtr cpu, int count)
+        void addressMode(ref Cpu cpu, int count)
         {
             auto address = cpu.state.A[Reg];
             foreach(i; 0..count)
@@ -133,12 +133,12 @@ nothrow @nogc:
     }
     else static if(0b100 == Mode)
     {
-        void addressMode(CpuPtr cpu)
+        void addressMode(ref Cpu cpu)
         {
             cpu.state.A[Reg] -= RegInc;
             memProxy(cpu,cpu.state.A[Reg]);
         }
-        void addressMode(CpuPtr cpu, int count)
+        void addressMode(ref Cpu cpu, int count)
         {
             auto address = cpu.state.A[Reg];
             foreach(i; 0..count)
@@ -151,14 +151,14 @@ nothrow @nogc:
     }
     else static if(0b101 == Mode)
     {
-        void addressMode(CpuPtr cpu)
+        void addressMode(ref Cpu cpu)
         {
             cpu.fetchInstruction(short.sizeof);
             const address = cpu.state.A[Reg] + cpu.getInstructionData!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             memProxy(cpu,address);
         }
-        void addressMode(CpuPtr cpu, int count)
+        void addressMode(ref Cpu cpu, int count)
         {
             cpu.fetchInstruction(short.sizeof);
             const address = cpu.state.A[Reg] + cpu.getInstructionData!short(cpu.state.PC);
@@ -171,12 +171,12 @@ nothrow @nogc:
     }
     else static if(0b110 == Mode)
     {
-        void addressMode(CpuPtr cpu)
+        void addressMode(ref Cpu cpu)
         {
             const address = decodeExtensionWord(cpu,cpu.state.A[Reg]);
             memProxy(cpu,address);
         }
-        void addressMode(CpuPtr cpu, int count)
+        void addressMode(ref Cpu cpu, int count)
         {
             const address = decodeExtensionWord(cpu,cpu.state.A[Reg]);
             foreach(i; 0..count)
@@ -187,14 +187,14 @@ nothrow @nogc:
     }
     else static if(0b111 == Mode && 0b010 == Reg && !Write)
     {
-        void addressMode(CpuPtr cpu)
+        void addressMode(ref Cpu cpu)
         {
             cpu.fetchInstruction(short.sizeof);
             const address = cpu.state.PC + cpu.getInstructionData!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             memProxy(cpu,address);
         }
-        void addressMode(CpuPtr cpu, int count)
+        void addressMode(ref Cpu cpu, int count)
         {
             cpu.fetchInstruction(short.sizeof);
             const address = cpu.state.PC + cpu.getInstructionData!short(cpu.state.PC);
@@ -207,12 +207,12 @@ nothrow @nogc:
     }
     else static if(0b111 == Mode && 0b011 == Reg && !Write)
     {
-        void addressMode(CpuPtr cpu)
+        void addressMode(ref Cpu cpu)
         {
             const address = decodeExtensionWord(cpu,cpu.state.PC);
             memProxy(cpu,address);
         }
-        void addressMode(CpuPtr cpu, int count)
+        void addressMode(ref Cpu cpu, int count)
         {
             const address = decodeExtensionWord(cpu,cpu.state.PC);
             foreach(i; 0..count)
@@ -223,14 +223,14 @@ nothrow @nogc:
     }
     else static if(0b111 == Mode && 0b000 == Reg)
     {
-        void addressMode(CpuPtr cpu)
+        void addressMode(ref Cpu cpu)
         {
             cpu.fetchInstruction(short.sizeof);
             const address = cpu.getInstructionData!short(cpu.state.PC);
             cpu.state.PC += short.sizeof;
             memProxy(cpu,address);
         }
-        void addressMode(CpuPtr cpu, int count)
+        void addressMode(ref Cpu cpu, int count)
         {
             cpu.fetchInstruction(short.sizeof);
             const address = cpu.getInstructionData!short(cpu.state.PC);
@@ -243,14 +243,14 @@ nothrow @nogc:
     }
     else static if(0b111 == Mode && 0b001 == Reg)
     {
-        void addressMode(CpuPtr cpu)
+        void addressMode(ref Cpu cpu)
         {
             cpu.fetchInstruction(uint.sizeof);
             const address = cpu.getInstructionData!uint(cpu.state.PC);
             cpu.state.PC += uint.sizeof;
             memProxy(cpu,address);
         }
-        void addressMode(CpuPtr cpu, int count)
+        void addressMode(ref Cpu cpu, int count)
         {
             cpu.fetchInstruction(uint.sizeof);
             const address = cpu.getInstructionData!uint(cpu.state.PC);
@@ -263,7 +263,7 @@ nothrow @nogc:
     }
     else static if(0b111 == Mode && 0b100 == Reg && !Write)
     {
-        void addressMode(CpuPtr cpu)
+        void addressMode(ref Cpu cpu)
         {
             static if(T.sizeof == 1)
             {
@@ -460,7 +460,7 @@ unittest
 }
 
 nothrow @nogc:
-private uint decodeExtensionWord(CpuPtr cpu, uint addrRegVal)
+private uint decodeExtensionWord(ref Cpu cpu, uint addrRegVal)
 {
     cpu.fetchInstruction(ushort.sizeof);
     auto pc = cpu.state.PC;

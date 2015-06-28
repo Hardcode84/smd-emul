@@ -27,12 +27,12 @@ void addAddDivInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void divwImpl(bool Signed, ubyte Mode)(CpuPtr cpu)
+void divwImpl(bool Signed, ubyte Mode)(ref Cpu cpu)
 {
     const reg = ((cpu.getInstructionData!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
     static if(Signed)
     {
-        addressMode!(short,AddressModeType.Read,Mode,(cpu,val)
+        addressMode!(short,AddressModeType.Read,Mode,(ref cpu,val)
             {
                 if(val == 0)
                 {
@@ -54,7 +54,7 @@ void divwImpl(bool Signed, ubyte Mode)(CpuPtr cpu)
     }
     else
     {
-        addressMode!(ushort,AddressModeType.Read,Mode,(cpu,val)
+        addressMode!(ushort,AddressModeType.Read,Mode,(ref cpu,val)
             {
                 if(val == 0)
                 {
@@ -76,7 +76,7 @@ void divwImpl(bool Signed, ubyte Mode)(CpuPtr cpu)
     }
 }
 
-void divImpl(ubyte Mode)(CpuPtr cpu)
+void divImpl(ubyte Mode)(ref Cpu cpu)
 {
     const word = cpu.getInstructionData!ushort(cpu.state.PC - 0x2);
     static immutable funcs = [
@@ -87,7 +87,7 @@ void divImpl(ubyte Mode)(CpuPtr cpu)
     funcs[(word >> 10) & 0b11](cpu,word);
 }
 
-void divImpl2(bool S, bool Quad, ubyte Mode)(CpuPtr cpu, ushort word)
+void divImpl2(bool S, bool Quad, ubyte Mode)(ref Cpu cpu, ushort word)
 {
     static if(S)
     {
@@ -99,7 +99,7 @@ void divImpl2(bool S, bool Quad, ubyte Mode)(CpuPtr cpu, ushort word)
         alias Type = uint;
         alias ResType = ulong;
     }
-    addressMode!(Type,AddressModeType.Read,Mode,(cpu,val)
+    addressMode!(Type,AddressModeType.Read,Mode,(ref cpu,val)
         {
             if(val == 0)
             {

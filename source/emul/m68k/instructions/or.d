@@ -24,13 +24,13 @@ void addOrInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void orImpl(Type,ubyte d,ubyte Mode)(CpuPtr cpu)
+void orImpl(Type,ubyte d,ubyte Mode)(ref Cpu cpu)
 {
     const reg = (cpu.getInstructionData!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111;
     const int val = cpu.state.D[reg];
     static if(0 == d)
     {
-        addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
+        addressModeWSize!(AddressModeType.Read,Mode,(ref cpu,b)
             {
                 const result = cast(Type)(val | b);
                 updateFlags(cpu,result);
@@ -39,7 +39,7 @@ void orImpl(Type,ubyte d,ubyte Mode)(CpuPtr cpu)
     }
     else
     {
-        addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,b)
+        addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(ref cpu,b)
             {
                 const result = cast(Type)(val | b);
                 updateFlags(cpu,result);

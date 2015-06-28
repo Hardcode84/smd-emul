@@ -25,21 +25,21 @@ void addSubInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void subImpl(ubyte d,ubyte Mode)(CpuPtr cpu)
+void subImpl(ubyte d,ubyte Mode)(ref Cpu cpu)
 {
     alias Type = sizeField!(Mode >> 6);
     const reg = (cpu.getInstructionData!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111;
     const val = cast(Type)cpu.state.D[reg];
     static if(0 == d)
     {
-        addressModeWSize!(AddressModeType.Read,Mode,(cpu,b)
+        addressModeWSize!(AddressModeType.Read,Mode,(ref cpu,b)
             {
                 truncateReg!Type(cpu.state.D[reg]) = sub(val, b, cpu);
             })(cpu);
     }
     else
     {
-        addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,b)
+        addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(ref cpu,b)
             {
                 return sub(val, b, cpu);
             })(cpu);

@@ -19,7 +19,7 @@ void addDbccInstructions(ref Instruction[ushort] ret) pure
 
 private:
 
-void dbccImpl(ubyte condition)(CpuPtr cpu)
+void dbccImpl(ubyte condition)(ref Cpu cpu)
 {
     if(!conditionalTest!condition(cpu))
     {

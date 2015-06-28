@@ -2,7 +2,7 @@
 
 import emul.m68k.instructions.common;
 
-T add(T)(in T x, in T y, CpuPtr cpu)
+T add(T)(in T x, in T y, ref Cpu cpu)
 {
     const r1 = cast(long)x + cast(long)y;
     updateNZFlags(cpu, cast(T)r1);
@@ -11,7 +11,7 @@ T add(T)(in T x, in T y, CpuPtr cpu)
     return cast(T)r1;
 }
 
-T sub_no_x(T)(in T x, in T y, CpuPtr cpu)
+T sub_no_x(T)(in T x, in T y, ref Cpu cpu)
 {
     const r1 = cast(long)x - cast(long)y;
     updateNZFlags(cpu, cast(T)r1);
@@ -20,7 +20,7 @@ T sub_no_x(T)(in T x, in T y, CpuPtr cpu)
     return cast(T)r1;
 }
 
-T sub(T)(in T x, in T y, CpuPtr cpu)
+T sub(T)(in T x, in T y, ref Cpu cpu)
 {
     const r1 = cast(long)x - cast(long)y;
     updateNZFlags(cpu, cast(T)r1);
@@ -29,7 +29,7 @@ T sub(T)(in T x, in T y, CpuPtr cpu)
     return cast(T)r1;
 }
 
-T mul(T)(in T x, in T y, CpuPtr cpu)
+T mul(T)(in T x, in T y, ref Cpu cpu)
 {
     const r1 = cast(long)x * cast(long)y;
     updateNZFlags(cpu, cast(Signed!T)r1);

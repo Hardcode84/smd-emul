@@ -49,14 +49,9 @@ public:
         mCpu = params;
         mCpu.setReset();
 
-        convertSafe2((CpuPtr cpu)
-            {
-                mMisc.register(cpu);
-                mZ80.register(cpu);
-                mVdp.register(cpu);
-            },
-            () {assert(false);},
-            &mCpu);
+        mMisc.register(mCpu);
+        mZ80.register(mCpu);
+        mVdp.register(mCpu);
     }
 
     void run()
@@ -74,7 +69,7 @@ public:
                 buf.popFront;
             }
         }
-        params.breakHandlers[CpuRunner.BreakReason.SingleStep] = (CpuPtr cpu)
+        params.breakHandlers[CpuRunner.BreakReason.SingleStep] = (ref Cpu cpu)
         {
             /*if(cpu.state.TickCounter > 5000_000)
             {
@@ -86,7 +81,7 @@ public:
             return true;
         };
         bool invalidOpcode = false;
-        params.breakHandlers[CpuRunner.BreakReason.InvalidOpCode] = (CpuPtr cpu)
+        params.breakHandlers[CpuRunner.BreakReason.InvalidOpCode] = (ref Cpu cpu)
         {
             const pc = cpu.state.PC - 0x2;
             debugfOut("Invalid op: 0x%.6x 0x%.4x",pc,cpu.getMemValue!ushort(pc));
@@ -95,7 +90,7 @@ public:
         };
 
         uint ticks = 0;
-        params.processHandler = (CpuPtr cpu)
+        params.processHandler = (ref Cpu cpu)
         {
             if(cpu.state.TickCounter > (ticks + 100_000) && !mOutput.insideFrame)
             {
@@ -125,12 +120,7 @@ public:
                     default:
                 }
             }
-            convertSafe2((CpuPtr cpu)
-                {
-                    mCpuRunner.run(cpu,params);
-                },
-                () {assert(false);},
-                &mCpu);
+            mCpuRunner.run(mCpu,params);
             if(invalidOpcode)
             {
                 break;

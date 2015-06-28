@@ -18,10 +18,10 @@ void addEoriInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void eoriImpl(Type,ubyte Mode)(CpuPtr cpu)
+void eoriImpl(Type,ubyte Mode)(ref Cpu cpu)
 {
     const val = cpu.getInstructionData!Type(cast(uint)(cpu.state.PC - Type.sizeof));
-    addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,b)
+    addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(ref cpu,b)
         {
             const result = cast(Type)(val ^ b);
             updateFlags(cpu,result);

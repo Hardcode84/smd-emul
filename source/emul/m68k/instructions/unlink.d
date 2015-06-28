@@ -12,7 +12,7 @@ void addUnlinkInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void unlinkImpl(byte Reg)(CpuPtr cpu)
+void unlinkImpl(byte Reg)(ref Cpu cpu)
 {
     cpu.state.SP = cpu.state.A[Reg];
     cpu.state.A[Reg] = cpu.getMemValue!uint(cpu.state.SP);

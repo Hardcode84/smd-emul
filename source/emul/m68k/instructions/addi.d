@@ -19,10 +19,10 @@ void addAddiInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void addiImpl(Type,ubyte Mode)(CpuPtr cpu)
+void addiImpl(Type,ubyte Mode)(ref Cpu cpu)
 {
     const val = cpu.getInstructionData!Type(cast(uint)(cpu.state.PC - Type.sizeof));
-    addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(cpu,b)
+    addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(ref cpu,b)
         {
             const result = add(val, b, cpu);
             return result;

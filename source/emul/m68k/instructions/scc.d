@@ -20,9 +20,9 @@ void addSccInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void sccImpl(ubyte Condition,ubyte Mode)(CpuPtr cpu)
+void sccImpl(ubyte Condition,ubyte Mode)(ref Cpu cpu)
 {
-    addressMode!(ubyte,AddressModeType.WriteDontExtendRegister,Mode,(cpu)
+    addressMode!(ubyte,AddressModeType.WriteDontExtendRegister,Mode,(ref cpu)
         {
             return cast(ubyte)(conditionalTest!Condition(cpu) ? 0xff : 0x0);
         })(cpu);

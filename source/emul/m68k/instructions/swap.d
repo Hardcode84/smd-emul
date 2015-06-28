@@ -13,7 +13,7 @@ void addSwapInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void swapImpl(ubyte Reg)(CpuPtr cpu)
+void swapImpl(ubyte Reg)(ref Cpu cpu)
 {
     const uint val = cpu.state.D[Reg];
     const newVal = (val >> 16) | ((val & 0xffff) << 16);

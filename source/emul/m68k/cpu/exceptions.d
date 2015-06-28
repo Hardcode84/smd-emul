@@ -163,7 +163,7 @@ bool isIRQ(ExceptionCodes code) @safe pure
     return code >= ExceptionCodes.Spurious_exception && code <= ExceptionCodes.IRQ_7;
 }
 
-bool enterException(CpuPtr cpu, ExceptionCodes code)
+bool enterException(ref Cpu cpu, ExceptionCodes code)
 {
     assert(code != ExceptionCodes.Start_code_address);
     const oldSR = cpu.state.SR;
@@ -199,7 +199,7 @@ bool enterException(CpuPtr cpu, ExceptionCodes code)
     return true;
 }
 
-void returnFromException(CpuPtr cpu)
+void returnFromException(ref Cpu cpu)
 {
     assert(cpu.state.testFlags!(SRFlags.S),debugConv(cpu.state.SR));
     cpu.state.SR = cpu.getMemValue!ushort(cpu.state.SP);

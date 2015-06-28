@@ -10,7 +10,7 @@ void addRtsInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void rtsImpl(Dummy)(CpuPtr cpu)
+void rtsImpl(Dummy)(ref Cpu cpu)
 {
     cpu.state.PC = cpu.getMemValue!uint(cpu.state.SP);
     cpu.state.SP += uint.sizeof;

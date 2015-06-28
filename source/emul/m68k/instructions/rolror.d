@@ -35,7 +35,7 @@ void addRolRorInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void rotateImpl(Type,ubyte dr,ubyte ir)(CpuPtr cpu)
+void rotateImpl(Type,ubyte dr,ubyte ir)(ref Cpu cpu)
 {
     const word = cpu.getMemValue!ushort(cpu.state.PC - 0x2);
     const cr = ((word >> 9) & 0b111);
@@ -72,9 +72,9 @@ void rotateImpl(Type,ubyte dr,ubyte ir)(CpuPtr cpu)
     truncateReg!Type(cpu.state.D[reg]) = cast(Type)val;
 }
 
-void rotatemImpl(ubyte dr,ubyte Mode)(CpuPtr cpu)
+void rotatemImpl(ubyte dr,ubyte Mode)(ref Cpu cpu)
 {
-    addressMode!(ushort,AddressModeType.ReadWrite,Mode,(cpu,val)
+    addressMode!(ushort,AddressModeType.ReadWrite,Mode,(ref cpu,val)
         {
             static if(0 == dr) //right
             {

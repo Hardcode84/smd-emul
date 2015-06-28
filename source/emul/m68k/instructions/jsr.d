@@ -17,9 +17,9 @@ void addJsrInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void jsrImpl(byte Mode)(CpuPtr cpu)
+void jsrImpl(byte Mode)(ref Cpu cpu)
 {
-    addressMode!(uint,AddressModeType.ReadAddress,Mode,(cpu,b)
+    addressMode!(uint,AddressModeType.ReadAddress,Mode,(ref cpu,b)
         {
             cpu.state.SP -= uint.sizeof;
             cpu.setMemValue(cpu.state.SP, cpu.state.PC);

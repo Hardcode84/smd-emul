@@ -79,12 +79,7 @@ extern(C) export
         ctx.cpu.state.PC = pc;
         try
         {
-            convertSafe2((CpuPtr cpu)
-                {
-                    ctx.runner.run(cpu);
-                },
-                () {assert(false);},
-                &ctx.cpu);
+            ctx.runner.run(ctx.cpu);
         }
         catch(Throwable e)
         {

@@ -13,7 +13,7 @@ void addLinkInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void linkImpl(byte Reg)(CpuPtr cpu)
+void linkImpl(byte Reg)(ref Cpu cpu)
 {
     const disp = cpu.getInstructionData!short(cpu.state.PC - 0x2);
     cpu.state.SP -= uint.sizeof;
@@ -21,7 +21,7 @@ void linkImpl(byte Reg)(CpuPtr cpu)
     cpu.state.A[Reg] = cpu.state.SP;
     cpu.state.SP += disp;
 }
-void linklImpl(byte Reg)(CpuPtr cpu)
+void linklImpl(byte Reg)(ref Cpu cpu)
 {
     const disp = cpu.getInstructionData!int(cpu.state.PC - 0x4);
     cpu.state.SP -= uint.sizeof;

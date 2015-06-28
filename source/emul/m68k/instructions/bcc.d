@@ -20,7 +20,7 @@ void addBccInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void bccImpl(ubyte condition,T)(CpuPtr cpu)
+void bccImpl(ubyte condition,T)(ref Cpu cpu)
 {
     if(conditionalTest!condition(cpu))
     {
@@ -28,7 +28,7 @@ void bccImpl(ubyte condition,T)(CpuPtr cpu)
         cpu.state.PC += offset - T.sizeof;
     }
 }
-void bccImpl(ubyte condition,T : void)(CpuPtr cpu)
+void bccImpl(ubyte condition,T : void)(ref Cpu cpu)
 {
     if(conditionalTest!condition(cpu))
     {

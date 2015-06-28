@@ -17,9 +17,9 @@ void addMovefromsrInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void movefromsrImpl(ubyte Mode)(CpuPtr cpu)
+void movefromsrImpl(ubyte Mode)(ref Cpu cpu)
 {
-    addressMode!(ushort,AddressModeType.WriteDontExtendRegister,Mode,(cpu)
+    addressMode!(ushort,AddressModeType.WriteDontExtendRegister,Mode,(ref cpu)
         {
             return cpu.state.SR;
         })(cpu);

@@ -21,11 +21,11 @@ void addLeaInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void leaImpl(ubyte Mode)(CpuPtr cpu)
+void leaImpl(ubyte Mode)(ref Cpu cpu)
 {
     const reg = ((cpu.getInstructionData!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111);
-    addressMode!(uint,AddressModeType.ReadAddress,Mode,(a,b)
+    addressMode!(uint,AddressModeType.ReadAddress,Mode,(ref cpu,val)
         {
-            a.state.A[reg] = b;
+            cpu.state.A[reg] = val;
         })(cpu);
 }

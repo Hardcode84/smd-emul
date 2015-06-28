@@ -22,10 +22,10 @@ void addMoveaInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void moveaImpl(T,ubyte Src)(CpuPtr cpu)
+void moveaImpl(T,ubyte Src)(ref Cpu cpu)
 {
     const reg = (cpu.getInstructionData!ubyte(cpu.state.PC - 0x2) >> 1) & 0b111;
-    void readFunc(CpuPtr cpu, in T val)
+    void readFunc(ref Cpu cpu, in T val)
     {
         cpu.state.A[reg] = val;
     }

@@ -17,9 +17,9 @@ void addPeaInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void peaImpl(ubyte Mode)(CpuPtr cpu)
+void peaImpl(ubyte Mode)(ref Cpu cpu)
 {
-    addressMode!(uint,AddressModeType.ReadAddress,Mode,(cpu,val)
+    addressMode!(uint,AddressModeType.ReadAddress,Mode,(ref cpu,val)
         {
             cpu.state.SP -= uint.sizeof;
             cpu.setMemValue(cpu.state.SP, val);

@@ -31,7 +31,7 @@ void addExtInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void extImpl(SrcT,DstT,ubyte Reg)(CpuPtr cpu)
+void extImpl(SrcT,DstT,ubyte Reg)(ref Cpu cpu)
 {
     static assert(DstT.sizeof > SrcT.sizeof);
     truncateReg!DstT(cpu.state.D[Reg]) = truncateReg!SrcT(cpu.state.D[Reg]);

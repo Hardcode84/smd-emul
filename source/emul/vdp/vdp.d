@@ -34,14 +34,14 @@ public:
         mState.CurrentLine = mState.EndLine;
     }
 
-    void register(CpuPtr cpu) pure nothrow
+    void register(ref Cpu cpu) pure nothrow
     {
         cpu.addReadHook(&readHook,   0xc00000, 0xc0000A);
         cpu.addWriteHook(&writeHook, 0xc00000, 0xc0000A);
         cpu.setInterruptsHook(&interruptsHook);
     }
 
-    void update(CpuPtr cpu)
+    void update(ref Cpu cpu)
     {
         if(!mState.displayEnable())
         {
@@ -173,7 +173,7 @@ private:
     VdpLayers mVdpLayers;
     VdpSpriteTable mSpriteTable;
 
-    ushort readHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart) nothrow @nogc
+    ushort readHook(ref Cpu cpu, uint offset, Cpu.MemWordPart wpart) nothrow @nogc
     {
         //debugfOut("vdp read : 0x%.6x 0x%.8x %s",cpu.state.PC,offset,wpart);
         assert(0x0 == (offset & 0x1));
@@ -191,7 +191,7 @@ private:
         }
         assert(false);
     }
-    void writeHook(CpuPtr cpu, uint offset, Cpu.MemWordPart wpart, ushort data) nothrow @nogc
+    void writeHook(ref Cpu cpu, uint offset, Cpu.MemWordPart wpart, ushort data) nothrow @nogc
     {
         //debugfOut("vdp write : 0x%.6x 0x%.8x %s 0x%.4x",cpu.state.PC,offset,wpart,data);
         assert(0x0 == (offset & 0x1));
@@ -214,7 +214,7 @@ private:
         }
        assert(false);
     }
-    void interruptsHook(const CpuPtr cpu, ref Exceptions e) nothrow @nogc
+    void interruptsHook(const ref Cpu cpu, ref Exceptions e) nothrow @nogc
     {
         if(mState.HBlankScheduled)
         {
@@ -230,14 +230,14 @@ private:
         }
     }
 
-    ushort readDataPort(CpuPtr cpu) nothrow @nogc
+    ushort readDataPort(ref Cpu cpu) nothrow @nogc
     {
         //debugfOut("read data");
         flushControl(cpu);
         //assert(false);
         return 0;
     }
-    void writeDataPort(CpuPtr cpu, ushort data) nothrow @nogc
+    void writeDataPort(ref Cpu cpu, ushort data) nothrow @nogc
     {
         //debugfOut("write data 0x%.4x",data);
         if(mPendingVramFill)
@@ -258,13 +258,13 @@ private:
         }
         mState.AddressReg += mState.autoIncrement;
     }
-    ushort readControlPort(CpuPtr cpu) nothrow @nogc
+    ushort readControlPort(ref Cpu cpu) nothrow @nogc
     {
         //debugOut("read control");
         flushControl(cpu);
         return mState.Status;
     }
-    void writeControlPort(CpuPtr cpu, ushort data) nothrow @nogc
+    void writeControlPort(ref Cpu cpu, ushort data) nothrow @nogc
     {
         //debugfOut("write control 0x%.4x",data);
         if(mPendingControlWrite)
@@ -298,14 +298,14 @@ private:
             mPendingControlWrite = true;
         }
     }
-    ushort readHVCounter(CpuPtr cpu) nothrow @nogc
+    ushort readHVCounter(ref Cpu cpu) nothrow @nogc
     {
         debugOut("read HV counter");
         //assert(false);
         return 0;
     }
 
-    void flushControl(CpuPtr cpu) nothrow @nogc
+    void flushControl(ref Cpu cpu) nothrow @nogc
     {
         if(mPendingControlWrite)
         {
@@ -317,7 +317,7 @@ private:
         mPendingVramFill = false;
     }
 
-    void executeDma(CpuPtr cpu) nothrow @nogc
+    void executeDma(ref Cpu cpu) nothrow @nogc
     {
         debugfOut("exec dma: enbl=%s %s %s",mState.dmaEnabled,mState.dmaType,mState.CodeReg);
         debugfOut("src= 0x%.8x start=0x%.4x inc=%s len=%s",
@@ -333,7 +333,7 @@ private:
         }
     }
 
-    void dmaTransfer(CpuPtr cpu) nothrow @nogc
+    void dmaTransfer(ref Cpu cpu) nothrow @nogc
     {
         switch(mState.CodeReg)
         {
@@ -343,7 +343,7 @@ private:
             default: assert(false);
         }
     }
-    void dmaTransferImpl(VdpCodeRegState Dir)(CpuPtr cpu) nothrow @nogc
+    void dmaTransferImpl(VdpCodeRegState Dir)(ref Cpu cpu) nothrow @nogc
     {
         scope void delegate(size_t, ushort val) nothrow @nogc writeFunc = (size_t, ushort val)
         {

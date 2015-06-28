@@ -17,7 +17,7 @@ void addMoveuspInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void moveuspImpl(ubyte dr)(CpuPtr cpu)
+void moveuspImpl(ubyte dr)(ref Cpu cpu)
 {
     const reg = cpu.getInstructionData!ubyte(cpu.state.PC - 0x1) & 0b111;
     static if(0 == dr)

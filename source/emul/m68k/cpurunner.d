@@ -4,9 +4,6 @@ import std.string;
 import std.algorithm;
 import std.exception;
 
-import gamelib.debugout;
-import gamelib.memory.saferef;
-
 import emul.m68k.cpu;
 
 import emul.m68k.instructions.create;
@@ -22,8 +19,8 @@ public:
     }
     struct RunParams
     {
-        alias BreakHandler = bool delegate(CpuPtr cpu);
-        alias ProcessHandler = bool delegate(CpuPtr cpu);
+        alias BreakHandler = bool delegate(ref Cpu cpu);
+        alias ProcessHandler = bool delegate(ref Cpu cpu);
         BreakHandler[BreakReason.max + 1] breakHandlers;
         ProcessHandler processHandler;
     }
@@ -38,7 +35,7 @@ public:
         mOps = assumeUnique(opsTemp);
     }
 
-    void run(CpuPtr cpu,in RunParams params = RunParams.init)
+    void run(ref Cpu cpu,in RunParams params = RunParams.init)
     {
         if(params.breakHandlers[BreakReason.SingleStep] is null)
         {
@@ -58,7 +55,7 @@ private:
         @nogc nothrow:
         ushort size;
         ushort ticks = 1;
-        void function(CpuPtr) impl;
+        void function(ref Cpu) impl;
         this(in Instruction instr) @safe pure
         {
             size = instr.size;
@@ -66,7 +63,7 @@ private:
         }
     }
 
-    static void invalidOp(Dummy)(CpuPtr cpu)
+    static void invalidOp(Dummy)(ref Cpu cpu)
     {
         const pc = cpu.state.PC - 0x2;
         //debugfOut("Invalid op: 0x%.6x 0x%.4x",pc,cpu.getMemValue!ushort(pc));
@@ -78,19 +75,19 @@ private:
     {
         ops[] = Op(Instruction("illegal",0x0,0x2,&invalidOp!void));
         const instructions = createInstructions();
-        debugfOut("Total instructions: %s",instructions.length);
+        //debugfOut("Total instructions: %s",instructions.length);
         foreach(i,instr; instructions)
         {
             ops[i] = Op(instr);
         }
     }
 
-    bool defProcessHandler(CpuPtr)
+    bool defProcessHandler(ref Cpu)
     {
         return true;
     }
 
-    void runImpl(bool SingleStep)(CpuPtr cpu, in RunParams params)
+    void runImpl(bool SingleStep)(ref Cpu cpu, in RunParams params)
     {
         const processHandler = (params.processHandler is null ? &defProcessHandler : params.processHandler);
         assert((params.breakHandlers[BreakReason.SingleStep] !is null) == SingleStep);
@@ -128,5 +125,3 @@ private:
         }
     }
 }
-
-alias CpuRunnerPtr = SafeRef!CpuRunner;

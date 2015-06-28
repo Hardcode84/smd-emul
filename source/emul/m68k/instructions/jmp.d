@@ -17,9 +17,9 @@ void addJmpInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void jmpImpl(byte Mode)(CpuPtr cpu)
+void jmpImpl(byte Mode)(ref Cpu cpu)
 {
-    addressMode!(uint,AddressModeType.ReadAddress,Mode,(cpu,b)
+    addressMode!(uint,AddressModeType.ReadAddress,Mode,(ref cpu,b)
         {
             cpu.state.PC = b;
         })(cpu);

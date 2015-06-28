@@ -26,9 +26,9 @@ void addMoveInstructions(ref Instruction[ushort] ret) pure
 }
 
 private:
-void readFunc(T,ubyte Dest)(CpuPtr cpu, in T val)
+void readFunc(T,ubyte Dest)(ref Cpu cpu, in T val)
 {
-    T writeFunc(CpuPtr cpu)
+    T writeFunc(ref Cpu cpu)
     {
         return val;
     }
@@ -38,7 +38,7 @@ void readFunc(T,ubyte Dest)(CpuPtr cpu, in T val)
 
 auto createReadFuncs(T)()
 {
-    void function(CpuPtr,in T) @nogc nothrow[] ret;
+    void function(ref Cpu,in T) @nogc nothrow[] ret;
     foreach(j; TupleRange!(0,writeAddressModes.length))
     {
         enum DestMode = writeAddressModes[j];
@@ -56,11 +56,11 @@ auto createReadFuncs(T)()
     return ret;
 }
 
-void moveImpl(T,ubyte Src)(CpuPtr cpu)
+void moveImpl(T,ubyte Src)(ref Cpu cpu)
 {
     const dest = (cpu.getInstructionData!ushort(cpu.state.PC - 0x2) >> 6) & 0b111111;
     static immutable funcs = createReadFuncs!T();
-    void readFuncThunk(CpuPtr cpu, in T val)
+    void readFuncThunk(ref Cpu cpu, in T val)
     {
         funcs[dest](cpu,val);
     }
