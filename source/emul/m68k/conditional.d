@@ -7,7 +7,7 @@ import std.range;
 import emul.m68k.cpu;
 
 pure nothrow @nogc @safe:
-bool conditionalTest(ubyte Code)(ref Cpu cpu)
+bool conditionalTest(ubyte Code)(in ref Cpu cpu)
 {
     bool t(CCRFlags flag)() { return cpu.state.testFlags!flag; }
          static if(0b0000 == Code) return true;
