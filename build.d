@@ -32,14 +32,23 @@ void main(string[] args)
     const string[] sourcePaths = ["d-gamelib","source"];
     const string buildDir = currPath ~ ".build/";
     const string compiler = "dmd";
-    const string conf = args[1..$].find(["debug","unittest","release"]).chain(["debug"]).front;
+    const string conf = args[1..$].findAmong(["debug","unittest","release"]).chain(["debug"]).front;
     const sharedLib = args[1..$].canFind("shared");
+    const isParallel = args[1..$].canFind("parallel");
     const string config = conf ~ (sharedLib ? " shared" : "");
     const string exeExt = (sharedLib ? ".dll" : ".exe");
 
-    const dmdConfs = ["debug" : "-debug -g -w -c","unittest" : "-debug -g -w -c -unittest", "debug shared" : "-debug -g -w -c -shared -version=M68k_SharedLib"];
+    const dmdConfs = [
+        "debug" : "-debug -g -w -c",
+        "unittest" : "-debug -g -w -c -unittest",
+        "debug shared" : "-debug -g -w -c -shared -version=M68k_SharedLib",
+        "release" : "-O -release -inline -w -c"];
     const string[string][string] compilerOpts = ["dmd" : dmdConfs];
-    const dmdLinkConfs = ["debug" : "-debug -g -w","unittest" : "-debug -g -w -unittest", "debug shared" : "-debug -g -w -shared -version=M68k_SharedLib"];
+    const dmdLinkConfs = [
+        "debug" : "-debug -g -w",
+        "unittest" : "-debug -g -w -unittest",
+        "debug shared" : "-debug -g -w -shared -version=M68k_SharedLib",
+        "release" : "-O -release -inline -w"];
     const string[string][string] linkerOpts = ["dmd" : dmdLinkConfs];
 
     const string[string] importOpts = ["dmd" : "-I\"%s\""];
@@ -192,7 +201,7 @@ void main(string[] args)
     auto objFiles = appender!(string[])();
     auto mutex = new Mutex;
     const csourceList = sourceList;
-    foreach(const ref e; csourceList)
+    foreach(const ref e; csourceList[])
     {
         if(e.changed && e.objName.exists)
         {
@@ -206,7 +215,7 @@ void main(string[] args)
         cache.object["compiler"] = compiler;
         cache.object["config"] = config;
     }
-    foreach(const ref e; parallel(csourceList, 1))
+    void compilefunc(const ref BuildEntry e)
     {
         if(e.changed)
         {
@@ -214,6 +223,7 @@ void main(string[] args)
             Pid pid;
             synchronized(mutex)
             {
+                writefln("Compiling: \"%s\"",e.prettyName);
                 if(!exists(e.objDir))
                 {
                     mkdirRecurse(e.objDir);
@@ -239,6 +249,15 @@ void main(string[] args)
             }
             objFiles ~= e.objName;
         }
+    }
+
+    if(isParallel)
+    {
+        foreach(const ref e; parallel(csourceList[], 1)) compilefunc(e);
+    }
+    else
+    {
+        foreach(const ref e; csourceList[]) compilefunc(e);
     }
     writeln("Files compiled: ",numCompiledFiles);
 
