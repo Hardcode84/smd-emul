@@ -16,7 +16,7 @@ enum ExceptionCodes
     Bus_error,
     Address_error,
     Illegal_instruction,
-    Divistion_by_zero,
+    Division_by_zero,
     CHK_exception,
     TRAPV_exception,
     Privilege_violation,
@@ -112,7 +112,7 @@ static immutable ExceptionCodes[] exceptionsByPriotities = [
     ExceptionCodes.TRAP_15_exception,
     ExceptionCodes.TRAPV_exception,
     ExceptionCodes.CHK_exception,
-    ExceptionCodes.Divistion_by_zero];
+    ExceptionCodes.Division_by_zero];
 
 static immutable int[] priotitiesByExceptions =
     iota(ExceptionCodes.max + 1).map!(a => exceptionsByPriotities[].countUntil(cast(ExceptionCodes)a)).array;
