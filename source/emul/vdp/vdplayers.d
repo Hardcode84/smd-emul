@@ -62,7 +62,6 @@ pure nothrow @nogc @safe:
            height != state.layerHeight ||
            vramchanged != memory.vramChanged)
         {
-            //debugOut("VdpLayers.update");
             planeAbase = state.patternNameTableLayerA;
             planeBbase = state.patternnameTableLayerB;
             width = state.layerWidth;
@@ -87,24 +86,21 @@ pure nothrow @nogc @safe:
         const hscroll = getHScrollValue(state, memory, line);
         foreach(i, const ref plane; planes[])
         {
-            const begin = (-hscroll[i]) & (width - 1);
-            const end = begin + outData.length;
-            const beginCell = begin / 8;
-            const endCell = (end + 7) / 8;
-            //special case for the 1st cell
-
-            const outBegin = begin % 8;
-            const len = 8 - outBegin;
-            getCellData(outData[0..len], state, memory, line, beginCell, cast(Plane)i, outBegin, outBegin + len);
-            int currPos = len;
-            foreach(j; (beginCell + 1)..(endCell - 1))
+            foreach(cell;0..(outData.length / 8))
             {
-                getCellData(outData[currPos..currPos + 8], state, memory, line, j, cast(Plane)i);
-                currPos += 8;
+                const start = cell * 8;
+                const begin1 = (start - hscroll[i]) & (width * 8 - 1);
+                const beginCell1 = (begin1 / 8);
+                const offset1 = (begin1 % 8);
+                const len1 = 8 - offset1;
+                const begin2 = (begin1 + 8) & (width * 8 - 1);
+                const beginCell2 = (begin2 / 8);
+                const len2 = 8 - len1;
+                const center = start + len1;
+                const end = start + 8;
+                getCellData!pri(outData[start..center], state, memory, line, cell, beginCell1, cast(Plane)i, offset1, offset1 + len1);
+                getCellData!pri(outData[center..end],   state, memory, line, cell, beginCell2, cast(Plane)i, 0, len2);
             }
-            //special case for the last cell
-            const remLen = outData.length - currPos;
-            getCellData(outData[currPos..$], state, memory, line, endCell - 1, cast(Plane)i, 0, remLen);
         }
     }
 
@@ -144,22 +140,22 @@ pure nothrow @nogc @safe:
     }
     body
     {
-        /*final switch(state.vscrollMode)
+        final switch(state.vscrollMode)
         {
             case VScrollMode.FullScreen:
                 return memory.readVsram(plane);
             case VScrollMode.TwoCell:
-                return memory.readVsram(plane + (cell % 40) & ~0x1);
+                return memory.readVsram(plane + cell & ~0x1);
         }
-        assert(false);*/
-        return 0;
+        assert(false);
     }
 
-    void getCellData(
+    void getCellData(Priotity pri)(
         ubyte[] data,
         in ref VdpState state,
         in ref VdpMemory memory,
-        int line, int cell, Plane plane, int start = 0, int end = 8) const
+        int line,
+        int visCell, int cell, Plane plane, int start = 0, int end = 8) const
     in
     {
         assert(data.length == (end - start));
@@ -169,11 +165,16 @@ pure nothrow @nogc @safe:
     body
     {
         const xcell = cell % width;
-        const vscroll = getVScrollValue(state, memory, cell, plane);
+        const vscroll = getVScrollValue(state, memory, visCell, plane);
         const y = line + vscroll;
         const ycell = (y / 8) % height;
+        const srcCell = xcell + ycell * width;
+        if(planes[plane][srcCell].priority != pri)
+        {
+            return;
+        }
         const ypat = y % 8;
-        planes[plane][xcell + ycell * width].getData(data,ypat,start,end);
+        planes[plane][srcCell].getData(data,ypat,start,end);
     }
 }
 

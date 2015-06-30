@@ -218,13 +218,13 @@ private:
     {
         if(mState.HBlankScheduled)
         {
-            debugOut("hinterrupt");
+            //debugOut("hinterrupt");
             e.setInterrupt(ExceptionCodes.IRQ_4);
             mState.HBlankScheduled = false;
         }
         if(mState.VBlankScheduled)
         {
-            debugOut("vinterrupt");
+            //debugOut("vinterrupt");
             e.setInterrupt(ExceptionCodes.IRQ_6);
             mState.VBlankScheduled = false;
         }
@@ -300,7 +300,7 @@ private:
     }
     ushort readHVCounter(ref Cpu cpu) nothrow @nogc
     {
-        debugOut("read HV counter");
+        //debugOut("read HV counter");
         //assert(false);
         return 0;
     }
