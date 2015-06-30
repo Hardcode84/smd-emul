@@ -65,7 +65,7 @@ private:
 
     static void invalidOp(Dummy)(ref Cpu cpu)
     {
-        const pc = cpu.state.PC - 0x2;
+        //const pc = cpu.state.PC - 0x2;
         //debugfOut("Invalid op: 0x%.6x 0x%.4x",pc,cpu.getMemValue!ushort(pc));
         cpu.triggerBreak(InvalidOpCode);
         assert(false);

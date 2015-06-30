@@ -109,7 +109,7 @@ nothrow:
             }
             else static assert(false);
         }
-        memory.checkRange!true(offset,T.sizeof);
+        assert(memory.checkRange!true(offset,T.sizeof));
         return memory.getValue!T(offset);
     }
 
@@ -118,7 +118,7 @@ nothrow:
         assert(sink !is null);
         checkAddress!(T.sizeof)(offset);
         //TODO: check hooks
-        memory.checkRange!true(offset,count * T.sizeof);
+        assert(memory.checkRange!true(offset,count * T.sizeof));
         foreach(i; 0..count)
         {
             sink(i,memory.getValue!T(offset + i * T.sizeof));
@@ -148,7 +148,7 @@ nothrow:
             else static assert(false);
             return;
         }
-        memory.checkRange!false(offset,T.sizeof);
+        assert(memory.checkRange!false(offset,T.sizeof));
         memory.setValue!T(offset,val);
     }
 
@@ -200,7 +200,7 @@ nothrow:
     void fetchInstruction(uint size)
     {
         const start = mSavedPC + mCurrentInstructionBuff.length;
-        memory.checkRange!true(start,size);
+        assert(memory.checkRange!true(start,size));
         const buffStart = mCurrentInstructionBuff.length;
         const buffEnd = buffStart + size;
         mInstructionBuff[buffStart..buffEnd] = memory.getRawData(start,size)[0..$];

@@ -5,7 +5,6 @@ import emul.m68k.instructions.common;
 package nothrow:
 void addMovemInstructions(ref Instruction[ushort] ret) pure
 {
-    //movem
     foreach(s,T; TypeTuple!(short,int))
     {
         foreach(dr; TupleRange!(0,2))

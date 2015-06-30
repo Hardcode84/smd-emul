@@ -14,6 +14,7 @@ import gamelib.debugout;
 import emul.rom;
 import emul.m68k.cpu;
 import emul.m68k.cpurunner;
+import emul.m68k.disasm;
 
 import emul.misc.misc;
 import emul.z80.z80;
@@ -63,9 +64,10 @@ public:
         scope(exit)
         {
             debugOut(mCpu.state);
+            Disasm disasm = 0;
             foreach(i; 0..pos.length)
             {
-                debugfOut("0x%.6x",buf.front);
+                debugfOut("0x%.6x\t%s",buf.front,disasm.getDesc(mCpu, buf.front));
                 buf.popFront;
             }
         }

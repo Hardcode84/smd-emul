@@ -5,7 +5,6 @@ import emul.m68k.instructions.common;
 package nothrow:
 void addMoveInstructions(ref Instruction[ushort] ret) pure
 {
-    //move
     foreach(i,Type;TypeTuple!(byte,int,short))
     {
         enum Sz = i + 1;
