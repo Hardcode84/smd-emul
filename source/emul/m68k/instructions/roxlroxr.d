@@ -45,7 +45,7 @@ void rotatexImpl(Type,ubyte dr,ubyte ir)(ref Cpu cpu)
     }
     else
     {
-        const count = cpu.state.D[cr] % 32;
+        const count = cpu.state.D[cr] % 64;
     }
     const reg = (word & 0b111);
     auto val = cast(Type)cpu.state.D[reg];
@@ -53,14 +53,14 @@ void rotatexImpl(Type,ubyte dr,ubyte ir)(ref Cpu cpu)
     {
         static if(0 == dr) //right
         {
-            val = cast(Type)(val >> (count - 1)) | cast(Type)(val << (Type.sizeof * 8 - count + 1));
+            val = cast(Type)(cast(ulong)(val >> (count - 1)) | cast(ulong)(val << (Type.sizeof * 8 - count + 1)));
             const flag = (val & 0x1);
             cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != flag);
             val = cast(Type)(val >> 1) | cast(Type)(flag << (Type.sizeof * 8 - 1));
         }
         else
         {
-            val = cast(Type)(val << (count - 1)) | cast(Type)(val >> (Type.sizeof * 8 - count + 1));
+            val = cast(Type)(cast(ulong)(val << (count - 1)) | cast(ulong)(val >> (Type.sizeof * 8 - count + 1)));
             const flag = ((val >> (Type.sizeof * 8 - 1)) & 0x1);
             cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != flag);
             val = cast(Type)(val << 1) | cast(Type)(flag);
