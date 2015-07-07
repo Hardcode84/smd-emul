@@ -12,7 +12,7 @@ void addSubInstructions(ref Instruction[ushort] ret) pure
         enum mode = readAddressModesWSize[v];
         foreach(d; TupleRange!(0,2))
         {
-            static if(0 == d || addressModeTraits!mode.Alterable)
+            static if(0 == d || (addressModeTraits!mode.Memory && addressModeTraits!mode.Alterable))
             {
                 foreach(r; 0..8)
                 {

@@ -42,6 +42,19 @@ T sub(T)(in T x, in T y, ref Cpu cpu)
     return cast(T)r1;
 }
 
+T subx(T)(in T x, in T y, ref Cpu cpu)
+{
+    static assert(isSigned!T);
+    const flag = cast(long)cpu.state.testFlags!(CCRFlags.X);
+    const val = cast(long)x - cast(long)y - flag;
+    if(cast(T)val < 0) cpu.state.setFlags!(CCRFlags.N);
+    else        cpu.state.clearFlags!(CCRFlags.N);
+    if(cast(T)val != 0) cpu.state.clearFlags!(CCRFlags.Z);
+    cpu.state.setFlags!(CCRFlags.V)(val < Signed!T.min || val > Signed!T.max);
+    cpu.state.setFlags!(CCRFlags.C | CCRFlags.X)(cast(Unsigned!T)x < (cast(Unsigned!T)y + cast(Unsigned!T)flag));
+    return cast(T)val;
+}
+
 T mul(T)(in T x, in T y, ref Cpu cpu)
 {
     const r1 = cast(long)x * cast(long)y;
