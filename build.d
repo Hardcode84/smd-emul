@@ -31,7 +31,7 @@ void main(string[] args)
     const string[] importPaths = ["d-gamelib","source","d-gamelib/gamelib/3rdparty/DerelictUtil-master/source","d-gamelib/gamelib/3rdparty/DerelictSDL2-master/source"];
     const string[] sourcePaths = ["d-gamelib","source"];
     const string buildDir = currPath ~ ".build/";
-    const string compiler = "dmd";
+    const string compiler = args[1..$].findAmong(["dmd","ldc2"]).chain(["dmd"]).front;
     const string conf = args[1..$].findAmong(["debug","unittest","release"]).chain(["debug"]).front;
     const sharedLib = args[1..$].canFind("shared");
     const isParallel = args[1..$].canFind("parallel");
@@ -43,16 +43,28 @@ void main(string[] args)
         "unittest" : "-debug -g -w -c -unittest",
         "debug shared" : "-debug -g -w -c -shared -version=M68k_SharedLib",
         "release" : "-O -release -inline -w -c"];
-    const string[string][string] compilerOpts = ["dmd" : dmdConfs];
+    const ldcConfs = [
+        "debug" : "-g -oq -c",
+        "unittest" : "-g -oq -c -unittest",
+        "debug shared" : "-g -oq -c -shared -version=M68k_SharedLib",
+        "release" : "-O5 -oq -release -c"];
+    const string[string][string] compilerOpts = ["dmd" : dmdConfs, "ldc2" : ldcConfs ];
     const dmdLinkConfs = [
         "debug" : "-debug -g -w",
         "unittest" : "-debug -g -w -unittest",
         "debug shared" : "-debug -g -w -shared -version=M68k_SharedLib",
         "release" : "-O -release -inline -w"];
-    const string[string][string] linkerOpts = ["dmd" : dmdLinkConfs];
+    const ldcLinkConfs = [
+        "debug" : "-g -oq",
+        "unittest" : "-g -oq -unittest",
+        "debug shared" : "-g -oq -shared -version=M68k_SharedLib",
+        "release" : "-O5 -oq -release"];
+    const string[string][string] linkerOpts = ["dmd" : dmdLinkConfs, "ldc2" : ldcLinkConfs ];
 
-    const string[string] importOpts = ["dmd" : "-I\"%s\""];
-    const string[string] outputOpts = ["dmd" : "-of\"%s\""];
+    const string[string] importOpts = ["dmd" : "-I\"%s\"","ldc2" : "-I=\"%s\""];
+    const string[string] outputOpts = ["dmd" : "-of\"%s\"","ldc2" : "-of=\"%s\""];
+
+    writeln("Compiler: ", compiler);
 
     const currentOpts = compilerOpts[compiler][config];
     const currentLinkerOpts = linkerOpts[compiler][config];

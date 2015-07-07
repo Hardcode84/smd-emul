@@ -1,3 +1,4 @@
 .dub
 *.userprefs
 bin/
+dub.selections.json
