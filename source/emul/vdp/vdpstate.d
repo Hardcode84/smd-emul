@@ -70,6 +70,7 @@ pure nothrow @nogc @safe:
     int TicksPerScan;
     int TicksPerRetrace;
 
+    uint CurrentFrame = 0;
     int CurrentLine = 0;
     uint FrameStart = 0;
     int HInterruptCounter = 0;

@@ -19,6 +19,7 @@ import emul.vdp.vdpspritetable;
 struct VdpSettings
 {
     DisplayFormat format = DisplayFormat.NTSC;
+    uint frameSkip = 0;
 }
 
 final class Vdp
@@ -75,12 +76,16 @@ public:
                 if(mState.CurrentLine == 0)
                 {
                     callEventCallback(FrameEvent.Start);
+                    ++mState.CurrentFrame;
                 }
 
                 if(mState.CurrentLine >= 0 && mState.CurrentLine < mState.Height)
                 {
                     mState.clearFlags!(VdpFlags.HBlank | VdpFlags.VBlank);
-                    renderLine();
+                    if(0 == mSettings.frameSkip || 0 == (mState.CurrentFrame % (mSettings.frameSkip + 1)))
+                    {
+                        renderLine();
+                    }
                 }
                 else
                 {
