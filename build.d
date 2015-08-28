@@ -231,12 +231,14 @@ void main(string[] args)
     const totalFiles = csourceList.length;
     void compilefunc(const ref BuildEntry e)
     {
+        SysTime compStartTime;
         if(e.changed)
         {
             string cmd = buildStr ~ e.name ~ " " ~ format(outputOpt,e.objName);
             Pid pid;
             synchronized(mutex)
             {
+                compStartTime = Clock.currTime();
                 writefln("Compiling: \"%s\"",e.prettyName);
                 if(!exists(e.objDir))
                 {
@@ -256,7 +258,7 @@ void main(string[] args)
             if(e.changed)
             {
                 ++numCompiledFiles;
-                writefln("[%s/%s] Compiled: \"%s\"",compiledFiles,totalFiles,e.prettyName);
+                writefln("[%s/%s] Compiled: \"%s\", %s",compiledFiles,totalFiles,e.prettyName,Clock.currTime() - compStartTime);
             }
             else
             {
@@ -283,8 +285,10 @@ void main(string[] args)
     }
 
     const cmd = compiler ~ " " ~ currentLinkerOpts ~ " " ~ objFiles.data.map!(a => "\""~a~"\"").join(" ") ~ " " ~ format(outputOpt,outputDir~exeName~exeExt);
+    const linkStartTime = Clock.currTime();
     writeln("Linking...");
     writeln(cmd);
     const status = executeShell(cmd);
+    writefln("Link Time: %s",Clock.currTime() - linkStartTime);
     enforce(0 == status.status, format("Build error %s, output:\n%s", status.status, status.output));
 }
