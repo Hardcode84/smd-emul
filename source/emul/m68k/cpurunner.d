@@ -35,7 +35,7 @@ public:
         mOps = assumeUnique(opsTemp);
     }
 
-    void run(ref Cpu cpu,in RunParams params = RunParams.init)
+    void run(ref Cpu cpu,in RunParams params = RunParams.init) const
     {
         if(params.breakHandlers[BreakReason.SingleStep] is null)
         {
@@ -82,12 +82,12 @@ private:
         }
     }
 
-    bool defProcessHandler(ref Cpu)
+    bool defProcessHandler(ref Cpu) const
     {
         return true;
     }
 
-    void runImpl(bool SingleStep)(ref Cpu cpu, in RunParams params)
+    void runImpl(bool SingleStep)(ref Cpu cpu, in RunParams params) const
     {
         const processHandler = (params.processHandler is null ? &defProcessHandler : params.processHandler);
         assert((params.breakHandlers[BreakReason.SingleStep] !is null) == SingleStep);
