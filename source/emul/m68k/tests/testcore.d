@@ -19,6 +19,7 @@ public:
         mCpuRunner = 0;
         CpuParams params;
         params.memory.length = 0xffffff + 1;
+        (cast(ubyte[])params.memory)[] = 0xff;
 
         params.romStart = 0x0;
         params.romEnd   = 0xffff;
@@ -26,6 +27,14 @@ public:
         params.ramEnd   = 0xffffff;
 
         mCpu = params;
+    }
+
+    void reset(uint startAddress, uint stackAddress)
+    {
+        (cast(ubyte[])mCpu.memory.data)[] = 0xff;
+        mCpu.setMemValue(0x0, stackAddress);
+        mCpu.setMemValue(0x4, startAddress);
+        mCpu.state = CpuState();
         mCpu.setReset();
     }
 
