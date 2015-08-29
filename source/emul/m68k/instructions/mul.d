@@ -33,7 +33,7 @@ void mulwImpl(bool Signed, ubyte Mode)(ref Cpu cpu)
     {
         addressMode!(short,AddressModeType.Read,Mode,(ref cpu,val)
             {
-                const result = cast(int)val * cast(int)cpu.state.D[reg];
+                const result = cast(int)val * cast(int)truncateReg!short(cpu.state.D[reg]);
                 updateFlags(cpu, result);
                 cpu.state.D[reg] = result;
             })(cpu);
@@ -42,7 +42,7 @@ void mulwImpl(bool Signed, ubyte Mode)(ref Cpu cpu)
     {
         addressMode!(ushort,AddressModeType.Read,Mode,(ref cpu,val)
             {
-                const result = cast(uint)val * cast(uint)cpu.state.D[reg];
+                const result = cast(uint)val * cast(uint)truncateReg!ushort(cpu.state.D[reg]);
                 updateFlags(cpu, cast(int)result);
                 cpu.state.D[reg] = result;
             })(cpu);

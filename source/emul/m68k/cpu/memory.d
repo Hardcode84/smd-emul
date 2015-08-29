@@ -31,6 +31,12 @@ package:
         (cast(ubyte[])data)[o..o+T.sizeof] = temp;
     }
 
+    void setValueUnchecked(T)(uint offset, in T val)
+    {
+        ubyte[T.sizeof] temp = nativeToBigEndian(val);
+        (cast(ubyte[])data)[offset..offset+T.sizeof] = temp;
+    }
+
     auto getRawData(uint offset, size_t size) inout
     {
         const o = offset & AddressMask;

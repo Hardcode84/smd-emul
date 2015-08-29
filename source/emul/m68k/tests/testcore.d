@@ -3,11 +3,10 @@
 import gamelib.types;
 
 import gamelib.core;
-import gamelib.memory.saferef;
+public import gamelib.memory.saferef;
 import gamelib.debugout;
 
-import emul.rom;
-import emul.m68k.cpu;
+public import emul.m68k.cpu;
 import emul.m68k.cpurunner;
 import emul.m68k.disasm;
 
@@ -32,8 +31,8 @@ public:
     void reset(uint startAddress, uint stackAddress)
     {
         (cast(ubyte[])mCpu.memory.data)[] = 0xff;
-        mCpu.setMemValue(0x0, stackAddress);
-        mCpu.setMemValue(0x4, startAddress);
+        mCpu.memory.setValueUnchecked(0x0, stackAddress);
+        mCpu.memory.setValueUnchecked(0x4, startAddress);
         mCpu.state = CpuState();
         mCpu.setReset();
     }
