@@ -51,19 +51,20 @@ void rotatexImpl(Type,ubyte dr,ubyte ir)(ref Cpu cpu)
     auto val = cast(Type)cpu.state.D[reg];
     if(count > 0)
     {
+        const ulong X = (cpu.state.testFlags!(CCRFlags.X) ? 1 : 0);
         static if(0 == dr) //right
         {
-            val = cast(Type)(cast(ulong)(val >> (count - 1)) | cast(ulong)(val << (Type.sizeof * 8 - count + 1)));
-            const flag = (val & 0x1);
+            const temp = (cast(ulong)val >> count) | (cast(ulong)val << (Type.sizeof * 8 - count + 1));
+            const flag = (val >> (count - 1)) & 0x1;
             cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != flag);
-            val = cast(Type)(val >> 1) | cast(Type)(flag << (Type.sizeof * 8 - 1));
+            val = cast(Type)temp | cast(Type)(X << (Type.sizeof * 8 - (count % (Type.sizeof * 8))));
         }
         else
         {
-            val = cast(Type)(cast(ulong)(val << (count - 1)) | cast(ulong)(val >> (Type.sizeof * 8 - count + 1)));
-            const flag = ((val >> (Type.sizeof * 8 - 1)) & 0x1);
+            const temp = (cast(ulong)val << count) | (cast(ulong)val >> (Type.sizeof * 8 - count + 1));
+            const flag = (val >> (Type.sizeof * 8 - count)) & 0x1;
             cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != flag);
-            val = cast(Type)(val << 1) | cast(Type)(flag);
+            val = cast(Type)temp | cast(Type)(X << ((count - 1) % (Type.sizeof * 8)));
         }
     }
     else
@@ -88,8 +89,6 @@ void rotatexmImpl(ubyte dr,ubyte Mode)(ref Cpu cpu)
             }
             else
             {
-                //const result = cast(ushort)(val << 1) | cast(ushort)(val >> (ushort.sizeof * 8 - 1));
-                //cpu.state.setFlags!(CCRFlags.C)(0x0 != (val & 0x1));
                 const flag = ((val >> (ushort.sizeof * 8 - 1)) & 0x1);
                 const result = cast(ushort)(val << 1) | cast(ushort)(cpu.state.testFlags!(CCRFlags.X) & 0x1);
                 cpu.state.setFlags!(CCRFlags.C|CCRFlags.X)(0x0 != flag);
