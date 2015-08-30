@@ -49,7 +49,7 @@ void divwImpl(bool Signed, ubyte Mode)(ref Cpu cpu)
                 const rem    = cast(int)cpu.state.D[reg] % cast(int)val;
                 assert(rem >= short.min && rem <= short.max);
                 updateFlags(cpu, result);
-                cpu.state.D[reg] = result | (rem << 16);
+                cpu.state.D[reg] = (result & 0xffff) | (rem << 16);
             })(cpu);
     }
     else
