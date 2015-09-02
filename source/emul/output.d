@@ -98,18 +98,22 @@ private:
             mColorCacheVer = vdp.memory.cramChanged;
         }
 
-        foreach(l;0..2)
+        auto surfLine = mSurface[line * 2];
+        foreach(i, d; data[])
         {
-            auto surfLine = mSurface[line * 2 + l];
-            foreach(i, d; data[])
-            {
-                surfLine[i * 2 + 0] = mColorCache[d];
-                surfLine[i * 2 + 1] = mColorCache[d];
-            }
+            const col = mColorCache[d];
+            surfLine[i * 2 + 0] = col;
+            surfLine[i * 2 + 1] = col;
         }
-        foreach(i;0..64)
+        const len = data.length * 2;
+        mSurface[line * 2 + 1][0..len] = surfLine[0..len];
+
+        if(line < 50)
         {
-            mSurface[line][900 + i] = mColorCache[i];
+            foreach(i;0..64)
+            {
+                mSurface[line][900 + i] = mColorCache[i];
+            }
         }
     }
 }
