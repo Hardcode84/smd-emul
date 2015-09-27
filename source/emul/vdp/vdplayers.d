@@ -82,7 +82,7 @@ pure nothrow @nogc @safe:
                     planes[Plane.B][offset] = Cell(planeBbase + offset * ushort.sizeof, memory);
                 }
             }
-            foreach(offset; 0..(state.CellHeight * state.CellHeight))
+            foreach(offset; 0..(state.CellHeight * state.CellWidth))
             {
                 windowPlane[offset] = Cell(windowBase + offset * ushort.sizeof, memory);
             }
