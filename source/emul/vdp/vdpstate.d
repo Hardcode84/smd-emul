@@ -71,9 +71,9 @@ pure nothrow @nogc @safe:
     int TicksPerRetrace;
 
     uint CurrentFrame = 0;
-    int CurrentLine = 0;
+    int  CurrentLine = 0;
     uint FrameStart = 0;
-    int HInterruptCounter = 0;
+    int  HInterruptCounter = 0;
 
     bool HBlankScheduled = false;
     bool VBlankScheduled = false;
@@ -117,6 +117,11 @@ pure nothrow @nogc @safe:
             assert(0x0 == (R[23] & 0x80));
             return (R[21] | (R[22] << 8) | (R[23] << 16)) << 1;
         }
+        bool windowEnabled() { return (0x0 != (R[17] & 0b11111)) && (0x0 != (R[18] & 0b11111)); }
+        bool windowIsRight() { return 0x0 != (R[17] & (1 << 7)); }
+        auto windowHPos() { return (R[17] & 0b11111) << 1; }
+        bool windowIsDown() { return 0x0 != (R[18] & (1 << 7)); }
+        auto windowVPos() { return R[18] & 0b11111; }
     }
 
     void setFlags(VdpFlags flags)() { Status |= flags; }

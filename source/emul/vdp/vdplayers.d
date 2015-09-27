@@ -51,19 +51,23 @@ pure nothrow @nogc @safe:
     int width, height;
     uint planeAbase = 0xffffffff;
     uint planeBbase = 0xffffffff;
+    uint windowBase = 0xffffffff;
 
     Cell[64*64][2] planes;
+    Cell[40*30] windowPlane;
 
     void update(in ref VdpState state, in ref VdpMemory memory)
     {
         if(planeAbase != state.patternNameTableLayerA ||
            planeBbase != state.patternnameTableLayerB ||
+           windowBase != state.patternNameTableWindow ||
            width != state.layerWidth ||
            height != state.layerHeight ||
            vramchanged != memory.vramChanged)
         {
             planeAbase = state.patternNameTableLayerA;
             planeBbase = state.patternnameTableLayerB;
+            windowBase = state.patternNameTableWindow;
             width = state.layerWidth;
             height = state.layerHeight;
             assert(ispow2(width),  debugConv(width));
@@ -78,18 +82,76 @@ pure nothrow @nogc @safe:
                     planes[Plane.B][offset] = Cell(planeBbase + offset * ushort.sizeof, memory);
                 }
             }
+            foreach(offset; 0..(state.CellHeight * state.CellHeight))
+            {
+                windowPlane[offset] = Cell(windowBase + offset * ushort.sizeof, memory);
+            }
         }
     }
 
     void drawPlanes(Priotity pri)(ubyte[] outData, in ref VdpState state, in ref VdpMemory memory, int line) const
     {
         const hscroll = getHScrollValue(state, memory, line);
-        foreach(i, const ref plane; planes[])
+        import std.typetuple;
+        foreach(i;TypeTuple!(Plane.A, Plane.B))
         {
-            foreach(cell;0..(outData.length / 8))
+            drawPlane!(pri,i)(outData, hscroll[i], state, memory, line);
+        }
+    }
+
+private:
+    static bool checkWindow(in ref VdpState state, int cell, int line)
+    in
+    {
+        assert(cell >= 0);
+        assert(line >= 0);
+    }
+    body
+    {
+        if(!state.windowEnabled)
+        {
+            return false;
+        }
+
+        if(state.windowIsDown)
+        {
+            if(line < (8 * state.windowVPos)) return false;
+        }
+        else
+        {
+            if(line >= (8 * state.windowVPos)) return false;
+        }
+
+        if(state.windowIsRight)
+        {
+            if(cell < (8 * state.windowHPos)) return false;
+        }
+        else
+        {
+            if(cell >= (8 * state.windowHPos)) return false;
+        }
+        return true;
+    }
+
+    void drawPlane(Priotity pri,Plane pla)(
+                ubyte[] outData,
+                in int hscroll,
+                in ref VdpState state,
+                in ref VdpMemory memory,
+                int line) const
+    {
+        foreach(cell;0..(outData.length / 8))
+        {
+            if(pla == Plane.A && checkWindow(state, cell, line))
             {
                 const start = cell * 8;
-                const begin1 = (start - hscroll[i]) & (width * 8 - 1);
+                const end   = start + 8;
+                getWindowCellData!pri(outData[start..end], state, memory, cell, line);
+            }
+            else
+            {
+                const start = cell * 8;
+                const begin1 = (start - hscroll) & (width * 8 - 1);
                 const beginCell1 = (begin1 / 8);
                 const offset1 = (begin1 % 8);
                 const len1 = 8 - offset1;
@@ -98,13 +160,13 @@ pure nothrow @nogc @safe:
                 const len2 = 8 - len1;
                 const center = start + len1;
                 const end = start + 8;
-                getCellData!pri(outData[start..center], state, memory, line, cell, beginCell1, cast(Plane)i, offset1, offset1 + len1);
-                getCellData!pri(outData[center..end],   state, memory, line, cell, beginCell2, cast(Plane)i, 0, len2);
+                getCellData!pri(outData[start..center], state, memory, line, cell, beginCell1, pla, offset1, offset1 + len1);
+                getCellData!pri(outData[center..end],   state, memory, line, cell, beginCell2, pla, 0, len2);
             }
         }
     }
 
-    private int[2] getHScrollValue(in ref VdpState state, in ref VdpMemory memory, int line) const
+    int[2] getHScrollValue(in ref VdpState state, in ref VdpMemory memory, int line) const
     in
     {
         assert(line >= 0);
@@ -133,7 +195,7 @@ pure nothrow @nogc @safe:
         return ret;
     }
 
-    private int getVScrollValue(in ref VdpState state, in ref VdpMemory memory, int cell, Plane plane) const
+    int getVScrollValue(in ref VdpState state, in ref VdpMemory memory, int cell, Plane plane) const
     in
     {
         assert(cell >= 0);
@@ -175,6 +237,28 @@ pure nothrow @nogc @safe:
         }
         const ypat = y % 8;
         planes[plane][srcCell].getData(data,ypat,start,end);
+    }
+
+    void getWindowCellData(Priotity pri)(
+        ubyte[] data,
+        in ref VdpState state,
+        in ref VdpMemory memory,
+        int cell,
+        int line) const
+    in
+    {
+        assert(line >= 0);
+        assert(cell >= 0);
+    }
+    body
+    {
+        const ycell = line / 8;
+        const srcCell = cell + ycell * state.CellWidth;
+        if(windowPlane[srcCell].priority != pri)
+        {
+            return;
+        }
+        windowPlane[srcCell].getData(data, line % 8, 0, 8);
     }
 }
 
