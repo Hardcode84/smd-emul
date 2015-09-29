@@ -146,7 +146,10 @@ private:
             {
                 const start = cell * 8;
                 const end   = start + 8;
-                getWindowCellData!pri(outData[start..end], state, memory, cell, line);
+                if(end > start)
+                {
+                    getWindowCellData!pri(outData[start..end], state, memory, cell, line);
+                }
             }
             else
             {
@@ -160,8 +163,14 @@ private:
                 const len2 = 8 - len1;
                 const center = start + len1;
                 const end = start + 8;
-                getCellData!pri(outData[start..center], state, memory, line, cell, beginCell1, pla, offset1, offset1 + len1);
-                getCellData!pri(outData[center..end],   state, memory, line, cell, beginCell2, pla, 0, len2);
+                if(center > start)
+                {
+                    getCellData!pri(outData[start..center], state, memory, line, cell, beginCell1, pla, offset1, offset1 + len1);
+                }
+                if(end > center)
+                {
+                    getCellData!pri(outData[center..end],   state, memory, line, cell, beginCell2, pla, 0, len2);
+                }
             }
         }
     }

@@ -32,6 +32,7 @@ pure nothrow @nogc @safe:
     void getData(ubyte[] outData, int line, bool vflip, bool hflip, int start = 0, int end = 8) const
     in
     {
+        assert(outData.length > 0);
         assert(start >= 0,debugConv(start));
         assert(end <= 8,debugConv(end));
         assert(end >= start);
@@ -45,7 +46,10 @@ pure nothrow @nogc @safe:
         {
             foreach(i, c; data[srcLine][start..end])
             {
-                if(0 != c) outData[7 - i] = c;
+                const ind = end - start - 1 - i;
+                assert(ind >= 0);
+                assert(ind < outData.length);
+                if(0 != c) outData[ind] = c;
             }
         }
         else
