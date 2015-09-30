@@ -73,11 +73,6 @@ public:
         }
         params.breakHandlers[CpuRunner.BreakReason.SingleStep] = (ref Cpu cpu)
         {
-            /*if(cpu.state.TickCounter > 5000_000)
-            {
-                debugOut(cpu.state);
-                return false;
-            }*/
             buf.front = cpu.state.PC;
             buf.popFront;
             return true;
@@ -112,11 +107,23 @@ public:
                 switch(e.type)
                 {
                     case SDL_KEYDOWN:
-                        if(SDL_SCANCODE_ESCAPE == e.key.keysym.scancode)
+                        switch(e.key.keysym.scancode)
                         {
-                            break mainloop;
+                            case SDL_SCANCODE_ESCAPE:
+                                break mainloop;
+                            case SDL_SCANCODE_RIGHTBRACKET:
+                                mVdp.userSettings.isAplaneVisible = !mVdp.userSettings.isAplaneVisible;
+                                break;
+                            case SDL_SCANCODE_APOSTROPHE:
+                                mVdp.userSettings.isBplaneVisible = !mVdp.userSettings.isBplaneVisible;
+                                break;
+                            case SDL_SCANCODE_SLASH:
+                                mVdp.userSettings.isWindowVisible = !mVdp.userSettings.isWindowVisible;
+                                break;
+                            default: break;
                         }
                         break;
+
                     case SDL_QUIT:
                         break mainloop;
                     default:

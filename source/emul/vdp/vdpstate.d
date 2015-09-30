@@ -47,9 +47,18 @@ enum VScrollMode
     TwoCell = 0x1,
 }
 
+struct UserSettings
+{
+pure nothrow @nogc @safe:
+    bool isAplaneVisible = true;
+    bool isBplaneVisible = true;
+    bool isWindowVisible = true;
+}
+
 struct VdpState
 {
 pure nothrow @nogc @safe:
+    UserSettings user;
     ubyte[24] R;
 
     ushort Status = 0x3600;
@@ -117,7 +126,9 @@ pure nothrow @nogc @safe:
             assert(0x0 == (R[23] & 0x80));
             return (R[21] | (R[22] << 8) | (R[23] << 16)) << 1;
         }
-        bool windowEnabled() { return (0x0 != (R[17] & 0b11111)) && (0x0 != (R[18] & 0b11111)); }
+        bool planeAVisible() { return user.isAplaneVisible; }
+        bool planeBVisible() { return user.isBplaneVisible; }
+        bool windowEnabled() { return (0x0 != (R[17] & 0b11111)) && (0x0 != (R[18] & 0b11111)) && user.isWindowVisible; }
         bool windowIsRight() { return 0x0 != (R[17] & (1 << 7)); }
         auto windowHPos() { return (R[17] & 0b11111) << 1; }
         bool windowIsDown() { return 0x0 != (R[18] & (1 << 7)); }

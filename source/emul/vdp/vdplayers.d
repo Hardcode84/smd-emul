@@ -153,6 +153,14 @@ private:
             }
             else
             {
+                static if(pla == Plane.A)
+                {
+                    if(!state.planeAVisible) return;
+                }
+                else
+                {
+                    if(!state.planeBVisible) return;
+                }
                 const start = cell * 8;
                 const begin1 = (start - hscroll) & (width * 8 - 1);
                 const beginCell1 = (begin1 / 8);

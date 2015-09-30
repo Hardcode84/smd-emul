@@ -2,8 +2,6 @@
 
 import std.bitmanip;
 
-import gamelib.debugout;
-
 struct VdpMemory
 {
 pure nothrow @nogc @safe:
@@ -37,7 +35,6 @@ pure nothrow @nogc @safe:
     }
     void writeCram(uint address, ushort value)
     {
-        debugfOut("cram write 0x%x 0x%x",address,value);
         ++cramChanged;
         cram[(address >> 1) & 0b111_111] = value;
     }
@@ -66,7 +63,7 @@ pure nothrow @nogc @safe:
     auto readVsram(uint address) const
     in
     {
-        assert(address < vsram.length, debugConv(address));
+        assert(address < vsram.length);
     }
     body
     {
