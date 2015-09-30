@@ -93,7 +93,7 @@ pure nothrow @nogc @safe:
     {
         const hscroll = getHScrollValue(state, memory, line);
         import std.typetuple;
-        foreach(i;TypeTuple!(Plane.A, Plane.B))
+        foreach(i;TypeTuple!(Plane.B, Plane.A))
         {
             drawPlane!(pri,i)(outData, hscroll[i], state, memory, line);
         }
