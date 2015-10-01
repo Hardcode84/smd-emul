@@ -225,7 +225,7 @@ private:
             case VScrollMode.FullScreen:
                 return memory.readVsram(plane);
             case VScrollMode.TwoCell:
-                return memory.readVsram(plane + cell & ~0x1);
+                return memory.readVsram(plane + cell / 2);
         }
         assert(false);
     }
