@@ -44,7 +44,9 @@ pure nothrow @nogc @safe:
         const srcLine = (vflip ? 7 - line : line);
         if(hflip)
         {
-            foreach(i, c; data[srcLine][start..end])
+            const nstart = 8 - end;
+            const mend   = 8 - start;
+            foreach(i, c; data[srcLine][nstart..mend])
             {
                 const ind = end - start - 1 - i;
                 assert(ind >= 0);
