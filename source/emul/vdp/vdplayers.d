@@ -162,11 +162,12 @@ private:
                     if(!state.planeBVisible) return;
                 }
                 const start = cell * 8;
-                const begin1 = (start - hscroll) & (width * 8 - 1);
+                const wmask = (width * 8 - 1);
+                const begin1 = (start - hscroll) & wmask;
                 const beginCell1 = (begin1 / 8);
                 const offset1 = (begin1 % 8);
                 const len1 = 8 - offset1;
-                const begin2 = (begin1 + 8) & (width * 8 - 1);
+                const begin2 = (begin1 + 8) & wmask;
                 const beginCell2 = (begin2 / 8);
                 const len2 = 8 - len1;
                 const center = start + len1;

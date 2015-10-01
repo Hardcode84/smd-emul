@@ -18,7 +18,7 @@ import emul.vdp.vdpspritetable;
 
 struct VdpSettings
 {
-    DisplayFormat format = DisplayFormat.NTSC;
+    DisplayFormat format = DisplayFormat.PAL;
     uint frameSkip = 0;
 }
 
@@ -384,7 +384,7 @@ private:
 
     void updateDisplayMode() pure @safe nothrow @nogc
     {
-        mState.TotalWidth  = (mSettings.format == DisplayFormat.NTSC ? 262 : 322);
+        mState.TotalWidth  = (mSettings.format == DisplayFormat.NTSC ? 262 : 320);
         mState.TotalHeight = (mSettings.format == DisplayFormat.NTSC ? 262 : 312);
 
         mState.CellWidth   = (mSettings.format == DisplayFormat.PAL && mState.wideDisplayMode ? 40 : 32);
