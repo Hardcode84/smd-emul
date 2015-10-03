@@ -24,7 +24,6 @@ void subiImpl(Type,ubyte Mode)(ref Cpu cpu)
     const val = cpu.getInstructionData!Type(cast(uint)(cpu.state.PC - Type.sizeof));
     addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(ref cpu,b)
         {
-            const result = sub(val, b, cpu);
-            return result;
+            return sub(b, val, cpu);
         })(cpu);
 }
