@@ -41,7 +41,7 @@ void subImpl(ubyte d,ubyte Mode)(ref Cpu cpu)
     {
         addressModeWSize!(AddressModeType.ReadWriteDontExtendRegister,Mode,(ref cpu,b)
             {
-                return sub(val, b, cpu);
+                return sub(b, val, cpu);
             })(cpu);
     }
 }

@@ -12,7 +12,6 @@ unittest
     {
         core.reset(0x200,0xffffff);
         core.cpu.state.D[0] = a[0];
-        core.cpu.state.SR = 0x2000;
         core.cpu.memory.setValueUnchecked!ushort(0x200,0x0400);
         core.cpu.memory.setValueUnchecked!ubyte(0x203,cast(ubyte)a[1]);
         core.run(1);
@@ -46,6 +45,9 @@ unittest
         assert((a[3] & 0xff) == (core.cpu.state.SR & 0xff));
     }
 }
+
+version(unittest)
+{
 
 immutable resultB = [
     // d0, im, res, sr
@@ -3125,3 +3127,5 @@ immutable uint[4][] resultL = [
     [0xBD9B0ECD,0xDF577EC2,0xDE43900B,0x2019],
     [0xBD9B0ECD,0x203AC303,0x9D604BCA,0x2008],
     [0xBD9B0ECD,0x7D973E48,0x4003D085,0x2002]];
+
+}
