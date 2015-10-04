@@ -39,6 +39,10 @@ auto createInstructions()
     import emul.m68k.instructions.cmpi;
     addCmpiInstructions(ret);
 
+    import emul.m68k.instructions.cmpm;
+    addCmpmInstructions(ret);
+
+
     import emul.m68k.instructions.scc;
     addSccInstructions(ret);
 

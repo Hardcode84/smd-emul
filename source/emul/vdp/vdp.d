@@ -158,9 +158,12 @@ public:
         mRenderCallback = renderCallback;
     }
 
-    @property auto ref userSettings() inout { return mState.user; }
-    @property auto ref state()  const { return mState; }
-    @property auto ref memory() const { return mMemory; }
+    @property @nogc nothrow
+    {
+        auto ref userSettings() inout { return mState.user; }
+        auto ref state()  const { return mState; }
+        auto ref memory() const { return mMemory; }
+    }
 
 private:
     enum CellWidth = 8;
