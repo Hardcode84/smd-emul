@@ -50,11 +50,12 @@ void main(string[] args)
         "release" : "-O -release -inline",
         "m64" : "-m64"];
     const ldcConfs = [
-        "" : "-oq -c",
+        "" : "-oq -w -c",
         "debug" : "-g",
         "unittest" : "-unittest",
         "shared" : "-shared -version=M68k_SharedLib",
-        "release" : "-O5 -release"];
+        "release" : "-O5 -release",
+        "m64" : "-m64"];
     const string[string][string] compilerOpts = ["dmd" : dmdConfs, "ldc2" : ldcConfs ];
     const compilers = compilerOpts.byKey.array;
 
@@ -69,11 +70,12 @@ void main(string[] args)
         "release" : "-O -release -inline",
         "m64" : "-m64"];
     const ldcLinkConfs = [
-        "" : "-oq",
+        "" : "-oq -w",
         "debug" : "-g",
         "unittest" : "-unittest",
         "shared" : "-shared -version=M68k_SharedLib",
-        "release" : "-O5 -release"];
+        "release" : "-O5 -release",
+        "m64" : "-m64"];
     const string[string][string] linkerOpts = ["dmd" : dmdLinkConfs, "ldc2" : ldcLinkConfs ];
 
     const string[string] importOpts = ["dmd" : "-I\"%s\"","ldc2" : "-I=\"%s\""];

@@ -34,6 +34,7 @@ public:
         mCpu.memory.setValueUnchecked(0x0, stackAddress);
         mCpu.memory.setValueUnchecked(0x4, startAddress);
         mCpu.state = CpuState();
+        assert(0 == mCpu.state.CCR);
         mCpu.setReset();
     }
 
