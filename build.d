@@ -11,6 +11,7 @@ import std.string;
 import std.json;
 import std.datetime;
 import std.regex;
+import std.typecons;
 import core.sync.mutex;
 
 auto moduleRegex = ctRegex!("module\\s.*[^;];");
@@ -23,54 +24,84 @@ void main(string[] args)
     writeln("Preparing...");
     scope(success) writeln("Success");
     scope(failure) writeln("Failure");
-    bool rebuild = args[1..$].canFind("rebuild");
+
+    auto params = args[1..$];
+    bool rebuild = params.canFind("rebuild");
     const string exeName = "smd-emul";
     const string outputPath = "bin";
     const string currPath = "./";
     const string cacheFile = ".cache";
     const string[] importPaths = ["d-gamelib","source","d-gamelib/gamelib/3rdparty/DerelictUtil-master/source","d-gamelib/gamelib/3rdparty/DerelictSDL2-master/source"];
     const string[] sourcePaths = ["d-gamelib","source"];
-    const string buildDir = currPath ~ ".build/";
-    const string compiler = args[1..$].findAmong(["dmd","ldc2"]).chain(["dmd"]).front;
-    const string conf = args[1..$].findAmong(["debug","unittest","release"]).chain(["debug"]).front;
-    const sharedLib = args[1..$].canFind("shared");
-    const isParallel = args[1..$].canFind("parallel");
-    const string config = conf ~ (sharedLib ? " shared" : "");
+    const string buildDir = currPath ~ ".build/";    
+
+    const sharedStr = "shared";
+    const sharedLib = params.canFind(sharedStr);
+
+    const parallelStr = "parallel";
+    const isParallel = params.canFind(parallelStr);
     const string exeExt = (sharedLib ? ".dll" : ".exe");
 
     const dmdConfs = [
-        "debug" : "-debug -g -w -c",
-        "unittest" : "-debug -g -w -c -unittest",
-        "debug shared" : "-debug -g -w -c -shared -version=M68k_SharedLib",
-        "release" : "-O -release -inline -w -c"];
+        "" : "-w -c",
+        "debug" : "-debug -g",
+        "unittest" : "-unittest",
+        "shared" : "-shared -version=M68k_SharedLib",
+        "release" : "-O -release -inline"];
     const ldcConfs = [
-        "debug" : "-g -oq -c",
-        "unittest" : "-g -oq -c -unittest",
-        "debug shared" : "-g -oq -c -shared -version=M68k_SharedLib",
-        "release" : "-O5 -oq -release -c"];
+        "" : "-oq -c",
+        "debug" : "-g",
+        "unittest" : "-unittest",
+        "shared" : "-shared -version=M68k_SharedLib",
+        "release" : "-O5 -release"];
     const string[string][string] compilerOpts = ["dmd" : dmdConfs, "ldc2" : ldcConfs ];
+    const compilers = compilerOpts.byKey.array;
+
+    enforce(compilers.map!(a => params.count(a)).sum(0) < 2, "More than one compiler.");
+    const string compiler = chain(params.findAmong(compilers),"dmd".only).front;
+
     const dmdLinkConfs = [
-        "debug" : "-debug -g -w",
-        "unittest" : "-debug -g -w -unittest",
-        "debug shared" : "-debug -g -w -shared -version=M68k_SharedLib",
-        "release" : "-O -release -inline -w"];
+        "" : "-w",
+        "debug" : "-debug -g",
+        "unittest" : "-unittest",
+        "shared" : "-shared -version=M68k_SharedLib",
+        "release" : "-O -release -inline"];
     const ldcLinkConfs = [
-        "debug" : "-g -oq",
-        "unittest" : "-g -oq -unittest",
-        "debug shared" : "-g -oq -shared -version=M68k_SharedLib",
-        "release" : "-O5 -oq -release"];
+        "" : "-oq",
+        "debug" : "-g",
+        "unittest" : "-unittest",
+        "shared" : "-shared -version=M68k_SharedLib",
+        "release" : "-O5 -release"];
     const string[string][string] linkerOpts = ["dmd" : dmdLinkConfs, "ldc2" : ldcLinkConfs ];
 
     const string[string] importOpts = ["dmd" : "-I\"%s\"","ldc2" : "-I=\"%s\""];
     const string[string] outputOpts = ["dmd" : "-of\"%s\"","ldc2" : "-of=\"%s\""];
 
+    const currentOpts = compilerOpts[compiler];
+    const currentLinkerOpts = linkerOpts[compiler];
+    const importOpt = importOpts[compiler];
+    const outputOpt = outputOpts[compiler];
+
+    const knownOptions = chain(
+        parallelStr.only,
+        compilers,
+        currentOpts.byKey,
+        currentLinkerOpts.byKey).map!(a => tuple(a, true)).assocArray;
+
+    auto unknownOptions = params.filter!(a => a !in knownOptions);
+    enforce(unknownOptions.empty, format("Unknown options: %s", unknownOptions));
+
     writeln("Compiler: ", compiler);
 
-    const currentOpts = compilerOpts[compiler][config];
-    const currentLinkerOpts = linkerOpts[compiler][config];
-    const importOpt = importOpts[compiler];
-    const buildStr = compiler ~ " " ~ currentOpts ~ " " ~ importPaths.map!(a => format(importOpt,currPath~a)).join(" ") ~ " ";
-    const outputOpt = outputOpts[compiler];
+    const buildStr = chain(
+        compiler.only,
+        currentOpts[""].only,
+        params.dup.sort.map!(a => currentOpts.get(a,"")).filter!(a => !a.empty),
+        importPaths.map!(a => format(importOpt,currPath ~ a)),
+        " ".only).join(" ").to!string;
+
+    string config = params.filter!(a => a in currentOpts).array.sort.join(" ");
+
     if(!exists(buildDir))
     {
         mkdirRecurse(buildDir);
@@ -101,10 +132,14 @@ void main(string[] args)
         string[string] dummy;
         cacheFiles = JSONValue(dummy);
     }
-    if("compiler" !in cache.object || cache["compiler"].str != compiler ||
-       "config"   !in cache.object || cache["config"].str   != config)
+
+    if(!rebuild)
     {
-        rebuild = true;
+        if("compiler" !in cache.object || cache["compiler"].str != compiler ||
+           "config"   !in cache.object || cache["config"].str   != config)
+        {
+            rebuild = true;
+        }
     }
 
     char[] readBuf;
@@ -284,11 +319,19 @@ void main(string[] args)
         mkdirRecurse(outputDir);
     }
 
-    const cmd = compiler ~ " " ~ currentLinkerOpts ~ " " ~ objFiles.data.map!(a => "\""~a~"\"").join(" ") ~ " " ~ format(outputOpt,outputDir~exeName~exeExt);
+    return;
+
+    const linkStr = chain(
+        compiler.only,
+        currentLinkerOpts[""].only,
+        params.dup.sort.map!(a => currentLinkerOpts.get(a,"")).filter!(a => !a.empty),
+        objFiles.data.map!(a => "\""~a~"\""),
+        format(outputOpt,outputDir~exeName~exeExt).only).join(" ").to!string;
+
     const linkStartTime = Clock.currTime();
     writeln("Linking...");
-    writeln(cmd);
-    const status = executeShell(cmd);
+    writeln(linkStr);
+    const status = executeShell(linkStr);
     writefln("Link Time: %s",Clock.currTime() - linkStartTime);
     enforce(0 == status.status, format("Build error %s, output:\n%s", status.status, status.output));
 }
