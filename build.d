@@ -47,7 +47,8 @@ void main(string[] args)
         "debug" : "-debug -g",
         "unittest" : "-unittest",
         "shared" : "-shared -version=M68k_SharedLib",
-        "release" : "-O -release -inline"];
+        "release" : "-O -release -inline",
+        "m64" : "-m64"];
     const ldcConfs = [
         "" : "-oq -c",
         "debug" : "-g",
@@ -65,7 +66,8 @@ void main(string[] args)
         "debug" : "-debug -g",
         "unittest" : "-unittest",
         "shared" : "-shared -version=M68k_SharedLib",
-        "release" : "-O -release -inline"];
+        "release" : "-O -release -inline",
+        "m64" : "-m64"];
     const ldcLinkConfs = [
         "" : "-oq",
         "debug" : "-g",
@@ -318,8 +320,6 @@ void main(string[] args)
     {
         mkdirRecurse(outputDir);
     }
-
-    return;
 
     const linkStr = chain(
         compiler.only,

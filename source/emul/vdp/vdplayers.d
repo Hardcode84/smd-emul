@@ -78,13 +78,13 @@ pure nothrow @nogc @safe:
                 foreach(j; 0..width)
                 {
                     const offset = i * width + j;
-                    planes[Plane.A][offset] = Cell(planeAbase + offset * ushort.sizeof, memory);
-                    planes[Plane.B][offset] = Cell(planeBbase + offset * ushort.sizeof, memory);
+                    planes[Plane.A][offset] = Cell(planeAbase + offset * cast(uint)ushort.sizeof, memory);
+                    planes[Plane.B][offset] = Cell(planeBbase + offset * cast(uint)ushort.sizeof, memory);
                 }
             }
             foreach(offset; 0..(state.CellHeight * state.CellWidth))
             {
-                windowPlane[offset] = Cell(windowBase + offset * ushort.sizeof, memory);
+                windowPlane[offset] = Cell(windowBase + offset * cast(uint)ushort.sizeof, memory);
             }
         }
     }
@@ -140,7 +140,7 @@ private:
                 in ref VdpMemory memory,
                 int line) const
     {
-        foreach(cell;0..(outData.length / 8))
+        foreach(cell;0..(cast(uint)outData.length / 8))
         {
             if(pla == Plane.A && checkWindow(state, cell, line))
             {
@@ -191,25 +191,25 @@ private:
     }
     body
     {
-        size_t offset = void;
+        uint offset = void;
         final switch(state.hscrollMode)
         {
             case HScrollMode.FullScreen:
                 offset = state.hScrollTableAddress;
                 break;
             case HScrollMode.FirstEightLines:
-                offset = state.hScrollTableAddress + (line & 0b111) * short.sizeof * 2;
+                offset = state.hScrollTableAddress + (line & 0b111) * cast(uint)short.sizeof * 2;
                 break;
             case HScrollMode.EveryRow:
-                offset = state.hScrollTableAddress + (line & ~0b111) * short.sizeof * 2;
+                offset = state.hScrollTableAddress + (line & ~0b111) * cast(uint)short.sizeof * 2;
                 break;
             case HScrollMode.EveryLine:
-                offset = state.hScrollTableAddress + line * short.sizeof * 2;
+                offset = state.hScrollTableAddress + line * cast(uint)short.sizeof * 2;
                 break;
         }
         int[2] ret = void;
-        ret[Plane.A] = memory.readVram!short(offset + Plane.A * short.sizeof) & 0x3ff;
-        ret[Plane.B] = memory.readVram!short(offset + Plane.B * short.sizeof) & 0x3ff;
+        ret[Plane.A] = memory.readVram!short(offset + Plane.A * cast(uint)short.sizeof) & 0x3ff;
+        ret[Plane.B] = memory.readVram!short(offset + Plane.B * cast(uint)short.sizeof) & 0x3ff;
         return ret;
     }
 

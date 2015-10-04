@@ -273,7 +273,7 @@ nothrow @nogc:
             {
                 const pc = cpu.state.PC;
             }
-            const sz = max(T.sizeof,ushort.sizeof);
+            const sz = cast(uint)max(T.sizeof,ushort.sizeof);
             cpu.fetchInstruction(sz);
             cpu.state.PC += sz;
             static if(Type == AddressModeType.Read)

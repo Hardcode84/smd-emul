@@ -68,7 +68,7 @@ nothrow:
         mReadHooks ~= ReadHookTuple(begin, end, hook);
         mReadHooks.sort!((a,b) => a.begin < b.begin);
         checkHooksRange(mReadHooks);
-        mReadHooksRange = tuple(min(mReadHooksRange[0],begin),max(mReadHooksRange[1],end + uint.sizeof));
+        mReadHooksRange = tuple(min(mReadHooksRange[0],begin),max(mReadHooksRange[1],end + cast(uint)uint.sizeof));
     }
 
     void addWriteHook(MemWriteHook hook, uint begin, uint end) pure
@@ -82,7 +82,7 @@ nothrow:
         mWriteHooks ~= WriteHookTuple(begin, end, hook);
         mWriteHooks.sort!((a,b) => a.begin < b.begin);
         checkHooksRange(mWriteHooks);
-        mWriteHooksRange = tuple(min(mWriteHooksRange[0],begin),max(mWriteHooksRange[1],end + uint.sizeof));
+        mWriteHooksRange = tuple(min(mWriteHooksRange[0],begin),max(mWriteHooksRange[1],end + cast(uint)uint.sizeof));
     }
 
 @nogc:
@@ -118,10 +118,10 @@ nothrow:
         assert(sink !is null);
         checkAddress!(T.sizeof)(offset);
         //TODO: check hooks
-        assert(memory.checkRange!true(offset,count * T.sizeof));
+        assert(memory.checkRange!true(offset,cast(uint)(count * T.sizeof)));
         foreach(i; 0..count)
         {
-            sink(i,memory.getValue!T(offset + i * T.sizeof));
+            sink(i,memory.getValue!T(cast(uint)(offset + i * T.sizeof)));
         }
     }
 
@@ -199,7 +199,7 @@ nothrow:
 
     void fetchInstruction(uint size)
     {
-        const start = mSavedPC + mCurrentInstructionBuff.length;
+        const start = mSavedPC + cast(uint)mCurrentInstructionBuff.length;
         assert(memory.checkRange!true(start,size));
         const buffStart = mCurrentInstructionBuff.length;
         const buffEnd = buffStart + size;

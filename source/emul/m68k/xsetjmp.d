@@ -47,6 +47,21 @@ version(Windows)
             }
         }
     }
+    version(X86_64)
+    {
+        extern(C) nothrow @nogc:
+        align(16) struct jmp_buf
+        {
+            long[32] data;
+        }
+
+        int setjmp(ref xjmp_buf);
+        void longjmp(ref xjmp_buf, int);
+
+        alias xjmp_buf = jmp_buf;
+        alias xsetjmp = setjmp;
+        alias xlongjmp = longjmp;
+    }
 }
 
 unittest

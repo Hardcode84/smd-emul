@@ -99,13 +99,13 @@ private:
         }
 
         auto surfLine = mSurface[line * 2];
-        foreach(i, d; data[])
+        foreach(int i, d; data[])
         {
             const col = mColorCache[d];
             surfLine[i * 2 + 0] = col;
             surfLine[i * 2 + 1] = col;
         }
-        const len = data.length * 2;
+        const len = cast(uint)data.length * 2;
         mSurface[line * 2 + 1][0..len] = surfLine[0..len];
 
         if(line < 50)

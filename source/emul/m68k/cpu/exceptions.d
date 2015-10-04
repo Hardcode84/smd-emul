@@ -195,7 +195,7 @@ bool enterException(ref Cpu cpu, ExceptionCodes code)
     cpu.setMemValue(cpu.state.SSP,cpu.state.PC);
     cpu.state.SSP -= ushort.sizeof;
     cpu.setMemValue(cpu.state.SSP,oldSR);
-    cpu.state.PC = cpu.getMemValue!uint(code * uint.sizeof);
+    cpu.state.PC = cpu.getMemValue!uint(code * cast(uint)uint.sizeof);
     return true;
 }
 
