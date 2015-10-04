@@ -210,6 +210,7 @@ nothrow:
     void endInstruction()
     {
         const delta = cast(int)(state.TickCounter - mSavedTicks);
+        assert(delta > 0);
         mExecuteTicks = max(0,mExecuteTicks - delta);
     }
 
