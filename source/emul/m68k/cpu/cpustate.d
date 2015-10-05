@@ -66,10 +66,10 @@ nothrow @nogc:
     {
         struct
         {
-            ubyte CCR = void;
-            ubyte SRupper = void;
+            ubyte CCR;
+            private ubyte SRupper;
         }
-        private ushort PrivateSR = SRFlags.S;
+        private ushort PrivateSR;
     }
     void setFlags(CCRFlags flags)() { CCR |= flags; }
     void clearFlags(CCRFlags flags)() { CCR &= ~flags; }
