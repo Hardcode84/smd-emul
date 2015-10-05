@@ -42,20 +42,23 @@ void main(string[] args)
     const parallelStr = "parallel";
     const isParallel = params.canFind(parallelStr);
 
+    const helpStr = "help";
+    const isHelp = params.canFind(helpStr);
+
     const sharedStr = "shared";
     const sharedLib = params.canFind(sharedStr);
     const string exeExt = (sharedLib ? ".dll" : ".exe");
 
-    const freeOptions = [parallelStr,rebuildStr,againStr].dup.sort;
+    const freeOptions = [parallelStr,rebuildStr,againStr,helpStr].dup.sort;
 
-    const dmdConfs = [
+    enum dmdConfs = [
         "" : "-w -c",
         "debug" : "-debug -g",
         "unittest" : "-unittest",
         "shared" : "-shared -version=M68k_SharedLib",
         "release" : "-O -release -inline",
         "m64" : "-m64"];
-    const ldcConfs = [
+    enum ldcConfs = [
         "" : "-oq -w -c",
         "debug" : "-g",
         "unittest" : "-unittest",
@@ -63,19 +66,19 @@ void main(string[] args)
         "release" : "-O5 -release",
         "m64" : "-m64"];
     const string[string][string] compilerOpts = ["dmd" : dmdConfs, "ldc2" : ldcConfs ];
-    const compilers = compilerOpts.byKey.array;
+    const compilers = compilerOpts.byKey.array.sort;
 
     enforce(compilers.map!(a => params.count(a)).sum(0) < 2, "More than one compiler.");
     const string compiler = chain(params.findAmong(compilers),"dmd".only).front;
 
-    const dmdLinkConfs = [
+    enum dmdLinkConfs = [
         "" : "-w",
         "debug" : "-debug -g",
         "unittest" : "-unittest",
         "shared" : "-shared -version=M68k_SharedLib",
         "release" : "-O -release -inline",
         "m64" : "-m64"];
-    const ldcLinkConfs = [
+    enum ldcLinkConfs = [
         "" : "-oq -w",
         "debug" : "-g",
         "unittest" : "-unittest",
@@ -83,6 +86,23 @@ void main(string[] args)
         "release" : "-O5 -release",
         "m64" : "-m64"];
     const string[string][string] linkerOpts = ["dmd" : dmdLinkConfs, "ldc2" : ldcLinkConfs ];
+
+    if(isHelp)
+    {
+        enforce(params.length == 1, "Help must be used alone");
+        writeln("Supported options:");
+        freeOptions.each!(a => writefln("    %s",a));
+        writeln("Supported compilers:");
+        foreach(comp;compilers[])
+        {
+            writefln("    %s:",comp);
+            setUnion(
+                compilerOpts[comp].byKey.array.sort,
+                linkerOpts[comp].byKey.array.sort).
+            filter!(a => !a.empty).uniq.each!(a => writefln("        %s",a));
+        }
+        return;
+    }
 
     const string[string] importOpts = ["dmd" : "-I\"%s\"","ldc2" : "-I=\"%s\""];
     const string[string] outputOpts = ["dmd" : "-of\"%s\"","ldc2" : "-of=\"%s\""];
