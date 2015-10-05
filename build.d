@@ -26,21 +26,27 @@ void main(string[] args)
     scope(failure) writeln("Failure");
 
     auto params = args[1..$];
-    bool rebuild = params.canFind("rebuild");
+    string rebuildStr = "rebuild";
+    bool rebuild = params.canFind(rebuildStr);
     const string exeName = "smd-emul";
     const string outputPath = "bin";
     const string currPath = "./";
     const string cacheFile = ".cache";
     const string[] importPaths = ["d-gamelib","source","d-gamelib/gamelib/3rdparty/DerelictUtil-master/source","d-gamelib/gamelib/3rdparty/DerelictSDL2-master/source"];
     const string[] sourcePaths = ["d-gamelib","source"];
-    const string buildDir = currPath ~ ".build/";    
+    const string buildDir = currPath ~ ".build/";
 
-    const sharedStr = "shared";
-    const sharedLib = params.canFind(sharedStr);
+    const againStr = "again";
+    const isAgain = params.canFind(againStr);
 
     const parallelStr = "parallel";
     const isParallel = params.canFind(parallelStr);
+
+    const sharedStr = "shared";
+    const sharedLib = params.canFind(sharedStr);
     const string exeExt = (sharedLib ? ".dll" : ".exe");
+
+    const freeOptions = [parallelStr,rebuildStr,againStr].dup.sort;
 
     const dmdConfs = [
         "" : "-w -c",
@@ -87,7 +93,7 @@ void main(string[] args)
     const outputOpt = outputOpts[compiler];
 
     const knownOptions = chain(
-        parallelStr.only,
+        freeOptions,
         compilers,
         currentOpts.byKey,
         currentLinkerOpts.byKey).map!(a => tuple(a, true)).assocArray;
@@ -96,15 +102,6 @@ void main(string[] args)
     enforce(unknownOptions.empty, format("Unknown options: %s", unknownOptions));
 
     writeln("Compiler: ", compiler);
-
-    const buildStr = chain(
-        compiler.only,
-        currentOpts[""].only,
-        params.dup.sort.map!(a => currentOpts.get(a,"")).filter!(a => !a.empty),
-        importPaths.map!(a => format(importOpt,currPath ~ a)),
-        " ".only).join(" ").to!string;
-
-    string config = params.filter!(a => a in currentOpts).array.sort.join(" ");
 
     if(!exists(buildDir))
     {
@@ -137,14 +134,34 @@ void main(string[] args)
         cacheFiles = JSONValue(dummy);
     }
 
+    string[] config;
+    if(isAgain)
+    {
+        enforce("config" in cache.object, "No saved config");
+        enforce(0 == params.filter!(a => a in currentOpts).count, "again cannot be used with other options");
+        config = cache["config"].str.split(" ").sort;
+    }
+    else
+    {
+        config = params.filter!(a => a in currentOpts).array.sort;
+    }
+    string configStr = config.join(" ");
+
     if(!rebuild)
     {
         if("compiler" !in cache.object || cache["compiler"].str != compiler ||
-           "config"   !in cache.object || cache["config"].str   != config)
+           "config"   !in cache.object || cache["config"].str   != configStr)
         {
             rebuild = true;
         }
     }
+
+    const buildStr = chain(
+        compiler.only,
+        currentOpts[""].only,
+        config.map!(a => currentOpts.get(a,"")).filter!(a => !a.empty),
+        importPaths.map!(a => format(importOpt,currPath ~ a)),
+        " ".only).join(" ").to!string;
 
     char[] readBuf;
     struct BuildEntry
@@ -264,7 +281,7 @@ void main(string[] args)
     {
         cache.object["files"] = cacheFiles;
         cache.object["compiler"] = compiler;
-        cache.object["config"] = config;
+        cache.object["config"] = configStr;
     }
     int compiledFiles = 0;
     const totalFiles = csourceList.length;
@@ -317,23 +334,23 @@ void main(string[] args)
     }
     writeln("Files compiled: ",numCompiledFiles);
 
-    const outputDir = currPath ~ outputPath ~ "/"~config~"/";
+    const outputDir = currPath ~ outputPath ~ "/"~configStr.replace(" ","_")~"/";
     if(!exists(outputDir))
     {
         mkdirRecurse(outputDir);
     }
 
-    const linkStr = chain(
+    const outFile = outputDir~exeName~exeExt;
+    const linkCmd = chain(
         compiler.only,
         currentLinkerOpts[""].only,
         params.dup.sort.map!(a => currentLinkerOpts.get(a,"")).filter!(a => !a.empty),
         objFiles.data.map!(a => "\""~a~"\""),
-        format(outputOpt,outputDir~exeName~exeExt).only).join(" ").to!string;
+        format(outputOpt,outFile).only).join(" ").to!string;
 
     const linkStartTime = Clock.currTime();
-    writeln("Linking...");
-    writeln(linkStr);
-    const status = executeShell(linkStr);
+    writefln("Linking: %s",outFile);
+    const status = executeShell(linkCmd);
     writefln("Link Time: %s",Clock.currTime() - linkStartTime);
-    enforce(0 == status.status, format("Build error %s, output:\n%s", status.status, status.output));
+    enforce(0 == status.status, format("Link error %s, command:\n%s", status.status, linkCmd, status.output));
 }
