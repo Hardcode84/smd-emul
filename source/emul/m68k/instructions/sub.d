@@ -6,7 +6,6 @@ import emul.m68k.instructions.arith;
 package nothrow:
 void addSubInstructions(ref Instruction[ushort] ret) pure
 {
-    //sub
     foreach(v; TupleRange!(0,readAddressModesWSize.length))
     {
         enum mode = readAddressModesWSize[v];
