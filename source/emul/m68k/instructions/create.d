@@ -166,6 +166,9 @@ auto createInstructions()
     import emul.m68k.instructions.swap;
     addSwapInstructions(ret);
 
+    import emul.m68k.instructions.exg;
+    addExgInstructions(ret);
+
 
     import emul.m68k.instructions.btst;
     addBtstInstructions(ret);
