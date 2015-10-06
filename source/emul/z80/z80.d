@@ -24,13 +24,13 @@ public:
 private:
     ushort readHook(ref Cpu cpu, uint offset, Cpu.MemWordPart wpart) nothrow @nogc
     {
-        debugfOut("z80 read : 0x%.6x 0x%.8x %s",cpu.state.PC,offset,wpart);
+        //debugfOut("z80 read : 0x%.6x 0x%.8x %s",cpu.state.PC,offset,wpart);
         assert(0x0 == (offset & 0x1));
         return 0;
     }
     void writeHook(ref Cpu cpu, uint offset, Cpu.MemWordPart wpart, ushort data) nothrow @nogc
     {
-        debugfOut("z80 write : 0x%.6x 0x%.8x %s 0x%.4x",cpu.state.PC,offset,wpart,data);
+        //debugfOut("z80 write : 0x%.6x 0x%.8x %s 0x%.4x",cpu.state.PC,offset,wpart,data);
         assert(0x0 == (offset & 0x1));
     }
 }

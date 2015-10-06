@@ -328,9 +328,9 @@ private:
 
     void executeDma(ref Cpu cpu) nothrow @nogc
     {
-        debugfOut("exec dma: enbl=%s %s %s",mState.dmaEnabled,mState.dmaType,mState.CodeReg);
-        debugfOut("src= 0x%.8x start=0x%.4x inc=%s len=%s",
-            (DmaType.Transfer ==mState.dmaType ? mState.dmaSrcAddress:0),mState.AddressReg,mState.autoIncrement,mState.dmaLen);
+        //debugfOut("exec dma: enbl=%s %s %s",mState.dmaEnabled,mState.dmaType,mState.CodeReg);
+        //debugfOut("src= 0x%.8x start=0x%.4x inc=%s len=%s",
+        //    (DmaType.Transfer ==mState.dmaType ? mState.dmaSrcAddress:0),mState.AddressReg,mState.autoIncrement,mState.dmaLen);
         if(mState.dmaEnabled)
         {
             final switch(mState.dmaType)
@@ -367,7 +367,7 @@ private:
     }
     void dmaFill(ushort val) nothrow @nogc
     {
-        debugfOut("fill val=0x%.4x",val);
+        //debugfOut("fill val=0x%.4x",val);
         auto len = mState.dmaLen;
         if(len > 0)
         {
@@ -419,11 +419,11 @@ private:
             {
                 //TODO: render
                 mVdpLayers.update(mState, mMemory);
-                mSpriteTable.update(mState, mMemory);
+                //mSpriteTable.update(mState, mMemory);
 
                 mVdpLayers.drawPlanes!(VdpLayers.Priotity.Low)(mLineBuff[0..wdth],mState,mMemory,currLine);
 
-                foreach(const ref sprite; mSpriteTable.currentOrder[].retro.map!(a => mSpriteTable.sprites[a]))
+                /*foreach(const ref sprite; mSpriteTable.currentOrder[].retro.map!(a => mSpriteTable.sprites[a]))
                 {
                     const miny = sprite.y;
                     const maxy = miny + sprite.hsize * CellHeight;
@@ -434,7 +434,7 @@ private:
                         import std.random;
                         mLineBuff[minx..maxx] = cast(ubyte)uniform(0,64);
                     }
-                }
+                }*/
                 mVdpLayers.drawPlanes!(VdpLayers.Priotity.High)(mLineBuff[0..wdth],mState,mMemory,currLine);
             }
             callRenderCallback(currLine, mLineBuff[0..wdth]);
