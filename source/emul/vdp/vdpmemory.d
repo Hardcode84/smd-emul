@@ -44,7 +44,7 @@ pure nothrow @nogc @safe:
         if(addr < vsram.length)
         {
             ++vsRamChanged;
-            cram[addr] = value;
+            vsram[addr] = value;
         }
     }
 
