@@ -16,12 +16,6 @@ import emul.vdp.vdpmemory;
 import emul.vdp.vdplayers;
 import emul.vdp.vdpspritetable;
 
-struct VdpSettings
-{
-    DisplayFormat format = DisplayFormat.NTSC;
-    uint frameSkip = 0;
-}
-
 final class Vdp
 {
     private struct VdpSettings

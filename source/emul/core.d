@@ -29,6 +29,7 @@ public:
     this(RomRef rom)
     {
         Settings settings;
+        //settings.model = Model.Domestic;
         settings.vmode = DisplayFormat.PAL;
         mRom = rom;
         mCpuRunner = 0;
