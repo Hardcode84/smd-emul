@@ -7,17 +7,10 @@ import emul.settings;
 
 import emul.m68k.cpu;
 
-struct MiscSettings
-{
-    Model model = Model.Overseas;
-    DisplayFormat vmode = DisplayFormat.NTSC;
-    ubyte ver = 0;
-}
-
 final class Misc
 {
 public:
-    this(in MiscSettings settings = MiscSettings())
+    this(in Settings settings)
     {
         const val = (settings.model << 15) | (settings.vmode << 14) | (1 << 13) | ((settings.ver & 0b111) << 8);
         assert(0 == (val & 0xffff0000));

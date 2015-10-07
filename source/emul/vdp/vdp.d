@@ -18,18 +18,23 @@ import emul.vdp.vdpspritetable;
 
 struct VdpSettings
 {
-    DisplayFormat format = DisplayFormat.PAL;
+    DisplayFormat format = DisplayFormat.NTSC;
     uint frameSkip = 0;
 }
 
 final class Vdp
 {
+    private struct VdpSettings
+    {
+        DisplayFormat format;
+        uint frameSkip;
+    }
 public:
 /*pure nothrow:*/
 
-    this(in VdpSettings settings = VdpSettings()) pure
+    this(in Settings settings) pure
     {
-        mSettings = settings;
+        mSettings = VdpSettings(settings.vmode, settings.frameskip);
         mLineBuff.length = 400;
         updateDisplayMode();
         mState.CurrentLine = mState.EndLine;

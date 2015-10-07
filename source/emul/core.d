@@ -11,6 +11,7 @@ import gamelib.core;
 import gamelib.memory.saferef;
 import gamelib.debugout;
 
+import emul.settings;
 import emul.rom;
 import emul.m68k.cpu;
 import emul.m68k.cpurunner;
@@ -27,11 +28,13 @@ class Core
 public:
     this(RomRef rom)
     {
+        Settings settings;
+        settings.vmode = DisplayFormat.PAL;
         mRom = rom;
         mCpuRunner = 0;
-        mMisc = makeSafe!Misc();
+        mMisc = makeSafe!Misc(settings);
         mZ80 = makeSafe!Z80();
-        mVdp = makeSafe!Vdp();
+        mVdp = makeSafe!Vdp(settings);
         initSDL();
         scope(failure) dispose();
         mOutput = makeSafe!Output();
