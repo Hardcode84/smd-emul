@@ -23,8 +23,10 @@ pure nothrow @nogc @safe:
             foreach(j; 0..4)
             {
                 const d = srcdata[i * 4 + j];
-                line[j * 2 + 1] = cast(ubyte)(p | (d & 0b1111));
-                line[j * 2 + 0] = cast(ubyte)(p | ((d >> 4) & 0b1111));
+                const pix1 = (d & 0b1111);
+                const pix2 = ((d >> 4) & 0b1111);
+                line[j * 2 + 1] = (pix1 != 0) ? cast(ubyte)(p | pix1) : 0;
+                line[j * 2 + 0] = (pix2 != 0) ? cast(ubyte)(p | pix2) : 0;
             }
         }
     }
