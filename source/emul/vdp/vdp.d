@@ -74,6 +74,7 @@ public:
                 ++mState.CurrentLine;
                 if(mState.CurrentLine == 0)
                 {
+                    mState.clearFlags!(VdpFlags.VInterruptPending)();
                     callEventCallback(FrameEvent.Start);
                     ++mState.CurrentFrame;
                 }
@@ -97,6 +98,7 @@ public:
 
                 if(mState.CurrentLine == (mState.Height - 1))
                 {
+                    mState.setFlags!(VdpFlags.VInterruptPending)();
                     callEventCallback(FrameEvent.End);
                 }
             }
@@ -118,14 +120,13 @@ public:
                             --mState.HInterruptCounter;
                         }
 
-                        //debugOut(mState.hInterruptEnabled, " ", mState.HInterruptCounter);
                         if(mState.hInterruptEnabled && 0 == mState.HInterruptCounter)
                         {
                             mState.HBlankScheduled = true;
                         }
                     }
 
-                    cpu.scheduleProcessStop(hblankPos + mState.TicksPerRetrace - delta + 1);
+                    cpu.scheduleProcessStop(hblankPos + ticksPerLine - delta + 1);
                 }
                 else
                 {
@@ -138,7 +139,7 @@ public:
             }
             else
             {
-                cpu.scheduleProcessStop(-mState.StartLine * ticksPerLine - delta + 1);
+                cpu.scheduleProcessStop(-mState.StartLine * ticksPerLine + mState.TicksPerScan - delta + 1);
             }
         }
     }
@@ -165,8 +166,6 @@ public:
     }
 
 private:
-    enum CellWidth = 8;
-    enum CellHeight = 8;
     const VdpSettings mSettings;
     ubyte[] mLineBuff;
     FrameEventCallback mEventCallback;
@@ -241,8 +240,8 @@ private:
     ushort readDataPort(ref Cpu cpu) nothrow @nogc
     {
         //debugfOut("read data");
-        flushControl(cpu);
         //assert(false);
+        flushControl(cpu);
         return 0;
     }
     void writeDataPort(ref Cpu cpu, ushort data) nothrow @nogc
@@ -386,11 +385,12 @@ private:
 
     void updateDisplayMode() pure @safe nothrow @nogc
     {
-        mState.TotalWidth  = (mSettings.format == DisplayFormat.NTSC ? 262 : 320);
+        mState.CellWidth   = (mState.wideDisplayMode ? 40 : 32);
+        mState.CellHeight  = (mSettings.format == DisplayFormat.PAL && mState.tallDisplayMode ? 30 : 28);
+
+        mState.TotalWidth  = 360;
         mState.TotalHeight = (mSettings.format == DisplayFormat.NTSC ? 262 : 312);
 
-        mState.CellWidth   = (mSettings.format == DisplayFormat.PAL && mState.wideDisplayMode ? 40 : 32);
-        mState.CellHeight  = (mState.tallDisplayMode ? 30 : 28);
         mState.Width  = mState.CellWidth * 8;
         mState.Height = mState.CellHeight * 8;
 
@@ -398,11 +398,15 @@ private:
         mState.EndLine = mState.StartLine + mState.TotalHeight;
 
         const fps = (mSettings.format == DisplayFormat.NTSC ? 60 : 50);
-        const ticksPerFrame    = 7_600_000 / fps; //TODO
+        const ticksPerFrame    =  (mSettings.format == DisplayFormat.PAL ? 7_600_000 : 7_670_000) / fps; //TODO
         const ticksPerLine     = ticksPerFrame / mState.TotalHeight;
         mState.TicksPerFrame   = ticksPerFrame;
         mState.TicksPerScan    = (ticksPerLine * mState.Width) / mState.TotalWidth;
         mState.TicksPerRetrace = ticksPerLine - mState.TicksPerScan;
+        assert(mState.TicksPerScan > 0);
+        assert(mState.TicksPerRetrace > 0);
+
+        mState.setFlags!(VdpFlags.PalMode)(mSettings.format == DisplayFormat.PAL);
     }
 
     void renderLine()

@@ -30,7 +30,7 @@ public:
     {
         Settings settings;
         //settings.model = Model.Domestic;
-        settings.vmode = DisplayFormat.PAL;
+        settings.vmode = DisplayFormat.NTSC;
         mRom = rom;
         mCpuRunner = 0;
         mMisc = makeSafe!Misc(settings);
@@ -93,7 +93,7 @@ public:
         uint ticks = 0;
         params.processHandler = (ref Cpu cpu)
         {
-            if(cpu.state.TickCounter > (ticks + 100_000) && !mOutput.insideFrame)
+            if(cpu.state.TickCounter > (ticks + 10_000) && !mOutput.insideFrame)
             {
                 ticks = cpu.state.TickCounter;
                 return false;

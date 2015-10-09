@@ -111,8 +111,8 @@ pure nothrow @nogc @safe:
         auto backdropColor() { return cast(ubyte)(R[7] & 0b111_111); }
         auto interruptCounter() { return R[10]; }
         bool dmaEnabled() { return 0x0 != (R[1] & (1 << 4)); }
-        bool wideDisplayMode() { return 0x0 != (R[12] & (1 << 7)); }
-        bool tallDisplayMode() { return 0x0 != (R[7] & (1 << 3));}
+        bool wideDisplayMode() { return 0x0 != (R[12] & 1); }
+        bool tallDisplayMode() { return 0x0 != (R[1] & (1 << 3));}
         auto autoIncrement() { return R[15]; }
         auto dmaType()
         {
