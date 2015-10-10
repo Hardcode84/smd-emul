@@ -69,6 +69,10 @@ unittest
     import gamelib.debugout;
     debugOut("xsetjmp test");
     xjmp_buf buf;
+    version(X86_64)
+    {
+        assert((&buf & 0b1111) == 0);
+    }
     int res = xsetjmp(buf);
     if(0 == res)
     {

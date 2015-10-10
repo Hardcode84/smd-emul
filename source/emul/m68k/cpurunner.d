@@ -23,6 +23,7 @@ public:
         alias ProcessHandler = bool delegate(ref Cpu cpu);
         BreakHandler[BreakReason.max + 1] breakHandlers;
         ProcessHandler processHandler;
+        int processCycles = 1000;
     }
 
     @disable this();
@@ -37,6 +38,7 @@ public:
 
     void run(ref Cpu cpu,in RunParams params = RunParams.init) const
     {
+        assert(params.processCycles > 0);
         if(params.breakHandlers[BreakReason.SingleStep] is null)
         {
             runImpl!false(cpu,params);
@@ -54,7 +56,7 @@ private:
     {
         @nogc nothrow:
         ushort size;
-        ushort ticks = 1;
+        ushort ticks = 5;
         void function(ref Cpu) impl;
         this(in Instruction instr) @safe pure
         {
@@ -101,7 +103,11 @@ private:
         }
     outer: while(processHandler(cpu))
         {
-            cpu.process(10);
+            cpu.process(params.processCycles);
+            scope(exit)
+            {
+                cpu.postProcess();
+            }
             while(!cpu.processed)
             {
                 static if(SingleStep)

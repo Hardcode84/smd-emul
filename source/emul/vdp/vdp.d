@@ -68,10 +68,13 @@ public:
         {
             const int delta = cpu.state.TickCounter - mState.FrameStart;
             const reqLine = delta / ticksPerLine + mState.StartLine;
-            assert((reqLine - mState.CurrentLine) <= 1);
+            assert(reqLine >= mState.CurrentLine);
             if(reqLine > mState.CurrentLine)
             {
-                ++mState.CurrentLine;
+                assert((mState.CurrentLine < 0 || mState.CurrentLine >= mState.Height) ||
+                       (reqLine - mState.CurrentLine) == 1);
+                assert(mState.CurrentLine >= 0 || reqLine <= 0);
+                mState.CurrentLine = reqLine;
                 if(mState.CurrentLine == 0)
                 {
                     mState.clearFlags!(VdpFlags.VInterruptPending)();
@@ -103,6 +106,7 @@ public:
                 }
             }
 
+            assert(mState.CurrentLine <= mState.EndLine);
             if(mState.CurrentLine >= 0 && mState.CurrentLine < mState.Height)
             {
                 const hblankPos = ((mState.CurrentLine - mState.StartLine) * ticksPerLine + mState.TicksPerScan);
@@ -126,20 +130,35 @@ public:
                         }
                     }
 
-                    cpu.scheduleProcessStop(hblankPos + ticksPerLine - delta + 1);
+                    cpu.scheduleProcessStop(hblankPos + mState.TicksPerRetrace - delta + 1);
                 }
                 else
                 {
                     cpu.scheduleProcessStop(hblankPos - delta + 1);
                 }
             }
+            else if(mState.CurrentLine == mState.EndLine)
+            {
+                if(mNeedUpdateDispMode)
+                {
+                    updateDisplayMode();
+                    mNeedUpdateDispMode = false;
+                }
+                mState.FrameStart = cpu.state.TickCounter;
+                mState.CurrentLine = mState.StartLine;
+                mState.HInterruptCounter = mState.interruptCounter;
+                const val = -mState.StartLine * ticksPerLine + 1;
+                cpu.scheduleProcessStop(val);
+            }
             else if(mState.CurrentLine >= mState.Height)
             {
-                cpu.scheduleProcessStop(mState.TicksPerFrame - delta + 1);
+                const val = mState.TicksPerFrame - delta + 1;
+                cpu.scheduleProcessStop(val);
             }
             else
             {
-                cpu.scheduleProcessStop(-mState.StartLine * ticksPerLine + mState.TicksPerScan - delta + 1);
+                const val = -mState.StartLine * ticksPerLine - delta + 1;
+                cpu.scheduleProcessStop(val);
             }
         }
     }
@@ -174,6 +193,7 @@ private:
     bool mPendingControlWrite = false;
     ushort[2] mPendingControlBuff;
     bool mPendingVramFill = false;
+    bool mNeedUpdateDispMode = true;
 
     VdpState mState;
     VdpMemory mMemory;
@@ -293,7 +313,7 @@ private:
                 mState.R[reg] = val;
                 if(0 == reg || 1 == reg || 12 == reg)
                 {
-                    updateDisplayMode();
+                    mNeedUpdateDispMode = true;
                 }
             }
             //mState.CodeReg = VdpCodeRegState.VRamRead;

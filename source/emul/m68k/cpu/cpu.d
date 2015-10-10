@@ -182,10 +182,15 @@ nothrow:
         }
     }
 
-    void process(int ticks = 100)
+    void process(int ticks)
     {
-        mExecuteTicks = ticks;
+        scheduleProcessStop(ticks);
         processExceptions();
+    }
+
+    void postProcess()
+    {
+        mExecuteTicks = mExecuteTicks.max;
     }
 
     void beginNextInstruction()
