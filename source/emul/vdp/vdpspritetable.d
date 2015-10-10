@@ -29,7 +29,7 @@ pure nothrow @nogc @safe:
 
         this(in ref VdpMemory memory, uint offset)
         {
-            const ubyte[] data = memory.vram[offset..offset + 8];
+            const ubyte[] data = memory.getVramRange(offset, 8);
             x = ((data[6] & 0b11) << 8) | data[7];
             y = ((data[0] & 0b11) << 8) | data[1];
             const pattern = (((data[4] & 0b111) << 8) | data[5]) << 5;
@@ -48,7 +48,7 @@ pure nothrow @nogc @safe:
             foreach(i;0..(hsize * vsize))
             {
                 const patOffset = pattern + i * 32;
-                patterns[i] = VdpPattern(memory.vram[patOffset..patOffset + 32],palette);
+                patterns[i] = VdpPattern(memory.getVramRange(patOffset, 32),palette);
             }
         }
 

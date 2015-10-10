@@ -5,45 +5,48 @@ import std.bitmanip;
 struct VdpMemory
 {
 pure nothrow @nogc @safe:
-    uint cramChanged = 1;
-    uint vsRamChanged = 1;
-    uint vramChanged = 1;
-    ushort[64] cram;
-    ushort[40] vsram;
-    ubyte[0x10000] vram;
-
+    enum VramSize = 0x10000;
+    enum CramSize = 64;
+    enum VsRamSize = 40;
     void writeVram(uint address, ubyte value)
     {
-        ++vramChanged;
-        vram[address & 0xffff] = value;
+        ++mVramChanged;
+        vram[address & (VramSize - 1)] = value;
+        vramTail[address & (VramSize - 1)] = value;
     }
     void writeVram(uint address, ushort value)
     {
         const swapBytes = (0x0 != (address & 0x1));
-        const addr = address & 0xfffe;
-        ++vramChanged;
+        const addr = address & (VramSize - 2);
+        ++mVramChanged;
         if(swapBytes)
         {
             vram[addr + 0] = cast(ubyte)(value);
             vram[addr + 1] = cast(ubyte)(value >> 8);
+            vramTail[addr + 0] = cast(ubyte)(value);
+            vramTail[addr + 1] = cast(ubyte)(value >> 8);
         }
         else
         {
             vram[addr + 0] = cast(ubyte)(value >> 8);
             vram[addr + 1] = cast(ubyte)(value);
+            vramTail[addr + 0] = cast(ubyte)(value >> 8);
+            vramTail[addr + 1] = cast(ubyte)(value);
         }
     }
+
     void writeCram(uint address, ushort value)
     {
-        ++cramChanged;
+        ++mCramChanged;
         cram[(address >> 1) & 0b111_111] = value;
     }
+
     void writeVsram(uint address, ushort value)
     {
         const addr = (address >> 1) & 0b111_111;
         if(addr < vsram.length)
         {
-            ++vsRamChanged;
+            ++mVsRamChanged;
             vsram[addr] = value;
         }
     }
@@ -60,6 +63,28 @@ pure nothrow @nogc @safe:
         return bigEndianToNative!(T,T.sizeof)(temp);
     }
 
+    const(ubyte)[] getVramRange(uint address, uint size) const
+    in
+    {
+        assert(size <= VramSize);
+    }
+    body
+    {
+        const start = address & (VramSize - 1);
+        const end = start + size;
+        return vramDouble[start..end];
+    }
+
+    auto readCram(uint address) const
+    in
+    {
+        assert(address < cram.length);
+    }
+    body
+    {
+        return cram[address];
+    }
+
     auto readVsram(uint address) const
     in
     {
@@ -68,5 +93,28 @@ pure nothrow @nogc @safe:
     body
     {
         return vsram[address] & 0x7ff;
+    }
+
+    @property const
+    {
+        auto cramChanged()  { return mCramChanged; }
+        auto vsRamChanged() { return mVsRamChanged; }
+        auto vramChanged()  { return mVramChanged; }
+    }
+
+private:
+    uint mCramChanged = 1;
+    uint mVsRamChanged = 1;
+    uint mVramChanged = 1;
+    ushort[CramSize] cram;
+    ushort[VsRamSize] vsram;
+    union
+    {
+        struct
+        {
+            ubyte[VramSize] vram;
+            ubyte[VramSize] vramTail;
+        }
+        ubyte[VramSize * 2] vramDouble;
     }
 }

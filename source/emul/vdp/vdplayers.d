@@ -38,7 +38,7 @@ pure nothrow @nogc @safe:
             vflip = (0 != (data & (1 << 12)));
             hflip = (0 != (data & (1 << 11)));
             const patternAddress = (data << 5) & 0xffff;
-            pattern = VdpPattern(memory.vram[patternAddress..patternAddress + 32],palette);
+            pattern = VdpPattern(memory.getVramRange(patternAddress, 32),palette);
         }
 
         void getData(ubyte[] outData, int line, int start, int end) const

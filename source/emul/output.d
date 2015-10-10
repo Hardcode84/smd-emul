@@ -89,8 +89,9 @@ private:
 
     void buildColorCache(const VdpRef vdp) nothrow @nogc
     {
-        foreach(i, col; vdp.memory.cram[])
+        foreach(i; 0..64)
         {
+            const col = vdp.memory.readCram(i);
             const ubyte r_ = cast(ubyte)(((col >> 1) & 0b111) << 5);
             const ubyte g_ = cast(ubyte)(((col >> 5) & 0b111) << 5);
             const ubyte b_ = cast(ubyte)(((col >> 9) & 0b111) << 5);
