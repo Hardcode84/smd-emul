@@ -131,14 +131,7 @@ void main(string[] args)
     const cachePath = buildDir ~ cacheFile;
     if(exists(cachePath))
     {
-        if(rebuild)
-        {
-            remove(cachePath);
-        }
-        else
-        {
-            cache = parseJSON(std.file.readText(cachePath));
-        }
+        cache = parseJSON(std.file.readText(cachePath));
     }
     scope(exit) std.file.write(cachePath,cache.toPrettyString());
 
@@ -200,11 +193,13 @@ void main(string[] args)
             prettyName = name.find(currPath)[currPath.length..$].text;
             objDir = buildDir ~ prettyName.retro.find!(a => a == '\\' || a == '/').retro.text;
             objName = objDir ~ prettyName.retro.splitter!(a => a == '\\' || a == '/').front.find('.').array.retro.text ~ "obj";
+
             changed = rebuild || !exists(objName) || (prettyName !in cacheFiles.object) ||
                 ("buildTime" !in cacheFiles[prettyName].object) ||
                 ("moduleName" !in cacheFiles[prettyName].object) ||
                 ("dependencies" !in cacheFiles[prettyName].object) ||
-                timeLastModified(name) != SysTime.fromISOString(cacheFiles[prettyName]["buildTime"].str);
+                (timeLastModified(name) != SysTime.fromISOString(cacheFiles[prettyName]["buildTime"].str)).ifThrown(true);
+
             if(!changed)
             {
                 try
@@ -361,16 +356,28 @@ void main(string[] args)
     }
 
     const outFile = outputDir~exeName~exeExt;
-    const linkCmd = chain(
-        compiler.only,
-        currentLinkerOpts[""].only,
-        params.dup.sort.map!(a => currentLinkerOpts.get(a,"")).filter!(a => !a.empty),
-        objFiles.data.map!(a => "\""~a~"\""),
-        format(outputOpt,outFile).only).join(" ").to!string;
+    if(rebuild ||
+        numCompiledFiles > 0 ||
+        !exists(outFile) ||
+        "lastBuildTime" !in cache ||
+        (timeLastModified(outFile) != SysTime.fromISOString(cache["lastBuildTime"].str)).ifThrown(true))
+    {
+        const linkCmd = chain(
+            compiler.only,
+            currentLinkerOpts[""].only,
+            params.dup.sort.map!(a => currentLinkerOpts.get(a,"")).filter!(a => !a.empty),
+            objFiles.data.map!(a => "\""~a~"\""),
+            format(outputOpt,outFile).only).join(" ").to!string;
 
-    const linkStartTime = Clock.currTime();
-    writefln("Linking: %s",outFile);
-    const status = executeShell(linkCmd);
-    writefln("Link Time: %s",Clock.currTime() - linkStartTime);
-    enforce(0 == status.status, format("Link error %s, command:\n%s", status.status, linkCmd, status.output));
+        const linkStartTime = Clock.currTime();
+        writefln("Linking: %s",outFile);
+        const status = executeShell(linkCmd);
+        writefln("Link Time: %s",Clock.currTime() - linkStartTime);
+        enforce(0 == status.status, format("Link error %s, command:\n%s", status.status, linkCmd, status.output));
+        cache.object["lastBuildTime"] = JSONValue(timeLastModified(outFile).toISOString());
+    }
+    else
+    {
+        writeln("All up to date");
+    }
 }
