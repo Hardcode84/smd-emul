@@ -30,6 +30,7 @@ public:
     {
         Settings settings;
         //settings.model = Model.Domestic;
+        settings.scale = 2;
         settings.vmode = DisplayFormat.NTSC;
         mRom = rom;
         mCpuRunner = 0;
@@ -37,8 +38,9 @@ public:
         mZ80 = makeSafe!Z80();
         mVdp = makeSafe!Vdp(settings);
         initSDL();
-        scope(failure) dispose();
-        mOutput = makeSafe!Output();
+        scope(failure) deinitSDL();
+        mOutput = makeSafe!Output(settings);
+        scope(failure) mOutput.dispose();
         mOutput.register(mVdp);
         enforce(mRom.header.romEndAddress < mRom.header.ramEndAddress,
             format("Invalid memory ranges %s %s", mRom.header.romEndAddress, mRom.header.ramEndAddress));
@@ -102,8 +104,7 @@ public:
             return true;
         };
 
-        bool quit = false;
-    mainloop: while(!quit)
+    mainloop: while(true)
         {
             SDL_Event e = void;
             while(SDL_PollEvent(&e))
@@ -115,6 +116,9 @@ public:
                         {
                             case SDL_SCANCODE_ESCAPE:
                                 break mainloop;
+                            case SDL_SCANCODE_LEFTBRACKET:
+                                mOutput.showPalette = !mOutput.showPalette;
+                                break;
                             case SDL_SCANCODE_RIGHTBRACKET:
                                 mVdp.userSettings.isAplaneVisible = !mVdp.userSettings.isAplaneVisible;
                                 break;

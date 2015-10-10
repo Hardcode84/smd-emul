@@ -15,7 +15,7 @@ public:
         const val = (settings.model << 15) |
                 ((settings.vmode == DisplayFormat.NTSC ? 0 : 1) << 14) |
                 (1 << 13) |
-                ((settings.ver & 0b1111) << 8);
+                ((settings.consoleVer & 0b1111) << 8);
         assert(0 == (val & 0xffff0000));
         mVersionReg = cast(ushort)val;
     }

@@ -16,6 +16,7 @@ struct Settings
 {
     Model model = Model.Overseas;
     DisplayFormat vmode = DisplayFormat.NTSC;
-    ubyte ver = 0;
+    ubyte consoleVer = 0;
     int frameskip = 0;
+    int scale = 1;
 }

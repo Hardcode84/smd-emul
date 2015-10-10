@@ -1,24 +1,29 @@
 ﻿module emul.output;
 
+import std.exception;
+
 import gamelib.debugout;
+import gamelib.types;
 import gamelib.memory.saferef;
 import gamelib.graphics.window;
 import gamelib.graphics.surface;
 import gamelib.graphics.color;
 
 import emul.vdp.vdp;
+import emul.settings;
 
 final class Output
 {
 public:
     alias Color = BGRA8888Color;
-    this()
+    this(in Settings settings)
     {
-        // Constructor code
-        mWindow = makeSafe!Window("smd-emul", 1024,768,0);
-        mSurface = createSurface();
-
+        enforce(settings.scale > 0, "Invalid scale");
+        mScale = settings.scale;
+        mSize = Size(1024,768);
+        mWindow = makeSafe!Window("smd-emul", mSize,0);
         scope(failure) mWindow.dispose();
+        mSurface = createSurface();
     }
 
     void dispose() nothrow
@@ -37,12 +42,16 @@ public:
         vdp.setCallbacks(&frameEvent, &renderCallback);
     }
 
+    @property auto ref showPalette() inout { return mShowPalette; }
     @property bool insideFrame() const pure nothrow @nogc { return mInsideFrame; }
 
 private:
     SafeRef!Window mWindow;
     SafeRef!(FFSurface!Color) mSurface;
     bool mInsideFrame = false;
+    Size mSize;
+    int mScale = 1;
+    bool mShowPalette = false;
 
     auto createSurface()
     {
@@ -53,6 +62,26 @@ private:
             },
             dummy,
             mWindow.surface!Color);
+    }
+
+    void checkWindowSize(in Size srcSize)
+    in
+    {
+        assert(srcSize.w > 0);
+        assert(srcSize.h > 0);
+    }
+    body
+    {
+        assert(!mInsideFrame);
+        assert(mScale > 0);
+        const newSize = Size(srcSize.w * mScale, srcSize.h * mScale);
+        if(newSize != mSize)
+        {
+            mSurface.dispose();
+            mWindow.size = newSize;
+            mSurface = createSurface();
+            mSize = newSize;
+        }
     }
 
     Color[64] mColorCache;
@@ -77,13 +106,14 @@ private:
     {
         if(Vdp.FrameEvent.Start == event)
         {
-            //debugOut("begin");
+            assert(!mInsideFrame);
+            checkWindowSize(Size(vdp.state.Width, vdp.state.Height));
             mSurface.lock;
             mInsideFrame = true;
         }
         else if(Vdp.FrameEvent.End == event)
         {
-            //debugOut("end");
+            assert(mInsideFrame);
             mSurface.unlock;
             mInsideFrame = false;
             mWindow.updateSurface(mSurface);
@@ -98,21 +128,32 @@ private:
             mColorCacheVer = vdp.memory.cramChanged;
         }
 
-        auto surfLine = mSurface[line * 2];
+        auto surfLine = mSurface[line * mScale];
         foreach(int i, d; data[])
         {
             const col = mColorCache[d];
-            surfLine[i * 2 + 0] = col;
-            surfLine[i * 2 + 1] = col;
-        }
-        const len = cast(uint)data.length * 2;
-        mSurface[line * 2 + 1][0..len] = surfLine[0..len];
-
-        if(line < 50)
-        {
-            foreach(i;0..64)
+            foreach(j;0..mScale)
             {
-                mSurface[line][900 + i] = mColorCache[i];
+                assert((i * mScale + j) < mSize.w);
+                surfLine[i * mScale + j] = col;
+            }
+        }
+        const len = cast(uint)data.length * mScale;
+        foreach(j;1..mScale)
+        {
+            mSurface[line * mScale + j][0..len] = surfLine[0..len];
+        }
+
+        if(showPalette)
+        {
+            if(line < 50)
+            {
+                const start = mSize.w - 64;
+                foreach(i;0..64)
+                {
+                    assert((start + i) < mSize.w);
+                    mSurface[line][start + i] = mColorCache[i];
+                }
             }
         }
     }
