@@ -42,7 +42,7 @@ public:
         vdp.setCallbacks(&frameEvent, &renderCallback);
     }
 
-    @property auto ref showPalette() inout { return mShowPalette; }
+    @property auto ref showPalette() inout pure nothrow @nogc { return mShowPalette; }
     @property bool insideFrame() const pure nothrow @nogc { return mInsideFrame; }
 
 private:
