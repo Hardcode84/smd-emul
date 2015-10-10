@@ -37,7 +37,7 @@ pure nothrow @nogc @safe:
             palette = ((data >> 13) & 0b11);
             vflip = (0 != (data & (1 << 12)));
             hflip = (0 != (data & (1 << 11)));
-            const patternAddress = (data << 5) & 0xffff;
+            const patternAddress = (data << 5);
             pattern = VdpPattern(memory.getVramRange(patternAddress, 32),palette);
         }
 
@@ -274,7 +274,7 @@ private:
     body
     {
         const ycell = line / 8;
-        const srcCell = cell + ycell * state.CellWidth;
+        const srcCell = cell + ycell * (wideWindow ? 64 : 32);
         if(windowPlane[srcCell].priority != pri)
         {
             return;

@@ -32,6 +32,7 @@ public:
         mLineBuff.length = 400;
         updateDisplayMode();
         mState.CurrentLine = mState.EndLine;
+        mState.setFlags!(VdpFlags.PalMode)(mSettings.format == DisplayFormat.PAL);
     }
 
     void register(ref Cpu cpu) pure nothrow
@@ -440,7 +441,6 @@ private:
             mLineBuff[0..wdth] = mState.backdropColor;
             if(!mState.displayBlank)
             {
-                //TODO: render
                 mVdpLayers.update(mState, mMemory);
                 mSpriteTable.update(mState, mMemory);
 

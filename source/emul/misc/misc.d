@@ -12,11 +12,10 @@ final class Misc
 public:
     this(in Settings settings)
     {
-        const val = (settings.model << 15) |
-                ((settings.vmode == DisplayFormat.NTSC ? 0 : 1) << 14) |
-                (1 << 13) |
-                ((settings.consoleVer & 0b1111) << 8);
-        assert(0 == (val & 0xffff0000));
+        const val = (settings.model << 7) |
+                ((settings.vmode == DisplayFormat.NTSC ? 0 : 1) << 6) |
+                (1 << 5) |
+                (settings.consoleVer & 0b1111);
         mVersionReg = cast(ushort)val;
     }
 

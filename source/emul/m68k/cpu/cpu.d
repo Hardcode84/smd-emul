@@ -95,7 +95,8 @@ nothrow:
             static if(1 == T.sizeof)
             {
                 const lower = (0x0 == (offset & 0x1));
-                return cast(T)((hook(this, offset & ~0x1, (lower ? MemWordPart.LowerByte : MemWordPart.UpperByte)) >> (lower ? 0 : 8)) & 0xff);
+                return cast(T)((hook(this, offset & ~0x1,
+                            (lower ? MemWordPart.LowerByte : MemWordPart.UpperByte)) >> (lower ? 8 : 0)) & 0xff);
             }
             else static if(2 == T.sizeof)
             {
@@ -134,7 +135,8 @@ nothrow:
             static if(1 == T.sizeof)
             {
                 const lower = (0x0 == (offset & 0x1));
-                hook(this, offset & ~0x1, (lower ? MemWordPart.LowerByte : MemWordPart.UpperByte), cast(ushort)(cast(ushort)val << (lower ? 0 : 8))) ;
+                hook(this, offset & ~0x1,
+                    (lower ? MemWordPart.LowerByte : MemWordPart.UpperByte), cast(ushort)(cast(ushort)val << (lower ? 0 : 8))) ;
             }
             else static if(2 == T.sizeof)
             {

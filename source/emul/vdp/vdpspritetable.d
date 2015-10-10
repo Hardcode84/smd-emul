@@ -97,17 +97,18 @@ pure nothrow @nogc @safe:
 
     void drawSprites(Priotity pri)(ubyte[] outData, in ref VdpState state, in ref VdpMemory memory, int line) const
     {
-        void drawSprite(Priotity pri)(
+        bool drawSprite(Priotity pri)(
             ubyte[] outData, in ref VdpSprite sprite, in ref VdpState state, in ref VdpMemory memory, int line) const
         {
+            //if(0 == sprite.x) return false;
             if(sprite.priority == pri)
             {
                 const xstart = sprite.x - 128;
                 const xend = xstart + sprite.hsize * 8;
-                if(xstart >= outData.length || xend <= 0) return;
+                if(xstart >= outData.length || xend <= 0) return true;
                 const ystart = sprite.y - 128;
                 const yend = ystart + sprite.vsize * 8;
-                if(ystart > line || yend <= line) return;
+                if(ystart > line || yend <= line) return true;
                 const row = (line - ystart) / 8;
                 const patLine = (line - ystart) % 8;
                 int currxstart = xstart;
@@ -124,11 +125,15 @@ pure nothrow @nogc @safe:
                     if(currxstart >= outData.length) break;
                 }
             }
+            return true;
         }
 
         foreach(i;currentOrder[].retro)
         {
-            drawSprite!pri(outData, sprites[i], state, memory, line);
+            if(!drawSprite!pri(outData, sprites[i], state, memory, line))
+            {
+                break;
+            }
         }
     }
 
