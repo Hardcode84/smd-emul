@@ -69,7 +69,7 @@ void main(string[] args)
     const compilers = compilerOpts.byKey.array.sort;
 
     enforce(compilers.map!(a => params.count(a)).sum(0) < 2, "More than one compiler.");
-    const string compiler = chain(params.findAmong(compilers),"dmd".only).front;
+    string compiler = chain(params.findAmong(compilers),"dmd".only).front;
 
     enum dmdLinkConfs = [
         "" : "-w",
@@ -121,8 +121,6 @@ void main(string[] args)
     auto unknownOptions = params.filter!(a => a !in knownOptions);
     enforce(unknownOptions.empty, format("Unknown options: %s", unknownOptions));
 
-    writeln("Compiler: ", compiler);
-
     if(!exists(buildDir))
     {
         mkdirRecurse(buildDir);
@@ -150,14 +148,16 @@ void main(string[] args)
     string[] config;
     if(isAgain)
     {
-        enforce("config" in cache.object, "No saved config");
-        enforce(0 == params.filter!(a => a in currentOpts).count, "again cannot be used with other options");
+        enforce("config" in cache.object && "compiler" in cache.object, "No saved config");
+        enforce(0 == params.filter!(a => a in currentOpts || compilers.canFind(a)).count, "again cannot be used with other options");
+        compiler = cache["compiler"].str;
         config = cache["config"].str.split(" ").sort;
     }
     else
     {
         config = params.filter!(a => a in currentOpts).array.sort;
     }
+    writeln("Compiler: ", compiler);
     string configStr = config.join(" ");
 
     if(!rebuild)
