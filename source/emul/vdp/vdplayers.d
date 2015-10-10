@@ -124,11 +124,11 @@ private:
 
         if(state.windowIsRight)
         {
-            if(cell < (8 * state.windowHPos)) return false;
+            if(cell < (2 * state.windowHPos)) return false;
         }
         else
         {
-            if(cell >= (8 * state.windowHPos)) return false;
+            if(cell >= (2 * state.windowHPos)) return false;
         }
         return true;
     }

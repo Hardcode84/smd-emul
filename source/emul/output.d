@@ -20,7 +20,7 @@ public:
     {
         enforce(settings.scale > 0, "Invalid scale");
         mScale = settings.scale;
-        mSize = Size(1024,768);
+        mSize = Size(1,1);
         mWindow = makeSafe!Window("smd-emul", mSize,0);
         scope(failure) mWindow.dispose();
         mSurface = createSurface();

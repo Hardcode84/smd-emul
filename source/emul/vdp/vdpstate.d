@@ -128,7 +128,7 @@ pure nothrow @nogc @safe:
         }
         bool planeAVisible() { return user.isAplaneVisible; }
         bool planeBVisible() { return user.isBplaneVisible; }
-        bool windowEnabled() { return (0x0 != (R[17] & 0b11111)) && (0x0 != (R[18] & 0b11111)) && user.isWindowVisible; }
+        bool windowEnabled() { return 0x0 != R[17] && 0x0 != R[18] && user.isWindowVisible; }
         bool windowIsRight() { return 0x0 != (R[17] & (1 << 7)); }
         auto windowHPos() { return (R[17] & 0b11111) << 1; }
         bool windowIsDown() { return 0x0 != (R[18] & (1 << 7)); }
