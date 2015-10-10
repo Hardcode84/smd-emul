@@ -30,7 +30,7 @@ pure nothrow @nogc @safe:
         bool vflip;
         bool hflip;
         VdpPattern pattern;
-        this(in uint address, in ref VdpMemory memory)
+        this(in ref VdpMemory memory,uint address)
         {
             const data = memory.readVram!ushort(address);
             priority = (0 != (data & (1 << 15))) ? Priotity.High : Priotity.Low;
@@ -49,20 +49,22 @@ pure nothrow @nogc @safe:
 
     int vramchanged = 0;
     int width, height;
+    bool wideWindow;
     uint planeAbase = 0xffffffff;
     uint planeBbase = 0xffffffff;
     uint windowBase = 0xffffffff;
 
     Cell[64*64][2] planes;
-    Cell[40*30] windowPlane;
+    Cell[32*64] windowPlane;
 
     void update(in ref VdpState state, in ref VdpMemory memory)
     {
-        if(planeAbase != state.patternNameTableLayerA ||
-           planeBbase != state.patternnameTableLayerB ||
-           windowBase != state.patternNameTableWindow ||
-           width != state.layerWidth ||
-           height != state.layerHeight ||
+        if(planeAbase  != state.patternNameTableLayerA ||
+           planeBbase  != state.patternnameTableLayerB ||
+           windowBase  != state.patternNameTableWindow ||
+           width       != state.layerWidth ||
+           height      != state.layerHeight ||
+           wideWindow  != (state.CellWidth > 32) ||
            vramchanged != memory.vramChanged)
         {
             planeAbase = state.patternNameTableLayerA;
@@ -70,6 +72,7 @@ pure nothrow @nogc @safe:
             windowBase = state.patternNameTableWindow;
             width = state.layerWidth;
             height = state.layerHeight;
+            wideWindow = state.CellWidth > 32;
             assert(ispow2(width),  debugConv(width));
             assert(ispow2(height), debugConv(height));
             vramchanged = memory.vramChanged;
@@ -78,13 +81,13 @@ pure nothrow @nogc @safe:
                 foreach(j; 0..width)
                 {
                     const offset = i * width + j;
-                    planes[Plane.A][offset] = Cell(planeAbase + offset * cast(uint)ushort.sizeof, memory);
-                    planes[Plane.B][offset] = Cell(planeBbase + offset * cast(uint)ushort.sizeof, memory);
+                    planes[Plane.A][offset] = Cell(memory, planeAbase + offset * cast(uint)ushort.sizeof);
+                    planes[Plane.B][offset] = Cell(memory, planeBbase + offset * cast(uint)ushort.sizeof);
                 }
             }
-            foreach(offset; 0..(state.CellHeight * state.CellWidth))
+            foreach(offset; 0..(state.CellHeight * (wideWindow ? 64 : 32)))
             {
-                windowPlane[offset] = Cell(windowBase + offset * cast(uint)ushort.sizeof, memory);
+                windowPlane[offset] = Cell(memory, windowBase + offset * cast(uint)ushort.sizeof);
             }
         }
     }

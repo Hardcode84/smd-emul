@@ -442,23 +442,12 @@ private:
             {
                 //TODO: render
                 mVdpLayers.update(mState, mMemory);
-                //mSpriteTable.update(mState, mMemory);
+                mSpriteTable.update(mState, mMemory);
 
                 mVdpLayers.drawPlanes!(VdpLayers.Priotity.Low)(mLineBuff[0..wdth],mState,mMemory,currLine);
-
-                /*foreach(const ref sprite; mSpriteTable.currentOrder[].retro.map!(a => mSpriteTable.sprites[a]))
-                {
-                    const miny = sprite.y;
-                    const maxy = miny + sprite.hsize * CellHeight;
-                    if(currLine >= miny && currLine < maxy)
-                    {
-                        const minx = max(0, sprite.x - 128);
-                        const maxx = max(minx, min(mState.Width, sprite.x - 128 + sprite.vsize * CellWidth));
-                        import std.random;
-                        mLineBuff[minx..maxx] = cast(ubyte)uniform(0,64);
-                    }
-                }*/
+                mSpriteTable.drawSprites!(VdpSpriteTable.Priotity.Low)(mLineBuff[0..wdth],mState,mMemory,currLine);
                 mVdpLayers.drawPlanes!(VdpLayers.Priotity.High)(mLineBuff[0..wdth],mState,mMemory,currLine);
+                mSpriteTable.drawSprites!(VdpSpriteTable.Priotity.High)(mLineBuff[0..wdth],mState,mMemory,currLine);
             }
             callRenderCallback(currLine, mLineBuff[0..wdth]);
         }
