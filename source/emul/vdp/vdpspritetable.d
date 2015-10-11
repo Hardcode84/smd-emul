@@ -119,7 +119,7 @@ pure nothrow @nogc @safe:
                     const end = (currxend <= outData.length ? 8 : 8 - (currxend - outData.length));
                     if(end > start)
                     {
-                        sprite.getData(outData[max(0,currxstart)..min(outData.length,currxend)],i,row,patLine,start,end);
+                        sprite.getData(outData[max(0,currxstart)..min(outData.length,currxend)],i,row,patLine,start,cast(int)end);
                     }
                     currxstart += 8;
                     if(currxstart >= outData.length) break;

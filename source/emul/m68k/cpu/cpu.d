@@ -259,7 +259,7 @@ private:
     WriteHookTuple[] mWriteHooks;
     auto mReadHooksRange  = tuple(0xffffffff,0x0);
     auto mWriteHooksRange = tuple(0xffffffff,0x0);
-    xjmp_buf mJumpBuf;
+    align(16) xjmp_buf mJumpBuf;
     ubyte[ushort.sizeof * 11] mInstructionBuff;
     ubyte[] mCurrentInstructionBuff;
     ushort mCurrentInstruction;

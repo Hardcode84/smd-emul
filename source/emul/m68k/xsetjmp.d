@@ -52,6 +52,7 @@ version(Windows)
         extern(C) nothrow @nogc:
         align(16) struct jmp_buf
         {
+        align(16):
             long[32] data;
         }
 
@@ -66,27 +67,27 @@ version(Windows)
 
 unittest
 {
-    import gamelib.debugout;
-    debugOut("xsetjmp test");
+    import std.stdio;
+    writeln("xsetjmp test");
     xjmp_buf buf;
     version(X86_64)
     {
-        assert((&buf & 0b1111) == 0);
+        assert((cast(size_t)&buf & cast(size_t)0b1111) == 0);
     }
     int res = xsetjmp(buf);
     if(0 == res)
     {
-        debugOut("normal");
+        writeln("normal");
     }
     else
     {
-        debugOut("jump! ",res);
+        writeln("jump! ",res);
         assert(42 == res);
         return;
     }
     void foo()
     {
-        debugOut("foo");
+        writeln("foo");
         xlongjmp(buf,42);
         assert(false);
     }
