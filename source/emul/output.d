@@ -1,6 +1,11 @@
 ﻿module emul.output;
 
 import std.exception;
+import core.thread;
+import core.sync.mutex;
+import core.sync.condition;
+import core.atomic;
+import core.time;
 
 import gamelib.debugout;
 import gamelib.types;
@@ -24,10 +29,38 @@ public:
         mWindow = makeSafe!Window("smd-emul", mSize,0);
         scope(failure) mWindow.dispose();
         mSurface = createSurface();
+        scope(failure) mSurface.dispose();
+        mSyncThreadFlag.atomicStore(true);
+        const fps = (settings.vmode == DisplayFormat.NTSC ? 60 : 50);
+        mSyncMutex = new Mutex;
+        mSyncCondition = new Condition(mSyncMutex);
+        mSyncThread = new Thread(()
+            {
+                const ticksPerSec = MonoTime.ticksPerSecond();
+                const delay = ticksPerSec / fps;
+                assert(delay > 0);
+                const sleepDur1 = dur!"msecs"((1000 / fps) / 2);
+                const sleepDur2 = dur!"msecs"(1);
+                long nextFrame = MonoTime.currTime.ticks() + delay;
+                while(mSyncThreadFlag.atomicLoad())
+                {
+                    Thread.sleep(sleepDur1);
+                    long currTicks = MonoTime.currTime.ticks();
+                    while(currTicks < nextFrame)
+                    {
+                        Thread.sleep(sleepDur2);
+                        currTicks = MonoTime.currTime.ticks();
+                    }
+                    mSyncCondition.notifyAll();
+                    nextFrame = nextFrame + delay;
+                }
+            }).start();
     }
 
-    void dispose() nothrow
+    void dispose()
     {
+        mSyncThreadFlag.atomicStore(false);
+        mSyncThread.join();
         if(mInsideFrame)
         {
             mSurface.unlock;
@@ -52,6 +85,10 @@ private:
     Size mSize;
     int mScale = 1;
     bool mShowPalette = false;
+    shared bool mSyncThreadFlag = true;
+    Thread mSyncThread;
+    Mutex mSyncMutex;
+    Condition mSyncCondition;
 
     auto createSurface()
     {
@@ -117,6 +154,7 @@ private:
             assert(mInsideFrame);
             mSurface.unlock;
             mInsideFrame = false;
+            mSyncCondition.wait();
             mWindow.updateSurface(mSurface);
         }
     }

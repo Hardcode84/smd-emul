@@ -145,7 +145,7 @@ public:
         }
     }
 
-    void dispose() nothrow
+    void dispose()
     {
         mOutput.dispose();
         deinitSDL();
