@@ -12,6 +12,12 @@ enum DisplayFormat
     PAL
 }
 
+enum FramesyncMethod
+{
+    None,
+    Normal
+}
+
 struct Settings
 {
     Model model = Model.Overseas;
@@ -19,4 +25,5 @@ struct Settings
     ubyte consoleVer = 0;
     int frameskip = 0;
     int scale = 1;
+    FramesyncMethod framesyncMethod = FramesyncMethod.Normal;
 }

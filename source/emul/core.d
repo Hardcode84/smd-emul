@@ -30,6 +30,10 @@ public:
     {
         Settings settings;
         //settings.model = Model.Domestic;
+        debug
+        {
+            settings.framesyncMethod = FramesyncMethod.None;
+        }
         settings.scale = 2;
         settings.vmode = DisplayFormat.NTSC;
         mRom = rom;

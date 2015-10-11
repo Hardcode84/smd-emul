@@ -31,36 +31,43 @@ public:
         mSurface = createSurface();
         scope(failure) mSurface.dispose();
         mSyncThreadFlag.atomicStore(true);
-        const fps = (settings.vmode == DisplayFormat.NTSC ? 60 : 50);
-        mSyncMutex = new Mutex;
-        mSyncCondition = new Condition(mSyncMutex);
-        mSyncThread = new Thread(()
-            {
-                const ticksPerSec = MonoTime.ticksPerSecond();
-                const delay = ticksPerSec / fps;
-                assert(delay > 0);
-                const sleepDur1 = dur!"msecs"((1000 / fps) / 2);
-                const sleepDur2 = dur!"msecs"(1);
-                long nextFrame = MonoTime.currTime.ticks() + delay;
-                while(mSyncThreadFlag.atomicLoad())
+        if(FramesyncMethod.None != settings.framesyncMethod)
+        {
+            const fps = (settings.vmode == DisplayFormat.NTSC ? 60 : 50);
+            mSyncMutex = new Mutex;
+            mSyncCondition = new Condition(mSyncMutex);
+            mSyncThread = new Thread(()
                 {
-                    Thread.sleep(sleepDur1);
-                    long currTicks = MonoTime.currTime.ticks();
-                    while(currTicks < nextFrame)
+                    const ticksPerSec = MonoTime.ticksPerSecond();
+                    const delay = ticksPerSec / fps;
+                    assert(delay > 0);
+                    const sleepDur1 = dur!"msecs"((1000 / fps) / 2);
+                    const sleepDur2 = dur!"msecs"(1);
+                    long nextFrame = MonoTime.currTime.ticks() + delay;
+                    while(mSyncThreadFlag.atomicLoad())
                     {
-                        Thread.sleep(sleepDur2);
-                        currTicks = MonoTime.currTime.ticks();
+                        Thread.sleep(sleepDur1);
+                        long currTicks = MonoTime.currTime.ticks();
+                        while(currTicks < nextFrame)
+                        {
+                            Thread.sleep(sleepDur2);
+                            currTicks = MonoTime.currTime.ticks();
+                        }
+                        mSyncCondition.notifyAll();
+                        nextFrame = nextFrame + delay;
                     }
-                    mSyncCondition.notifyAll();
-                    nextFrame = nextFrame + delay;
-                }
-            }).start();
+                }).start();
+        }
     }
 
     void dispose()
     {
         mSyncThreadFlag.atomicStore(false);
-        mSyncThread.join();
+        if(mSyncThread !is null)
+        {
+            mSyncThread.join();
+            mSyncThread = null;
+        }
         if(mInsideFrame)
         {
             mSurface.unlock;
@@ -154,7 +161,10 @@ private:
             assert(mInsideFrame);
             mSurface.unlock;
             mInsideFrame = false;
-            mSyncCondition.wait();
+            if(mSyncCondition !is null)
+            {
+                mSyncCondition.wait();
+            }
             mWindow.updateSurface(mSurface);
         }
     }
