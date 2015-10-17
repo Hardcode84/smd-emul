@@ -20,6 +20,7 @@ import emul.m68k.disasm;
 import emul.misc.misc;
 import emul.z80.z80;
 import emul.vdp.vdp;
+import emul.io.gamepad;
 
 import emul.output;
 
@@ -38,7 +39,10 @@ public:
         settings.vmode = DisplayFormat.NTSC;
         mRom = rom;
         mCpuRunner = 0;
-        mMisc = makeSafe!Misc(settings);
+        mGamepad = makeSafe!Gamepad();
+        Misc.IoSettings ioSettings;
+        ioSettings.ioHooks[0] = &mGamepad.ioHandler;
+        mMisc = makeSafe!Misc(settings,ioSettings);
         mZ80 = makeSafe!Z80();
         mVdp = makeSafe!Vdp(settings);
         initSDL();
@@ -67,26 +71,30 @@ public:
 
     void run()
     {
-        bool trace = false;
         CpuRunner.RunParams params;
-        uint[20] pos;
-        auto buf = pos[].cycle;
-        scope(exit)
+        debug
         {
-            debugOut(mCpu.state);
-            Disasm disasm = 0;
-            foreach(i; 0..pos.length)
+            uint[20] pos;
+            auto buf = pos[].cycle;
+            scope(exit)
             {
-                debugfOut("0x%.6x\t%s",buf.front,disasm.getDesc(mCpu, buf.front));
-                buf.popFront;
+                debugOut(mCpu.state);
+                Disasm disasm = 0;
+                foreach(i; 0..pos.length)
+                {
+                    debugfOut("0x%.6x\t%s",buf.front,disasm.getDesc(mCpu, buf.front));
+                    buf.popFront;
+                }
             }
+
+            params.breakHandlers[CpuRunner.BreakReason.SingleStep] = (ref Cpu cpu)
+            {
+                buf.front = cpu.state.PC;
+                buf.popFront;
+                return true;
+            };
         }
-        params.breakHandlers[CpuRunner.BreakReason.SingleStep] = (ref Cpu cpu)
-        {
-            buf.front = cpu.state.PC;
-            buf.popFront;
-            return true;
-        };
+
         bool invalidOpcode = false;
         params.breakHandlers[CpuRunner.BreakReason.InvalidOpCode] = (ref Cpu cpu)
         {
@@ -96,15 +104,15 @@ public:
             return false;
         };
 
-        uint ticks = 0;
+        uint currentFrame = 0;
         params.processHandler = (ref Cpu cpu)
         {
-            if(cpu.state.TickCounter > (ticks + 10_000) && !mOutput.insideFrame)
+            mVdp.update(cpu);
+            if(!mOutput.insideFrame && mVdp.state.CurrentFrame > (currentFrame + 1))
             {
-                ticks = cpu.state.TickCounter;
+                currentFrame = mVdp.state.CurrentFrame;
                 return false;
             }
-            mVdp.update(cpu);
             return true;
         };
 
@@ -115,24 +123,29 @@ public:
             {
                 switch(e.type)
                 {
+                    case SDL_KEYUP:
                     case SDL_KEYDOWN:
-                        switch(e.key.keysym.scancode)
+                        mGamepad.processKeyboardEvent(e.key);
+                        if(e.type == SDL_KEYDOWN)
                         {
-                            case SDL_SCANCODE_ESCAPE:
-                                break mainloop;
-                            case SDL_SCANCODE_LEFTBRACKET:
-                                mOutput.showPalette = !mOutput.showPalette;
-                                break;
-                            case SDL_SCANCODE_RIGHTBRACKET:
-                                mVdp.userSettings.isAplaneVisible = !mVdp.userSettings.isAplaneVisible;
-                                break;
-                            case SDL_SCANCODE_APOSTROPHE:
-                                mVdp.userSettings.isBplaneVisible = !mVdp.userSettings.isBplaneVisible;
-                                break;
-                            case SDL_SCANCODE_SLASH:
-                                mVdp.userSettings.isWindowVisible = !mVdp.userSettings.isWindowVisible;
-                                break;
-                            default: break;
+                            switch(e.key.keysym.scancode)
+                            {
+                                case SDL_SCANCODE_ESCAPE:
+                                    break mainloop;
+                                case SDL_SCANCODE_LEFTBRACKET:
+                                    mOutput.showPalette = !mOutput.showPalette;
+                                    break;
+                                case SDL_SCANCODE_RIGHTBRACKET:
+                                    mVdp.userSettings.isAplaneVisible = !mVdp.userSettings.isAplaneVisible;
+                                    break;
+                                case SDL_SCANCODE_APOSTROPHE:
+                                    mVdp.userSettings.isBplaneVisible = !mVdp.userSettings.isBplaneVisible;
+                                    break;
+                                case SDL_SCANCODE_SLASH:
+                                    mVdp.userSettings.isWindowVisible = !mVdp.userSettings.isWindowVisible;
+                                    break;
+                                default: break;
+                            }
                         }
                         break;
 
@@ -163,6 +176,7 @@ private:
     Z80Ref mZ80;
     VdpRef mVdp;
     OutputRef mOutput;
+    GamepadRef mGamepad;
 }
 
 alias CoreRef = SafeRef!Core;
