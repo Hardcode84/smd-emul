@@ -135,8 +135,9 @@ nothrow:
             static if(1 == T.sizeof)
             {
                 const lower = (0x0 == (offset & 0x1));
+                const res = cast(ushort)val | (cast(ushort)val << 8);
                 hook(this, offset & ~0x1,
-                    (lower ? MemWordPart.LowerByte : MemWordPart.UpperByte), cast(ushort)(cast(ushort)val << (lower ? 0 : 8))) ;
+                    (lower ? MemWordPart.LowerByte : MemWordPart.UpperByte), cast(ushort)val);
             }
             else static if(2 == T.sizeof)
             {
